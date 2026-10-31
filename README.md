@@ -57,6 +57,8 @@ layers, audio buses, settings round-trip, and pause flow. It prints
 | **E** | Interact (Phase 1) |
 | **I / J / M** | Inventory / journal / map (future) |
 
+New games start in **first person**. Press **V** to switch to third person and back.
+
 The test room uses a temporary free-look camera. It is replaced by the player
 controller in Phase 1.
 

@@ -356,13 +356,14 @@ The UI never queries the chest. The quest system never reaches into the inventor
 ## 7. Player and camera rules
 
 - Use one `Player` scene for both perspectives. Do not create separate first-person and third-person player scenes.
+- New games start in **first person**. Pressing **V** toggles to third person and back.
 - The player is a `CharacterBody3D` with a capsule collision shape.
 - Movement is camera-relative.
 - **Third person:** `SpringArm3D` handles camera collision; the camera must not clip through walls.
 - **First person:** camera sits at the head; hide the head/body meshes appropriately without changing collision.
 - Toggling perspective must preserve position, yaw, and pitch. No teleporting and no snap to a different location.
 - Mouse capture is enabled only during gameplay. Menus and pause release the cursor.
-- Input action for toggling perspective: `toggle_camera` (default binding TBD).
+- Input action for toggling perspective: `toggle_camera`, bound to **V**.
 - Support keyboard/mouse first; controller support is planned but not required in Phase 0 or 1.
 - Do not hard-code keys in scripts. Use the Input Map.
 
@@ -618,6 +619,7 @@ The user is a beginner. Adapt explanations accordingly:
 | 2026-10-31 | Feature-first architecture with component composition and data-driven Resources. |
 | 2026-10-31 | Six initial autoloads approved: Events, Game, SceneRouter, SaveManager, Settings, Debug. |
 | 2026-10-31 | `toggle_camera` is bound to **V** by default. |
+| 2026-10-31 | New games start in **first person**; V toggles to third person and back. |
 | 2026-10-31 | Phase 0 foundations implemented; smoke test added at `tests/phase0_smoke.tscn`. |
 | 2026-10-31 | `AGENTS.md` created. |
 
@@ -626,7 +628,6 @@ The user is a beginner. Adapt explanations accordingly:
 These are undecided. Do not silently choose an answer.
 
 - Minimum target hardware and whether Steam Deck support matters.
-- Default perspective on new game (first or third person).
 - Final keybindings and controller support priority.
 - Art style and placeholder asset pipeline.
 - World scale: number of regions, approximate map size, interior count.
