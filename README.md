@@ -6,72 +6,80 @@ third-person cameras.
 
 ## Current status
 
-**Phase 0 — Foundations**
+**Phase 1 — Walking Skeleton**
 
 Working now:
 
-- Boot screen → main menu → test room
-- New Game, Settings, and Quit
-- Persistent master volume and fullscreen settings
+- Boot screen → main menu → test room, with a fade between scenes
+- One `CharacterBody3D` player with walk, sprint, jump, gravity, and mouse look
+- **V** toggles first and third person without moving the player
+- Third-person camera that pulls in near walls instead of clipping
+- Crosshair, `[E]` interaction prompt, and item notification toasts
+- A door that opens and closes, and a chest that opens once
 - Pause menu with resume, return to menu, and quit
-- F3 debug overlay
-- Six core Autoload services
-- Input Map and named 3D collision layers
-- Music, SFX, UI, Ambience, and Voice audio buses
+- Persistent master volume and fullscreen settings
+- F3 debug overlay showing FPS, state, camera mode, and position
+- Six core Autoload services, input map, named collision layers, audio buses
 
 Not built yet:
 
-- Player controller and real camera toggle (Phase 1)
+- Inventory: the chest shows a message but does not store the item (Phase 2)
+- Combat, equipment, stats, quests, NPC schedules (Phase 2 and later)
 - Saving and loading (Phase 3)
-- Combat, inventory, quests, NPC schedules, and world streaming
+- World streaming and chunks (Phase 3)
 
 ## How to run
 
 1. Open `project.godot` in **Godot 4.7.2**.
 2. Press **F5** (Run Project).
 3. The boot screen routes to the main menu.
-4. Choose **New Game** to enter the Phase 0 test room.
-
-## Validation
-
-Open `tests/phase0_smoke.tscn` and press **F6**, or run:
-
-```text
-godot --headless --path . tests/phase0_smoke.tscn
-```
-
-The smoke test checks the autoloads, main scene, input actions, collision
-layers, audio buses, settings round-trip, and pause flow. It prints
-`PHASE0_SMOKE_OK` when everything passes.
+4. Choose **New Game** to enter the test room.
 
 ## Controls
 
 | Input | Action |
 |---|---|
-| **W A S D** | Move the test camera |
+| **W A S D** | Move |
 | **Mouse** | Look around |
-| **V** | Toggle first/third person (wired in Phase 1) |
+| **Shift** | Sprint |
+| **Space** | Jump |
+| **E** | Interact with a door or chest |
+| **V** | Toggle first / third person |
 | **Esc** | Pause / resume |
 | **F3** | Toggle debug overlay |
 | **F5 / F9** | Quick save / quick load (Phase 3) |
-| **E** | Interact (Phase 1) |
 | **I / J / M** | Inventory / journal / map (future) |
 
 New games start in **first person**. Press **V** to switch to third person and back.
 
-The test room uses a temporary free-look camera. It is replaced by the player
-controller in Phase 1.
+## Validation
+
+Open a smoke test scene in the editor and press **F6**, or run:
+
+```text
+godot --headless --path . tests/phase0_smoke.tscn
+godot --headless --path . tests/phase1_smoke.tscn
+```
+
+`phase0_smoke` checks the autoloads, main scene, input actions, collision
+layers, audio buses, settings round-trip, and pause flow.
+
+`phase1_smoke` loads the real test room and drives the player: camera toggle,
+camera collision near a wall, walk, sprint, jump, gravity, the door, the chest,
+the HUD, the fade overlay, and pausing.
+
+They print `PHASE0_SMOKE_OK` / `PHASE1_SMOKE_OK` when everything passes.
 
 ## Project structure
 
 ```text
 assets/     models, textures, audio, fonts, animations
 core/       autoload services, game state, save helpers
-features/   player, combat, inventory, quests, NPCs, world, UI
+features/   player, interaction, combat, inventory, quests, NPCs, world, UI
 data/       item, quest, NPC, ability, and loot definitions
 scenes/     boot, menus, and test maps
 ui/         shared theme resources
-tests/      automated tests (future)
+tests/      smoke tests
 ```
 
 ## Rules for contributors

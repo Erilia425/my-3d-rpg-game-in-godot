@@ -1,33 +1,67 @@
 extends Node
-## Scene transition service.
+## Scene transition service with a fade overlay.
 ##
-## Phase 0 uses Godot's built-in scene change. The fade/loading overlay and
-## threaded loading arrive in Phase 1. See AGENTS.md section 4.4.
+## Scene loading is still synchronous in Phase 1. Threaded loading and a
+## progress screen are planned for Phase 3, when regions become large.
 
 signal scene_change_started(path: String)
 signal scene_changed(path: String)
 
 const MAIN_MENU := "res://scenes/main_menu.tscn"
+const FADE_OUT_TIME := 0.22
+const FADE_IN_TIME := 0.3
+
+var _fade_layer: CanvasLayer
+var _fade_rect: ColorRect
+var _transitioning := false
+
+
+func _ready() -> void:
+	process_mode = Node.PROCESS_MODE_ALWAYS
+
+	_fade_layer = CanvasLayer.new()
+	_fade_layer.name = "FadeLayer"
+	_fade_layer.layer = 200
+	add_child(_fade_layer)
+
+	_fade_rect = ColorRect.new()
+	_fade_rect.name = "FadeRect"
+	_fade_rect.color = Color(0, 0, 0, 0)
+	_fade_rect.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	_fade_rect.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	_fade_rect.visible = false
+	_fade_layer.add_child(_fade_rect)
 
 
 func goto_scene(path: String, fade: bool = true) -> void:
 	if not ResourceLoader.exists(path):
 		push_error("SceneRouter: scene not found: %s" % path)
 		return
+	if _transitioning:
+		push_warning("SceneRouter: ignoring scene change while another transition is running.")
+		return
 
+	_transitioning = true
 	scene_change_started.emit(path)
 
-	# Reserved for the Phase 1 fade/loading overlay.
 	if fade:
-		pass
+		await _fade_to_black()
 
 	var error := get_tree().change_scene_to_file(path)
 	if error != OK:
 		push_error("SceneRouter: failed to change scene (error %d): %s" % [error, path])
+		if fade:
+			await _fade_from_black()
+		_transitioning = false
 		return
 
-	# change_scene_to_file() is deferred, so announce after the new scene exists.
+	# change_scene_to_file() is deferred, so wait for the new scene to exist.
 	await get_tree().process_frame
+
+	if fade:
+		await _fade_from_black()
+
+	_transitioning = false
 	scene_changed.emit(path)
 
 
@@ -40,8 +74,29 @@ func reload_current() -> void:
 	if path.is_empty():
 		return
 
-	goto_scene(path, false)
+	goto_scene(path, true)
 
 
 func goto_main_menu() -> void:
-	goto_scene(MAIN_MENU, false)
+	goto_scene(MAIN_MENU, true)
+
+
+func _fade_to_black() -> void:
+	_fade_rect.visible = true
+	_fade_rect.mouse_filter = Control.MOUSE_FILTER_STOP
+	_fade_rect.color = Color(0, 0, 0, 0)
+
+	var tween := create_tween()
+	tween.set_pause_mode(Tween.TWEEN_PAUSE_PROCESS)
+	tween.tween_property(_fade_rect, "color:a", 1.0, FADE_OUT_TIME)
+	await tween.finished
+
+
+func _fade_from_black() -> void:
+	var tween := create_tween()
+	tween.set_pause_mode(Tween.TWEEN_PAUSE_PROCESS)
+	tween.tween_property(_fade_rect, "color:a", 0.0, FADE_IN_TIME)
+	await tween.finished
+
+	_fade_rect.visible = false
+	_fade_rect.mouse_filter = Control.MOUSE_FILTER_IGNORE

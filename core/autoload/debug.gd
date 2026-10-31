@@ -1,8 +1,8 @@
 extends CanvasLayer
 ## Minimal F3 debug overlay.
 ##
-## Shows FPS, game state, and player position. Refreshes four times per second
-## instead of every frame. Disabled automatically in release builds.
+## Shows FPS, game state, camera mode, and player position. Refreshes four
+## times per second instead of every frame. Disabled in release builds.
 
 const REFRESH_INTERVAL := 0.25
 
@@ -23,6 +23,7 @@ func _ready() -> void:
 	add_child(refresh_timer)
 
 	Events.game_state_changed.connect(_on_game_state_changed)
+	Events.camera_mode_changed.connect(_on_camera_mode_changed)
 
 	if not OS.is_debug_build():
 		_overlay_visible = false
@@ -75,6 +76,7 @@ func _refresh() -> void:
 	var player := get_tree().get_first_node_in_group("player")
 	var player_name := "none"
 	var position_text := "n/a"
+	var camera_text := "n/a"
 
 	if player is Node3D:
 		var player_3d := player as Node3D
@@ -84,17 +86,24 @@ func _refresh() -> void:
 			player_3d.global_position.y,
 			player_3d.global_position.z,
 		]
+		if player.has_method("get_camera_mode_name"):
+			camera_text = String(player.get_camera_mode_name())
 
 	_label.text = "\n".join([
 		"FPS: %d" % Engine.get_frames_per_second(),
 		"State: %s" % Game.get_state_name(),
 		"Player: %s" % player_name,
+		"Camera: %s" % camera_text,
 		"Position: %s" % position_text,
 		"F3 toggles this overlay",
 	])
 
 
 func _on_game_state_changed(_previous_state: int, _current_state: int) -> void:
+	_refresh()
+
+
+func _on_camera_mode_changed(_is_first_person: bool) -> void:
 	_refresh()
 
 

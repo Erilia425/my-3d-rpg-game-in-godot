@@ -1,0 +1,56 @@
+[gd_scene load_steps=9 format=3]
+
+[ext_resource type="Script" path="res://features/interaction/chest.gd" id="1_chest"]
+
+[sub_resource type="BoxMesh" id="BoxMesh_base"]
+size = Vector3(1.2, 0.7, 0.8)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_base"]
+albedo_color = Color(0.3, 0.18, 0.09, 1)
+roughness = 0.9
+
+[sub_resource type="BoxMesh" id="BoxMesh_lid"]
+size = Vector3(1.2, 0.18, 0.8)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_lid"]
+albedo_color = Color(0.38, 0.24, 0.12, 1)
+roughness = 0.82
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_chest"]
+size = Vector3(1.2, 0.9, 0.8)
+
+[sub_resource type="BoxMesh" id="BoxMesh_latch"]
+size = Vector3(0.18, 0.22, 0.08)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_latch"]
+albedo_color = Color(0.82, 0.68, 0.36, 1)
+metallic = 0.75
+roughness = 0.3
+
+[node name="Chest" type="StaticBody3D" groups=["interactable"]]
+collision_layer = 17
+collision_mask = 0
+script = ExtResource("1_chest")
+
+[node name="Base" type="MeshInstance3D" parent="."]
+position = Vector3(0, 0.35, 0)
+mesh = SubResource("BoxMesh_base")
+surface_material_override/0 = SubResource("StandardMaterial3D_base")
+
+[node name="LidPivot" type="Node3D" parent="."]
+unique_name_in_owner = true
+position = Vector3(0, 0.7, -0.4)
+
+[node name="Lid" type="MeshInstance3D" parent="LidPivot"]
+position = Vector3(0, 0.09, 0.4)
+mesh = SubResource("BoxMesh_lid")
+surface_material_override/0 = SubResource("StandardMaterial3D_lid")
+
+[node name="Collision" type="CollisionShape3D" parent="."]
+position = Vector3(0, 0.45, 0)
+shape = SubResource("BoxShape3D_chest")
+
+[node name="Latch" type="MeshInstance3D" parent="."]
+position = Vector3(0, 0.45, 0.42)
+mesh = SubResource("BoxMesh_latch")
+surface_material_override/0 = SubResource("StandardMaterial3D_latch")

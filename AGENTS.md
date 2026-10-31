@@ -22,8 +22,8 @@ When a request conflicts with this file, stop and ask the user which rule wins.
 | Primary development platform | Windows PC (D3D12 configured) |
 | Language | GDScript, statically typed where practical |
 | Target frame rate | 60 FPS on minimum-spec hardware (hardware TBD) |
-| Current phase | **Phase 0 — Foundations** (implemented; awaiting user acceptance) |
-| Project state | Phase 0 foundation implemented; gameplay systems are planned. |
+| Current phase | **Phase 1 — Walking Skeleton** (implemented; awaiting user acceptance) |
+| Project state | Phase 0 and Phase 1 implemented; combat and RPG systems are planned. |
 
 ### Design pillars
 
@@ -66,19 +66,31 @@ Do not copy Skyrim assets, names, quest text, maps, music, or lore. Use the refe
 
 ## 3. Current project state
 
-Phase 0 foundations are implemented and validated with Godot 4.7.2:
+Phase 0 and Phase 1 are implemented and validated with Godot 4.7.2:
 
 - `res://scenes/boot.tscn` is the main scene.
 - Six autoloads exist: `Events`, `Settings`, `SaveManager`, `SceneRouter`, `Game`, `Debug`.
-- The main menu, Phase 0 test room, pause menu, settings, and F3 overlay work.
+- The main menu, test room, pause menu, settings, and F3 overlay work.
 - Input actions and 3D collision layer names are configured.
 - Audio buses exist: Master, Music, SFX, UI, Ambience, Voice.
 - `icon.svg` exists and imports correctly.
 - Git is initialized; `.godot/` is ignored.
-- The Phase 0 smoke test is at `tests/phase0_smoke.tscn`.
+- Smoke tests: `tests/phase0_smoke.tscn` and `tests/phase1_smoke.tscn`.
 
-Remaining work is intentionally deferred to later phases: player controller,
-camera toggle, saving, combat, inventory, quests, NPC schedules, and streaming.
+Phase 1 adds a playable walking skeleton:
+
+- `features/player/player.tscn` — one `CharacterBody3D` for both perspectives.
+  Walk, sprint, jump, gravity, mouse look, and **V** first/third-person toggle.
+- Third-person `SpringArm3D` with camera collision (`world` + `camera_blocker`).
+- `features/interaction/interaction_component.gd` — ray from the head along the
+  active camera, 3 m reach, emits prompts through `Events`.
+- `features/interaction/door.tscn` — hinged door that opens and closes.
+- `features/interaction/chest.tscn` — one-shot chest; grants a placeholder item.
+- `features/ui/hud.tscn` — crosshair, `[E]` interaction prompt, item toast.
+- `SceneRouter` fades to black and back around scene changes.
+
+Still deferred: saving, inventory, combat, quests, NPC schedules, and streaming.
+The chest does not yet move items into an inventory; that is Phase 2.
 
 The project folder path contains a space (`rpg game`). This is harmless; do not
 rename or move it without permission.
@@ -541,6 +553,17 @@ Before reporting a task complete:
 - Scene transition uses a fade/loading screen.
 - Pause menu works during gameplay.
 
+### Verification commands
+
+```text
+Godot_v4.7.2-stable_win64_console.exe --headless --path . tests/phase0_smoke.tscn
+Godot_v4.7.2-stable_win64_console.exe --headless --path . tests/phase1_smoke.tscn
+```
+
+Both must print `PHASE0_SMOKE_OK` / `PHASE1_SMOKE_OK`. The Phase 1 test loads the
+real test room and drives the player: camera toggle, camera collision, walk,
+sprint, jump, gravity, door, chest, HUD, fade overlay, and pause.
+
 ### Future automation
 
 - Add GUT or gdUnit4 only with approval.
@@ -554,7 +577,7 @@ Before reporting a task complete:
 | Phase | Goal | Effort | Status |
 |---|---|---|---|
 | 0 | Foundations: repo, folders, boot flow, services, input, pause, settings, debug | S | **Implemented — awaiting acceptance** |
-| 1 | Walking skeleton: player, both cameras, interaction, doors/chests, transitions | M | Not started |
+| 1 | Walking skeleton: player, both cameras, interaction, doors/chests, transitions | M | **Implemented — awaiting acceptance** |
 | 2 | Core RPG loop: items, inventory, equipment, stats, combat, one enemy, HUD | L | Not started |
 | 3 | Persistence and world: save/load, chunks, time, persistent objects | L | Not started |
 | 4 | Sandbox life: NPC schedules, dialogue, quests, shops, crafting | XL | Not started |
@@ -621,6 +644,12 @@ The user is a beginner. Adapt explanations accordingly:
 | 2026-10-31 | `toggle_camera` is bound to **V** by default. |
 | 2026-10-31 | New games start in **first person**; V toggles to third person and back. |
 | 2026-10-31 | Phase 0 foundations implemented; smoke test added at `tests/phase0_smoke.tscn`. |
+| 2026-10-31 | One `Player` scene serves both perspectives; third person uses a `SpringArm3D` with a sphere shape. |
+| 2026-10-31 | Interaction ray starts at the player's head and follows the active camera; reach is 3 m. |
+| 2026-10-31 | The crosshair is hidden in third person because the player's body blocks it; the `[E]` prompt still shows. |
+| 2026-10-31 | Doors and chests sit on collision layers `world` + `interactable` (mask value 17). |
+| 2026-10-31 | The Phase 1 chest is a placeholder: it notifies the HUD but does not yet grant inventory items. |
+| 2026-10-31 | Phase 1 implemented; smoke test added at `tests/phase1_smoke.tscn`. |
 | 2026-10-31 | `AGENTS.md` created. |
 
 ## 16. Open questions

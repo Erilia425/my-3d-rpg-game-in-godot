@@ -9,3 +9,12 @@ extends Node
 
 signal game_state_changed(previous_state: int, current_state: int)
 signal setting_changed(key: StringName, value: Variant)
+
+## Producer: InteractionComponent. Consumer: HUD.
+signal interaction_prompt_changed(text: String)
+
+## Producer: interactable world objects. Consumer: HUD.
+signal notification_requested(text: String)
+
+## Producer: player camera rig. Consumer: debug overlay (and later, HUD).
+signal camera_mode_changed(is_first_person: bool)
