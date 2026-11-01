@@ -12,6 +12,7 @@ Working now:
 
 - Boot screen → main menu → test room, with a fade between scenes
 - One `CharacterBody3D` player with walk, sprint, jump, gravity, and mouse look
+- Idle, walk, run, and jump animations on a placeholder humanoid body
 - **V** toggles first and third person without moving the player
 - Third-person camera that pulls in near walls instead of clipping
 - Crosshair, `[E]` interaction prompt, and item notification toasts

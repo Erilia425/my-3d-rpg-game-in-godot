@@ -9,6 +9,11 @@ enum CameraMode {
 	THIRD_PERSON,
 }
 
+## Seconds spent blending between two locomotion clips.
+const ANIMATION_BLEND_TIME := 0.15
+## Below this horizontal speed (m/s) the player counts as standing still.
+const WALK_ANIMATION_THRESHOLD := 0.2
+
 @export_group("Movement")
 @export var walk_speed: float = 5.0
 @export var sprint_speed: float = 8.0
@@ -26,10 +31,12 @@ enum CameraMode {
 @onready var _first_person_camera: Camera3D = %FirstPersonCamera
 @onready var _third_person_camera: Camera3D = %ThirdPersonCamera
 @onready var _visual: Node3D = %Visual
+@onready var _animation_player: AnimationPlayer = %AnimationPlayer
 @onready var _interaction_component: Node3D = %InteractionComponent
 
 var camera_mode: CameraMode = CameraMode.FIRST_PERSON
 var _pitch := 0.0
+var _current_animation: StringName = &""
 
 
 func _ready() -> void:
@@ -99,6 +106,38 @@ func _physics_process(delta: float) -> void:
 		velocity.y = jump_velocity
 
 	move_and_slide()
+
+	_update_animation()
+
+
+## Chooses the locomotion clip from the current speed and airborne state.
+## The clips themselves live in player.tscn; this only selects and blends them.
+func _update_animation() -> void:
+	if _animation_player == null:
+		return
+
+	var horizontal_speed := Vector2(velocity.x, velocity.z).length()
+	var next: StringName = &"idle"
+
+	if not is_on_floor():
+		next = &"jump"
+	elif horizontal_speed > walk_speed * 1.1:
+		next = &"run"
+	elif horizontal_speed > WALK_ANIMATION_THRESHOLD:
+		next = &"walk"
+
+	if next != _current_animation:
+		_current_animation = next
+		_animation_player.play(next, ANIMATION_BLEND_TIME)
+
+	# Scale the cycle to the real speed so the feet do not slide.
+	match next:
+		&"walk":
+			_animation_player.speed_scale = clampf(horizontal_speed / walk_speed, 0.6, 1.4)
+		&"run":
+			_animation_player.speed_scale = clampf(horizontal_speed / sprint_speed, 0.7, 1.3)
+		_:
+			_animation_player.speed_scale = 1.0
 
 
 func toggle_camera() -> void:

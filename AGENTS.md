@@ -81,6 +81,10 @@ Phase 1 adds a playable walking skeleton:
 
 - `features/player/player.tscn` — one `CharacterBody3D` for both perspectives.
   Walk, sprint, jump, gravity, mouse look, and **V** first/third-person toggle.
+- The player body is a primitive humanoid placeholder under `Visual/Model`
+  (torso, head, arms, legs) animated by an `AnimationPlayer` with `idle`,
+  `walk`, `run`, and `jump` clips. A rigged model can replace `Visual/Model`
+  later without touching movement, collision, or cameras.
 - Third-person `SpringArm3D` with camera collision (`world` + `camera_blocker`).
 - `features/interaction/interaction_component.gd` — ray from the head along the
   active camera, 3 m reach, emits prompts through `Events`.
@@ -651,6 +655,10 @@ The user is a beginner. Adapt explanations accordingly:
 | 2026-10-31 | The Phase 1 chest is a placeholder: it notifies the HUD but does not yet grant inventory items. |
 | 2026-10-31 | Phase 1 implemented; smoke test added at `tests/phase1_smoke.tscn`. |
 | 2026-10-31 | `AGENTS.md` created. |
+| 2026-11-01 | Player body is a primitive humanoid placeholder (torso, head, arms, legs) under `Visual/Model`, animated by an `AnimationPlayer` with `idle`/`walk`/`run`/`jump`. Clips live in `player.tscn` and are selected by `player_controller.gd` from speed and airborne state; the animation only drives `Visual`, never the `Head` camera pivot. |
+| 2026-11-01 | Godot Editor MCP addon (v2026.10.20.1) installed at `addons/godot_mcp/` and enabled; server registered project-scoped in `opencode.json`. Tool-only, no runtime dependency, no game code references it. |
+| 2026-11-01 | `project.godot` lost its explicit `[audio] buses/default_bus_layout` line when Godot saved after the plugin was enabled. Harmless: the engine default is the same `res://default_bus_layout.tres`; all six buses verified intact by the Phase 0 smoke test. |
+| 2026-11-01 | The Phase 1 door prompt assertion was made deterministic: the door swings -100 deg into the room, so it leaves the 3 m interaction ray mid-swing and a fixed-frame wait raced it. The prompt is now read immediately after `interact()`. |
 
 ## 16. Open questions
 

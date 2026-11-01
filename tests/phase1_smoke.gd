@@ -6,10 +6,11 @@ extends Node
 ## Or open this scene in the editor and press F6.
 ##
 ## Loads the real test room and drives the player: camera toggle, camera
-## collision, walk/sprint/jump/gravity, door, chest, HUD, fade overlay, and
-## pause. Prints PHASE1_SMOKE_OK on success.
+## collision, walk/sprint/jump/gravity, animation states, door, chest, HUD,
+## fade overlay, and pause. Prints PHASE1_SMOKE_OK on success.
 
 const EPSILON := 0.05
+const ANIMATION_CLIPS := ["idle", "walk", "run", "jump"]
 
 var _failures: PackedStringArray = []
 var _prompt_text := ""
@@ -23,6 +24,8 @@ var _third_person_camera: Camera3D
 var _spring_arm: SpringArm3D
 var _visual: Node3D
 var _interaction: Node3D
+var _animation_player: AnimationPlayer
+var _hip_l: Node3D
 var _door: Node3D
 var _chest: Node3D
 var _crosshair: Control
@@ -49,6 +52,7 @@ func _ready() -> void:
 	await _check_camera_collision()
 	await _check_movement()
 	await _check_gravity_and_jump()
+	await _check_animations()
 	await _check_door()
 	await _check_chest()
 	_check_hud()
@@ -73,6 +77,8 @@ func _check_player_setup() -> void:
 	_spring_arm = _player.find_child("ThirdPersonArm", true, false) as SpringArm3D
 	_visual = _player.find_child("Visual", true, false) as Node3D
 	_interaction = _player.find_child("InteractionComponent", true, false) as Node3D
+	_animation_player = _player.find_child("AnimationPlayer", true, false) as AnimationPlayer
+	_hip_l = _player.find_child("HipL", true, false) as Node3D
 
 	_check(_head != null, "player has a Head node")
 	_check(_first_person_camera != null, "player has a first-person camera")
@@ -80,6 +86,7 @@ func _check_player_setup() -> void:
 	_check(_spring_arm != null, "player has a SpringArm3D")
 	_check(_visual != null, "player has a visual body")
 	_check(_interaction != null, "player has an interaction component")
+	_check(_animation_player != null, "player has an AnimationPlayer")
 
 	_check(_player.is_first_person(), "new game starts in first person")
 	_check(_first_person_camera.current, "first-person camera is active on start")
@@ -217,6 +224,103 @@ func _check_gravity_and_jump() -> void:
 	_check(_player.is_on_floor(), "player returns to the floor after jumping")
 
 
+func _check_animations() -> void:
+	if _animation_player == null:
+		_check(false, "animation checks need an AnimationPlayer")
+		return
+
+	for clip in ANIMATION_CLIPS:
+		_check(
+			_animation_player.has_animation(clip),
+			"player has a \"%s\" animation" % clip
+		)
+
+	_check(_all_tracks_resolve(), "every animation track targets a real node property")
+
+	_place_player(Vector3(0, 0.1, 6), 0.0, 0.0)
+	await _physics_frames(20)
+	_check(
+		_animation_player.current_animation == &"idle",
+		"standing still plays idle (%s)" % _animation_player.current_animation
+	)
+
+	Input.action_press("move_forward")
+	await _physics_frames(20)
+	_check(
+		_animation_player.current_animation == &"walk",
+		"walking plays walk (%s)" % _animation_player.current_animation
+	)
+
+	# The clips are only real if the limbs actually move: sample the left hip
+	# over half a cycle and require the rotation to sweep.
+	var samples: Array[float] = []
+	for _i in 8:
+		await _physics_frames(4)
+		if _hip_l != null:
+			samples.append(_hip_l.rotation.x)
+	if samples.size() >= 2:
+		var swing: float = samples.max() - samples.min()
+		_check(swing > 0.15, "the walk cycle swings the legs (%.2f rad)" % swing)
+	else:
+		_check(false, "player has a HipL node for the walk cycle")
+
+	Input.action_press("sprint")
+	await _physics_frames(30)
+	_check(
+		_animation_player.current_animation == &"run",
+		"sprinting plays run (%s)" % _animation_player.current_animation
+	)
+	Input.action_release("sprint")
+	Input.action_release("move_forward")
+	await _physics_frames(20)
+
+	_place_player(Vector3(0, 3.0, 6), 0.0, 0.0)
+	await _physics_frames(6)
+	_check(
+		_animation_player.current_animation == &"jump",
+		"being airborne plays jump (%s)" % _animation_player.current_animation
+	)
+
+	await _physics_frames(90)
+	_check(
+		_animation_player.current_animation != &"jump",
+		"landing leaves the jump animation (%s)" % _animation_player.current_animation
+	)
+
+
+func _all_tracks_resolve() -> bool:
+	var root := _animation_player.get_node_or_null(_animation_player.root_node)
+	if root == null:
+		push_error("AnimationPlayer root node does not resolve: %s" % _animation_player.root_node)
+		return false
+
+	for animation_name in _animation_player.get_animation_list():
+		var animation := _animation_player.get_animation(animation_name)
+		if animation == null or animation.get_track_count() == 0:
+			push_error("animation has no tracks: %s" % animation_name)
+			return false
+
+		for track_index in animation.get_track_count():
+			var track_path := str(animation.track_get_path(track_index))
+			var parts := track_path.split(":", true, 1)
+			var target := root.get_node_or_null(NodePath(parts[0]))
+			if target == null:
+				push_error("track node missing in %s: %s" % [animation_name, track_path])
+				return false
+			if parts.size() > 1 and not _has_property(target, parts[1]):
+				push_error("track property missing in %s: %s" % [animation_name, track_path])
+				return false
+
+	return true
+
+
+func _has_property(node: Node, property_name: String) -> bool:
+	for entry in node.get_property_list():
+		if String(entry["name"]) == property_name:
+			return true
+	return false
+
+
 func _check_door() -> void:
 	_door = _room.find_child("Door", true, false) as Node3D
 	_check(_door != null, "test room contains a door")
@@ -234,8 +338,8 @@ func _check_door() -> void:
 	_send_interact()
 	await _physics_frames(2)
 	_check(bool(_door.is_open), "pressing interact opens the door")
-
-	await _physics_frames(12)
+	# Read the prompt here, not after the swing: the panel rotates -100 deg into
+	# the room, so a fixed wait races the moment it leaves the interaction ray.
 	_check(_prompt_text == "Close door", "prompt updates to Close door (\"%s\")" % _prompt_text)
 
 	_send_interact()

@@ -1,4 +1,4 @@
-[gd_scene load_steps=9 format=3]
+[gd_scene load_steps=18 format=3]
 
 [ext_resource type="Script" path="res://features/player/player_controller.gd" id="1_player"]
 [ext_resource type="Script" path="res://features/interaction/interaction_component.gd" id="2_interaction"]
@@ -7,24 +7,294 @@
 radius = 0.35
 height = 1.8
 
-[sub_resource type="CapsuleMesh" id="CapsuleMesh_body"]
-radius = 0.35
-height = 1.8
-
 [sub_resource type="StandardMaterial3D" id="StandardMaterial3D_body"]
 albedo_color = Color(0.24, 0.36, 0.52, 1)
 roughness = 0.72
 
-[sub_resource type="BoxMesh" id="BoxMesh_marker"]
-size = Vector3(0.5, 0.12, 0.08)
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_limb"]
+albedo_color = Color(0.17, 0.23, 0.31, 1)
+roughness = 0.8
 
 [sub_resource type="StandardMaterial3D" id="StandardMaterial3D_marker"]
 albedo_color = Color(0.82, 0.68, 0.36, 1)
 metallic = 0.5
 roughness = 0.4
 
+[sub_resource type="BoxMesh" id="BoxMesh_torso"]
+size = Vector3(0.46, 0.56, 0.26)
+
+[sub_resource type="SphereMesh" id="SphereMesh_head"]
+radius = 0.15
+height = 0.3
+radial_segments = 16
+rings = 8
+
+[sub_resource type="BoxMesh" id="BoxMesh_arm"]
+size = Vector3(0.11, 0.56, 0.11)
+
+[sub_resource type="BoxMesh" id="BoxMesh_leg"]
+size = Vector3(0.15, 0.86, 0.16)
+
+[sub_resource type="BoxMesh" id="BoxMesh_marker"]
+size = Vector3(0.14, 0.14, 0.04)
+
 [sub_resource type="SphereShape3D" id="SphereShape3D_camera"]
 radius = 0.2
+
+[sub_resource type="Animation" id="Animation_idle"]
+resource_name = "idle"
+length = 2.0
+loop_mode = 1
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath("Model/ShoulderL:rotation")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0, 1, 2),
+"transitions": PackedFloat32Array(1, 1, 1),
+"update": 0,
+"values": [Vector3(0.05, 0, -0.09), Vector3(0.02, 0, -0.05), Vector3(0.05, 0, -0.09)]
+}
+tracks/1/type = "value"
+tracks/1/imported = false
+tracks/1/enabled = true
+tracks/1/path = NodePath("Model/ShoulderR:rotation")
+tracks/1/interp = 1
+tracks/1/loop_wrap = true
+tracks/1/keys = {
+"times": PackedFloat32Array(0, 1, 2),
+"transitions": PackedFloat32Array(1, 1, 1),
+"update": 0,
+"values": [Vector3(0.05, 0, 0.09), Vector3(0.02, 0, 0.05), Vector3(0.05, 0, 0.09)]
+}
+tracks/2/type = "value"
+tracks/2/imported = false
+tracks/2/enabled = true
+tracks/2/path = NodePath("Model/Torso:scale")
+tracks/2/interp = 1
+tracks/2/loop_wrap = true
+tracks/2/keys = {
+"times": PackedFloat32Array(0, 1, 2),
+"transitions": PackedFloat32Array(1, 1, 1),
+"update": 0,
+"values": [Vector3(1, 1, 1), Vector3(1.01, 1.02, 1.01), Vector3(1, 1, 1)]
+}
+
+[sub_resource type="Animation" id="Animation_walk"]
+resource_name = "walk"
+length = 1.0
+loop_mode = 1
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath("Model/HipL:rotation")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0, 0.25, 0.5, 0.75, 1),
+"transitions": PackedFloat32Array(1, 1, 1, 1, 1),
+"update": 0,
+"values": [Vector3(0.42, 0, 0), Vector3(0, 0, 0), Vector3(-0.42, 0, 0), Vector3(0, 0, 0), Vector3(0.42, 0, 0)]
+}
+tracks/1/type = "value"
+tracks/1/imported = false
+tracks/1/enabled = true
+tracks/1/path = NodePath("Model/HipR:rotation")
+tracks/1/interp = 1
+tracks/1/loop_wrap = true
+tracks/1/keys = {
+"times": PackedFloat32Array(0, 0.25, 0.5, 0.75, 1),
+"transitions": PackedFloat32Array(1, 1, 1, 1, 1),
+"update": 0,
+"values": [Vector3(-0.42, 0, 0), Vector3(0, 0, 0), Vector3(0.42, 0, 0), Vector3(0, 0, 0), Vector3(-0.42, 0, 0)]
+}
+tracks/2/type = "value"
+tracks/2/imported = false
+tracks/2/enabled = true
+tracks/2/path = NodePath("Model/ShoulderL:rotation")
+tracks/2/interp = 1
+tracks/2/loop_wrap = true
+tracks/2/keys = {
+"times": PackedFloat32Array(0, 0.25, 0.5, 0.75, 1),
+"transitions": PackedFloat32Array(1, 1, 1, 1, 1),
+"update": 0,
+"values": [Vector3(-0.36, 0, -0.06), Vector3(0, 0, -0.08), Vector3(0.36, 0, -0.06), Vector3(0, 0, -0.08), Vector3(-0.36, 0, -0.06)]
+}
+tracks/3/type = "value"
+tracks/3/imported = false
+tracks/3/enabled = true
+tracks/3/path = NodePath("Model/ShoulderR:rotation")
+tracks/3/interp = 1
+tracks/3/loop_wrap = true
+tracks/3/keys = {
+"times": PackedFloat32Array(0, 0.25, 0.5, 0.75, 1),
+"transitions": PackedFloat32Array(1, 1, 1, 1, 1),
+"update": 0,
+"values": [Vector3(0.36, 0, 0.06), Vector3(0, 0, 0.08), Vector3(-0.36, 0, 0.06), Vector3(0, 0, 0.08), Vector3(0.36, 0, 0.06)]
+}
+tracks/4/type = "value"
+tracks/4/imported = false
+tracks/4/enabled = true
+tracks/4/path = NodePath("Model/Torso:position")
+tracks/4/interp = 1
+tracks/4/loop_wrap = true
+tracks/4/keys = {
+"times": PackedFloat32Array(0, 0.25, 0.5, 0.75, 1),
+"transitions": PackedFloat32Array(1, 1, 1, 1, 1),
+"update": 0,
+"values": [Vector3(0, 1.17, 0), Vector3(0, 1.19, 0), Vector3(0, 1.17, 0), Vector3(0, 1.19, 0), Vector3(0, 1.17, 0)]
+}
+
+[sub_resource type="Animation" id="Animation_run"]
+resource_name = "run"
+length = 0.62
+loop_mode = 1
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath("Model/HipL:rotation")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0, 0.31, 0.62),
+"transitions": PackedFloat32Array(1, 1, 1),
+"update": 0,
+"values": [Vector3(0.85, 0, 0), Vector3(-0.55, 0, 0), Vector3(0.85, 0, 0)]
+}
+tracks/1/type = "value"
+tracks/1/imported = false
+tracks/1/enabled = true
+tracks/1/path = NodePath("Model/HipR:rotation")
+tracks/1/interp = 1
+tracks/1/loop_wrap = true
+tracks/1/keys = {
+"times": PackedFloat32Array(0, 0.31, 0.62),
+"transitions": PackedFloat32Array(1, 1, 1),
+"update": 0,
+"values": [Vector3(-0.55, 0, 0), Vector3(0.85, 0, 0), Vector3(-0.55, 0, 0)]
+}
+tracks/2/type = "value"
+tracks/2/imported = false
+tracks/2/enabled = true
+tracks/2/path = NodePath("Model/ShoulderL:rotation")
+tracks/2/interp = 1
+tracks/2/loop_wrap = true
+tracks/2/keys = {
+"times": PackedFloat32Array(0, 0.31, 0.62),
+"transitions": PackedFloat32Array(1, 1, 1),
+"update": 0,
+"values": [Vector3(-0.8, 0, -0.12), Vector3(0.7, 0, -0.12), Vector3(-0.8, 0, -0.12)]
+}
+tracks/3/type = "value"
+tracks/3/imported = false
+tracks/3/enabled = true
+tracks/3/path = NodePath("Model/ShoulderR:rotation")
+tracks/3/interp = 1
+tracks/3/loop_wrap = true
+tracks/3/keys = {
+"times": PackedFloat32Array(0, 0.31, 0.62),
+"transitions": PackedFloat32Array(1, 1, 1),
+"update": 0,
+"values": [Vector3(0.7, 0, 0.12), Vector3(-0.8, 0, 0.12), Vector3(0.7, 0, 0.12)]
+}
+tracks/4/type = "value"
+tracks/4/imported = false
+tracks/4/enabled = true
+tracks/4/path = NodePath("Model/Torso:rotation")
+tracks/4/interp = 1
+tracks/4/loop_wrap = true
+tracks/4/keys = {
+"times": PackedFloat32Array(0, 0.62),
+"transitions": PackedFloat32Array(1, 1),
+"update": 0,
+"values": [Vector3(0.14, 0, 0), Vector3(0.14, 0, 0)]
+}
+tracks/5/type = "value"
+tracks/5/imported = false
+tracks/5/enabled = true
+tracks/5/path = NodePath("Model/Torso:position")
+tracks/5/interp = 1
+tracks/5/loop_wrap = true
+tracks/5/keys = {
+"times": PackedFloat32Array(0, 0.31, 0.62),
+"transitions": PackedFloat32Array(1, 1, 1),
+"update": 0,
+"values": [Vector3(0, 1.18, 0), Vector3(0, 1.21, 0), Vector3(0, 1.18, 0)]
+}
+
+[sub_resource type="Animation" id="Animation_jump"]
+resource_name = "jump"
+length = 0.4
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath("Model/HipL:rotation")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0, 0.12, 0.4),
+"transitions": PackedFloat32Array(1, 1, 1),
+"update": 0,
+"values": [Vector3(0, 0, 0), Vector3(0.7, 0, 0), Vector3(0.45, 0, 0)]
+}
+tracks/1/type = "value"
+tracks/1/imported = false
+tracks/1/enabled = true
+tracks/1/path = NodePath("Model/HipR:rotation")
+tracks/1/interp = 1
+tracks/1/loop_wrap = true
+tracks/1/keys = {
+"times": PackedFloat32Array(0, 0.12, 0.4),
+"transitions": PackedFloat32Array(1, 1, 1),
+"update": 0,
+"values": [Vector3(0, 0, 0), Vector3(-0.4, 0, 0), Vector3(-0.2, 0, 0)]
+}
+tracks/2/type = "value"
+tracks/2/imported = false
+tracks/2/enabled = true
+tracks/2/path = NodePath("Model/ShoulderL:rotation")
+tracks/2/interp = 1
+tracks/2/loop_wrap = true
+tracks/2/keys = {
+"times": PackedFloat32Array(0, 0.12, 0.4),
+"transitions": PackedFloat32Array(1, 1, 1),
+"update": 0,
+"values": [Vector3(0, 0, 0), Vector3(-0.9, 0, -0.25), Vector3(-0.7, 0, -0.25)]
+}
+tracks/3/type = "value"
+tracks/3/imported = false
+tracks/3/enabled = true
+tracks/3/path = NodePath("Model/ShoulderR:rotation")
+tracks/3/interp = 1
+tracks/3/loop_wrap = true
+tracks/3/keys = {
+"times": PackedFloat32Array(0, 0.12, 0.4),
+"transitions": PackedFloat32Array(1, 1, 1),
+"update": 0,
+"values": [Vector3(0, 0, 0), Vector3(-0.9, 0, 0.25), Vector3(-0.7, 0, 0.25)]
+}
+tracks/4/type = "value"
+tracks/4/imported = false
+tracks/4/enabled = true
+tracks/4/path = NodePath("Model/Torso:rotation")
+tracks/4/interp = 1
+tracks/4/loop_wrap = true
+tracks/4/keys = {
+"times": PackedFloat32Array(0, 0.12),
+"transitions": PackedFloat32Array(1, 1),
+"update": 0,
+"values": [Vector3(0, 0, 0), Vector3(0.12, 0, 0)]
+}
+
+[sub_resource type="AnimationLibrary" id="AnimationLibrary_player"]
+_data = {
+&"idle": SubResource("Animation_idle"),
+&"jump": SubResource("Animation_jump"),
+&"run": SubResource("Animation_run"),
+&"walk": SubResource("Animation_walk")
+}
 
 [node name="Player" type="CharacterBody3D" groups=["player"]]
 collision_layer = 2
@@ -39,15 +309,62 @@ shape = SubResource("CapsuleShape3D_player")
 [node name="Visual" type="Node3D" parent="."]
 unique_name_in_owner = true
 
-[node name="Body" type="MeshInstance3D" parent="Visual"]
-position = Vector3(0, 0.9, 0)
-mesh = SubResource("CapsuleMesh_body")
+[node name="Model" type="Node3D" parent="Visual"]
+
+[node name="Torso" type="MeshInstance3D" parent="Visual/Model"]
+position = Vector3(0, 1.17, 0)
+mesh = SubResource("BoxMesh_torso")
 surface_material_override/0 = SubResource("StandardMaterial3D_body")
 
-[node name="FacingMarker" type="MeshInstance3D" parent="Visual"]
-position = Vector3(0, 1.05, -0.36)
+[node name="FacingMarker" type="MeshInstance3D" parent="Visual/Model"]
+position = Vector3(0, 1.28, -0.15)
 mesh = SubResource("BoxMesh_marker")
 surface_material_override/0 = SubResource("StandardMaterial3D_marker")
+
+[node name="HeadMesh" type="MeshInstance3D" parent="Visual/Model"]
+position = Vector3(0, 1.59, 0)
+mesh = SubResource("SphereMesh_head")
+surface_material_override/0 = SubResource("StandardMaterial3D_body")
+
+[node name="ShoulderL" type="Node3D" parent="Visual/Model"]
+position = Vector3(-0.28, 1.4, 0)
+
+[node name="ArmL" type="MeshInstance3D" parent="Visual/Model/ShoulderL"]
+position = Vector3(0, -0.28, 0)
+mesh = SubResource("BoxMesh_arm")
+surface_material_override/0 = SubResource("StandardMaterial3D_body")
+
+[node name="ShoulderR" type="Node3D" parent="Visual/Model"]
+position = Vector3(0.28, 1.4, 0)
+
+[node name="ArmR" type="MeshInstance3D" parent="Visual/Model/ShoulderR"]
+position = Vector3(0, -0.28, 0)
+mesh = SubResource("BoxMesh_arm")
+surface_material_override/0 = SubResource("StandardMaterial3D_body")
+
+[node name="HipL" type="Node3D" parent="Visual/Model"]
+position = Vector3(-0.12, 0.88, 0)
+
+[node name="LegL" type="MeshInstance3D" parent="Visual/Model/HipL"]
+position = Vector3(0, -0.43, 0)
+mesh = SubResource("BoxMesh_leg")
+surface_material_override/0 = SubResource("StandardMaterial3D_limb")
+
+[node name="HipR" type="Node3D" parent="Visual/Model"]
+position = Vector3(0.12, 0.88, 0)
+
+[node name="LegR" type="MeshInstance3D" parent="Visual/Model/HipR"]
+position = Vector3(0, -0.43, 0)
+mesh = SubResource("BoxMesh_leg")
+surface_material_override/0 = SubResource("StandardMaterial3D_limb")
+
+[node name="AnimationPlayer" type="AnimationPlayer" parent="Visual"]
+unique_name_in_owner = true
+root_node = NodePath("..")
+libraries = {
+&"": SubResource("AnimationLibrary_player")
+}
+autoplay = "idle"
 
 [node name="Head" type="Node3D" parent="."]
 unique_name_in_owner = true
