@@ -31,9 +31,9 @@ window/size/viewport_height=720
 window/stretch/mode="canvas_items"
 window/stretch/aspect="expand"
 
-[audio]
+[editor_plugins]
 
-buses/default_bus_layout="res://default_bus_layout.tres"
+enabled=PackedStringArray("res://addons/godot_mcp/plugin.cfg")
 
 [input]
 
