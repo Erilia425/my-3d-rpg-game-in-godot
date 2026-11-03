@@ -136,10 +136,31 @@ target_position = Vector3(0, 0.2, -8)
 [node name="Collision" type="CollisionShape3D" parent="ReturnGate"]
 shape = SubResource("BoxShape3D_gate")
 
-[node name="ChunkManager" type="Node3D" parent="."]
+[node name="PlainsChunks" type="Node3D" parent="."]
 script = ExtResource("5_chunks")
 chunk_directory = "res://features/world/chunks"
 chunk_size = 32.0
+load_radius = 1
+
+[node name="IceChunks" type="Node3D" parent="."]
+script = ExtResource("5_chunks")
+chunk_directory = "res://features/world/chunks/ice"
+chunk_size = 32.0
+chunk_origin = Vector2i(-1, -4)
+load_radius = 1
+
+[node name="DesertChunks" type="Node3D" parent="."]
+script = ExtResource("5_chunks")
+chunk_directory = "res://features/world/chunks/desert"
+chunk_size = 32.0
+chunk_origin = Vector2i(2, -4)
+load_radius = 1
+
+[node name="OceanChunks" type="Node3D" parent="."]
+script = ExtResource("5_chunks")
+chunk_directory = "res://features/world/chunks/ocean"
+chunk_size = 32.0
+chunk_origin = Vector2i(2, -1)
 load_radius = 1
 
 [node name="Player" parent="." instance=ExtResource("2_player")]
@@ -157,7 +178,7 @@ anchor_top = 1.0
 anchor_right = 0.5
 anchor_bottom = 1.0
 offset_left = -500.0
-offset_top = -64.0
+offset_top = -86.0
 offset_right = 500.0
 offset_bottom = -14.0
 grow_horizontal = 2
@@ -170,6 +191,7 @@ layout_mode = 2
 theme_override_colors/font_color = Color(0.8, 0.85, 0.88, 1)
 theme_override_font_sizes/font_size = 15
 text = "WASD move   |   Shift sprint   |   Space jump   |   LMB attack   |   E interact   |   I inventory   |   V camera   |   F3 debug
-Esc pause   |   F5 quicksave   |   F9 quickload   |   Walk through the stone arch to return inside"
+Esc pause   |   F5 quicksave   |   F9 quickload   |   Walk through the stone arch to return inside
+Biomes: the meadow around you, ice to the north, desert to the north-east, ocean to the east"
 horizontal_alignment = 1
 vertical_alignment = 1

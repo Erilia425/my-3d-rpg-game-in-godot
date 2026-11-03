@@ -15,6 +15,9 @@ signal chunk_unloaded(coord: Vector2i)
 
 @export var chunk_directory: String = "res://features/world/chunks"
 @export var chunk_size: float = 64.0
+## World chunk coordinate of this directory's `chunk_0_0.tscn`. One manager per
+## biome can then sit side by side in the same world.
+@export var chunk_origin: Vector2i = Vector2i.ZERO
 @export_range(0, 4) var load_radius: int = 1
 ## Seconds between streaming decisions. Chunks do not need per-frame attention.
 @export var update_interval: float = 0.25
@@ -49,10 +52,21 @@ func get_track_node() -> Node3D:
 	return _resolve_target()
 
 
+## Local chunk coordinate, i.e. relative to `chunk_origin`. A coordinate outside
+## this directory's authored range simply has no file and stays unloaded.
 func world_to_chunk(world_position: Vector3) -> Vector2i:
 	return Vector2i(
-		floori(world_position.x / chunk_size),
-		floori(world_position.z / chunk_size)
+		floori(world_position.x / chunk_size) - chunk_origin.x,
+		floori(world_position.z / chunk_size) - chunk_origin.y
+	)
+
+
+## World position of a local chunk coordinate. The inverse of `world_to_chunk()`.
+func chunk_to_world(coord: Vector2i) -> Vector3:
+	return Vector3(
+		(coord.x + chunk_origin.x) * chunk_size,
+		0.0,
+		(coord.y + chunk_origin.y) * chunk_size
 	)
 
 
@@ -170,7 +184,7 @@ func _attach(coord: Vector2i, resource: Resource) -> void:
 		return
 
 	# Chunk files are authored around the origin; the manager places them.
-	instance.position = Vector3(coord.x * chunk_size, 0.0, coord.y * chunk_size)
+	instance.position = chunk_to_world(coord)
 	add_child(instance)
 	_loaded[coord] = instance
 	chunk_loaded.emit(coord)

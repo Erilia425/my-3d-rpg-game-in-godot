@@ -1,0 +1,113 @@
+[gd_scene format=3]
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_p1ed4"]
+albedo_color = Color(0.58, 0.56, 0.45, 1)
+roughness = 0.97
+
+[sub_resource type="BoxMesh" id="BoxMesh_yrp1w"]
+size = Vector3(32, 0.6, 32)
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_ou2ya"]
+size = Vector3(32, 0.6, 32)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_le5w0"]
+transparency = 1
+albedo_color = Color(0.12, 0.38, 0.52, 0.62)
+metallic = 0.1
+roughness = 0.08
+
+[sub_resource type="BoxMesh" id="BoxMesh_88ur8"]
+size = Vector3(32, 0.06, 32)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_6up1l"]
+albedo_color = Color(0.44, 0.44, 0.42, 1)
+roughness = 0.9
+
+[sub_resource type="BoxMesh" id="BoxMesh_bcmku"]
+size = Vector3(1.2261419, 0.7322807, 1.118621)
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_bmbfx"]
+size = Vector3(1.2261419, 0.7322807, 1.118621)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_vvlqt"]
+albedo_color = Color(0.44, 0.44, 0.42, 1)
+roughness = 0.9
+
+[sub_resource type="BoxMesh" id="BoxMesh_ytgp1"]
+size = Vector3(1.390709, 1.0042219, 0.86556256)
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_u6gxx"]
+size = Vector3(1.390709, 1.0042219, 0.86556256)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_nmerf"]
+albedo_color = Color(0.92, 0.86, 0.76, 1)
+roughness = 0.7
+
+[sub_resource type="SphereMesh" id="SphereMesh_skrv3"]
+radius = 0.18165036
+height = 0.16
+radial_segments = 12
+rings = 6
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_0n4kj"]
+albedo_color = Color(0.92, 0.86, 0.76, 1)
+roughness = 0.7
+
+[sub_resource type="SphereMesh" id="SphereMesh_x24a8"]
+radius = 0.28702524
+height = 0.16
+radial_segments = 12
+rings = 6
+
+[node name="Chunk_1_2" type="Node3D" unique_id=347455671]
+
+[node name="Seafloor" type="StaticBody3D" parent="." unique_id=527362309]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.65, 0)
+collision_mask = 0
+
+[node name="Mesh" type="MeshInstance3D" parent="Seafloor" unique_id=1320635284]
+material_override = SubResource("StandardMaterial3D_p1ed4")
+mesh = SubResource("BoxMesh_yrp1w")
+
+[node name="Collision" type="CollisionShape3D" parent="Seafloor" unique_id=1310419042]
+shape = SubResource("BoxShape3D_ou2ya")
+
+[node name="Water" type="MeshInstance3D" parent="." unique_id=290751485]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.02, 0)
+material_override = SubResource("StandardMaterial3D_le5w0")
+cast_shadow = 0
+mesh = SubResource("BoxMesh_88ur8")
+
+[node name="Rock" type="StaticBody3D" parent="." unique_id=648179401]
+transform = Transform3D(-0.3635404, 0, -0.93157846, 0, 1, 0, 0.93157846, 0, -0.3635404, -9.141959, 0.3295263, -9.041334)
+collision_mask = 0
+
+[node name="Mesh" type="MeshInstance3D" parent="Rock" unique_id=902970757]
+material_override = SubResource("StandardMaterial3D_6up1l")
+mesh = SubResource("BoxMesh_bcmku")
+
+[node name="Collision" type="CollisionShape3D" parent="Rock" unique_id=627128700]
+shape = SubResource("BoxShape3D_bmbfx")
+
+[node name="@StaticBody3D@153" type="StaticBody3D" parent="." unique_id=2145718614]
+transform = Transform3D(0.55947036, 0, -0.8288503, 0, 1, 0, 0.8288503, 0, 0.55947036, -8.653767, 0.45189986, 8.416098)
+collision_mask = 0
+
+[node name="Mesh" type="MeshInstance3D" parent="@StaticBody3D@153" unique_id=1972503823]
+material_override = SubResource("StandardMaterial3D_vvlqt")
+mesh = SubResource("BoxMesh_ytgp1")
+
+[node name="Collision" type="CollisionShape3D" parent="@StaticBody3D@153" unique_id=217594938]
+shape = SubResource("BoxShape3D_u6gxx")
+
+[node name="Shell" type="MeshInstance3D" parent="." unique_id=1442935874]
+transform = Transform3D(0.8343995, 0, -0.55116004, 0, 1, 0, 0.55116004, 0, 0.8343995, 7.521364, -0.28, 11.687006)
+material_override = SubResource("StandardMaterial3D_nmerf")
+cast_shadow = 0
+mesh = SubResource("SphereMesh_skrv3")
+
+[node name="@MeshInstance3D@154" type="MeshInstance3D" parent="." unique_id=1535816236]
+transform = Transform3D(0.21445672, 0, 0.9767335, 0, 1, 0, -0.9767335, 0, 0.21445672, -1.565134, -0.28, 4.6059856)
+material_override = SubResource("StandardMaterial3D_0n4kj")
+cast_shadow = 0
+mesh = SubResource("SphereMesh_x24a8")

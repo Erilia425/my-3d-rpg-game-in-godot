@@ -1,0 +1,210 @@
+[gd_scene format=3]
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_8b6b0"]
+albedo_color = Color(0.79, 0.69, 0.47, 1)
+roughness = 0.97
+
+[sub_resource type="BoxMesh" id="BoxMesh_mxdp8"]
+size = Vector3(32, 0.6, 32)
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_vckpu"]
+size = Vector3(32, 0.6, 32)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_upjo8"]
+albedo_color = Color(0.22, 0.42, 0.24, 1)
+roughness = 0.9
+
+[sub_resource type="CylinderMesh" id="CylinderMesh_ncaet"]
+top_radius = 0.26213345
+bottom_radius = 0.3083923
+height = 2.1785874
+radial_segments = 8
+
+[sub_resource type="CylinderShape3D" id="CylinderShape3D_28m4h"]
+height = 2.1785874
+radius = 0.3083923
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_dy0ha"]
+albedo_color = Color(0.22, 0.42, 0.24, 1)
+roughness = 0.9
+
+[sub_resource type="CylinderMesh" id="CylinderMesh_o6vcv"]
+top_radius = 0.18503538
+bottom_radius = 0.2158746
+height = 0.6636774
+radial_segments = 8
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_vpnba"]
+albedo_color = Color(0.22, 0.42, 0.24, 1)
+roughness = 0.9
+
+[sub_resource type="CylinderMesh" id="CylinderMesh_k1oc6"]
+top_radius = 0.18503538
+bottom_radius = 0.2158746
+height = 0.6451106
+radial_segments = 8
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_urtq2"]
+albedo_color = Color(0.22, 0.42, 0.24, 1)
+roughness = 0.9
+
+[sub_resource type="CylinderMesh" id="CylinderMesh_qh67d"]
+top_radius = 0.26557204
+bottom_radius = 0.31243768
+height = 3.086484
+radial_segments = 8
+
+[sub_resource type="CylinderShape3D" id="CylinderShape3D_26u85"]
+height = 3.086484
+radius = 0.31243768
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_i8luq"]
+albedo_color = Color(0.22, 0.42, 0.24, 1)
+roughness = 0.9
+
+[sub_resource type="CylinderMesh" id="CylinderMesh_cl4po"]
+top_radius = 0.18746261
+bottom_radius = 0.21870638
+height = 0.7673248
+radial_segments = 8
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_ejffv"]
+albedo_color = Color(0.22, 0.42, 0.24, 1)
+roughness = 0.9
+
+[sub_resource type="CylinderMesh" id="CylinderMesh_hecl8"]
+top_radius = 0.18746261
+bottom_radius = 0.21870638
+height = 0.6362729
+radial_segments = 8
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_63a81"]
+albedo_color = Color(0.22, 0.42, 0.24, 1)
+roughness = 0.9
+
+[sub_resource type="CylinderMesh" id="CylinderMesh_rdw3v"]
+top_radius = 0.26687267
+bottom_radius = 0.31396785
+height = 3.1462336
+radial_segments = 8
+
+[sub_resource type="CylinderShape3D" id="CylinderShape3D_fbysq"]
+height = 3.1462336
+radius = 0.31396785
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_rx8ex"]
+albedo_color = Color(0.22, 0.42, 0.24, 1)
+roughness = 0.9
+
+[sub_resource type="CylinderMesh" id="CylinderMesh_8hl0v"]
+top_radius = 0.18838072
+bottom_radius = 0.2197775
+height = 0.6389067
+radial_segments = 8
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_awx2t"]
+albedo_color = Color(0.22, 0.42, 0.24, 1)
+roughness = 0.9
+
+[sub_resource type="CylinderMesh" id="CylinderMesh_dwv08"]
+top_radius = 0.18838072
+bottom_radius = 0.2197775
+height = 0.55323297
+radial_segments = 8
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_ny4jy"]
+albedo_color = Color(0.4, 0.33, 0.2, 1)
+roughness = 0.95
+
+[sub_resource type="CylinderMesh" id="CylinderMesh_igqvi"]
+top_radius = 0.0
+bottom_radius = 0.5875749
+height = 0.756907
+radial_segments = 8
+
+[node name="Chunk_1_2" type="Node3D" unique_id=420087163]
+
+[node name="Ground" type="StaticBody3D" parent="." unique_id=1514796992]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.3, 0)
+collision_mask = 0
+
+[node name="Mesh" type="MeshInstance3D" parent="Ground" unique_id=942018385]
+material_override = SubResource("StandardMaterial3D_8b6b0")
+mesh = SubResource("BoxMesh_mxdp8")
+
+[node name="Collision" type="CollisionShape3D" parent="Ground" unique_id=949949492]
+shape = SubResource("BoxShape3D_vckpu")
+
+[node name="Cactus" type="StaticBody3D" parent="." unique_id=1116448502]
+transform = Transform3D(0.9996869, 0, -0.025023058, 0, 1, 0, 0.025023058, 0, 0.9996869, 12.891541, 0, -5.2740455)
+collision_mask = 0
+
+[node name="Trunk" type="MeshInstance3D" parent="Cactus" unique_id=1690747972]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.0892937, 0)
+material_override = SubResource("StandardMaterial3D_upjo8")
+mesh = SubResource("CylinderMesh_ncaet")
+
+[node name="Collision" type="CollisionShape3D" parent="Cactus" unique_id=84134365]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.0892937, 0)
+shape = SubResource("CylinderShape3D_28m4h")
+
+[node name="Arm" type="MeshInstance3D" parent="." unique_id=1042092481]
+transform = Transform3D(-4.371139e-08, -1, 0, 1, -4.371139e-08, 0, 0, 0, 1, -0.40090996, 1.0873518, 0)
+material_override = SubResource("StandardMaterial3D_dy0ha")
+mesh = SubResource("CylinderMesh_o6vcv")
+
+[node name="@MeshInstance3D@115" type="MeshInstance3D" parent="." unique_id=1427545077]
+transform = Transform3D(-4.371139e-08, -1, 0, 1, -4.371139e-08, 0, 0, 0, 1, 0.40090996, 1.256468, 0)
+material_override = SubResource("StandardMaterial3D_vpnba")
+mesh = SubResource("CylinderMesh_k1oc6")
+
+[node name="@StaticBody3D@116" type="StaticBody3D" parent="." unique_id=1308189170]
+transform = Transform3D(-0.21113564, 0, 0.97745675, 0, 1, 0, -0.97745675, 0, -0.21113564, 6.265339, 0, -6.6285906)
+collision_mask = 0
+
+[node name="Trunk" type="MeshInstance3D" parent="@StaticBody3D@116" unique_id=694480194]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.543242, 0)
+material_override = SubResource("StandardMaterial3D_urtq2")
+mesh = SubResource("CylinderMesh_qh67d")
+
+[node name="Collision" type="CollisionShape3D" parent="@StaticBody3D@116" unique_id=1320772593]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.543242, 0)
+shape = SubResource("CylinderShape3D_26u85")
+
+[node name="@MeshInstance3D@117" type="MeshInstance3D" parent="." unique_id=918886740]
+transform = Transform3D(-4.371139e-08, -1, 0, 1, -4.371139e-08, 0, 0, 0, 1, -0.406169, 1.7968267, 0)
+material_override = SubResource("StandardMaterial3D_i8luq")
+mesh = SubResource("CylinderMesh_cl4po")
+
+[node name="@MeshInstance3D@118" type="MeshInstance3D" parent="." unique_id=1078991009]
+transform = Transform3D(-4.371139e-08, -1, 0, 1, -4.371139e-08, 0, 0, 0, 1, 0.406169, 1.3846354, 0)
+material_override = SubResource("StandardMaterial3D_ejffv")
+mesh = SubResource("CylinderMesh_hecl8")
+
+[node name="@StaticBody3D@119" type="StaticBody3D" parent="." unique_id=1599003035]
+transform = Transform3D(0.50821966, 0, 0.8612275, 0, 1, 0, -0.8612275, 0, 0.50821966, -6.418833, 0, -1.6248512)
+collision_mask = 0
+
+[node name="Trunk" type="MeshInstance3D" parent="@StaticBody3D@119" unique_id=1957345961]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.5731168, 0)
+material_override = SubResource("StandardMaterial3D_63a81")
+mesh = SubResource("CylinderMesh_rdw3v")
+
+[node name="Collision" type="CollisionShape3D" parent="@StaticBody3D@119" unique_id=391644655]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.5731168, 0)
+shape = SubResource("CylinderShape3D_fbysq")
+
+[node name="@MeshInstance3D@120" type="MeshInstance3D" parent="." unique_id=1746127194]
+transform = Transform3D(-4.371139e-08, -1, 0, 1, -4.371139e-08, 0, 0, 0, 1, -0.4081582, 1.7068042, 0)
+material_override = SubResource("StandardMaterial3D_rx8ex")
+mesh = SubResource("CylinderMesh_8hl0v")
+
+[node name="@MeshInstance3D@121" type="MeshInstance3D" parent="." unique_id=1335583387]
+transform = Transform3D(-4.371139e-08, -1, 0, 1, -4.371139e-08, 0, 0, 0, 1, 0.4081582, 1.4017357, 0)
+material_override = SubResource("StandardMaterial3D_awx2t")
+mesh = SubResource("CylinderMesh_dwv08")
+
+[node name="DryShrub" type="MeshInstance3D" parent="." unique_id=254451823]
+transform = Transform3D(0.65723664, 0, 0.7536843, 0, 1, 0, -0.7536843, 0, 0.65723664, 2.7696152, 0.2, -4.0223227)
+material_override = SubResource("StandardMaterial3D_ny4jy")
+mesh = SubResource("CylinderMesh_igqvi")

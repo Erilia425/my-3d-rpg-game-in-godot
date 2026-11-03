@@ -34,9 +34,14 @@ Working now:
 - A **world clock** (day and hour) advanced while playing, shown top-right on
   the HUD
 - A **chunk manager** that streams `chunk_<x>_<z>.tscn` scenes around the player
-  with threaded loading
-- A **3×3 exterior chunk set** (grass, rocks, trees) reached through the back
-  door, with a stone arch that leads back inside
+  with threaded loading; several managers can sit side by side through
+  `chunk_origin`, one per biome
+- A **four-biome exterior** reached through the back door, with a stone arch
+  that leads back inside:
+  - **plains** (grass, broadleaf trees, rocks) around the spawn and the arch
+  - **ice** to the north (snow, ice pillars, dead trees, frozen ponds)
+  - **desert** to the north-east (sand, cacti, bleached rocks, dry shrubs)
+  - **ocean** to the east (shallow sea, sandbars, palms, shells)
 - A first **AreaGate** doorway trigger that carries health, inventory, equipment,
   world time, and opened chests/doors across a scene change
 - Pause menu with resume, save, load, return to menu, and quit
@@ -47,7 +52,8 @@ Working now:
 Not built yet:
 
 - More than two fixed save slots (manual + autosave)
-- Chunk content beyond the first meadow (biomes, town, points of interest)
+- A town, a house interior, and points of interest in the exterior
+- Blended biome edges: today the four biomes meet at straight seams
 - Quests, NPC schedules, dialogue, shops, crafting (Phase 4+)
 - Magicka and spells (they arrive with the ability system)
 - Death screen, loot drops, and enemy variety (later phases)
@@ -107,9 +113,9 @@ a potion.
 `newest_slot()` selection, quicksave and autosave isolation (temporarily backing
 up and restoring slots 0 and 1), the saveable contract on the player, chests,
 the door, and the enemy, a full write/read/apply round trip, corrupt and
-future-version saves, chunk streaming from test fixtures and from the real
-`features/world/chunks/` set, the room's exit gate, the HUD clock, and the
-pause-menu save/load buttons.
+future-version saves, chunk streaming from test fixtures, the real
+`features/world/chunks/` set and the three biome chunk sets, the room's exit
+gate, the HUD clock, and the pause-menu save/load buttons.
 
 They print `PHASE0_SMOKE_OK` / `PHASE1_SMOKE_OK` / `PHASE2_SMOKE_OK` /
 `PHASE3_SMOKE_OK` when everything passes.

@@ -8,9 +8,9 @@ extends Node
 ## Covers the world clock, the save format, the slot model, autosave and quick
 ## save, the saveable contract on the player, chests, the door and the enemy, a
 ## full write/read/apply round trip, corrupt and future-version saves, chunk
-## streaming (both fixtures and the real chunk set), the overworld scene, the
-## HUD clock, and the pause menu save/load buttons. Prints PHASE3_SMOKE_OK on
-## success.
+## streaming (fixtures, the plains set, and the three biome sets), the overworld
+## scene, the HUD clock, and the pause menu save/load buttons. Prints
+## PHASE3_SMOKE_OK on success.
 
 const EPSILON := 0.02
 ## Slot 9 is reserved for this test and is always deleted again.
@@ -20,6 +20,25 @@ const CHUNK_DIRECTORY := "res://tests/fixtures/chunks"
 const REAL_CHUNK_DIRECTORY := "res://features/world/chunks"
 const REAL_CHUNK_SIZE := 32.0
 const OVERWORLD_SCENE := "res://scenes/overworld.tscn"
+## Biome chunk folders, the ground node each one uses, and one prop that only
+## exists in that biome.
+const BIOMES := {
+	"ice": {
+		"directory": "res://features/world/chunks/ice",
+		"ground": "Ground",
+		"prop": "IcePillar",
+	},
+	"desert": {
+		"directory": "res://features/world/chunks/desert",
+		"ground": "Ground",
+		"prop": "Cactus",
+	},
+	"ocean": {
+		"directory": "res://features/world/chunks/ocean",
+		"ground": "Seafloor",
+		"prop": "Water",
+	},
+}
 
 var _failures: PackedStringArray = []
 var _room: Node3D
@@ -54,6 +73,7 @@ func _ready() -> void:
 	_check_storage_errors()
 	await _check_chunk_manager()
 	await _check_real_chunks()
+	await _check_biomes()
 	_check_hud_and_pause_menu()
 	_check_game_save()
 	_check_quick_save_and_autosave()
@@ -545,6 +565,86 @@ func _check_real_chunks() -> void:
 	# Chunk instances are freed deferred; let the frees happen before the suite
 	# exits so the engine does not report orphaned objects.
 	await _frames(2)
+
+
+## Every biome is its own 3x3 chunk folder streamed by its own manager. The
+## biome folders sit beside the plains set in world space through chunk_origin.
+func _check_biomes() -> void:
+	for biome in BIOMES:
+		var directory: String = BIOMES[biome]["directory"]
+		var missing: PackedStringArray = []
+		for z in 3:
+			for x in 3:
+				if not ResourceLoader.exists("%s/chunk_%d_%d.tscn" % [directory, x, z]):
+					missing.append("chunk_%d_%d" % [x, z])
+		_check(
+			missing.is_empty(),
+			"the %s biome has a full 3x3 chunk set%s" % [
+				biome, "" if missing.is_empty() else " (missing %s)" % ", ".join(missing)
+			]
+		)
+
+	var offset := ChunkManager.new()
+	offset.chunk_size = REAL_CHUNK_SIZE
+	offset.chunk_origin = Vector2i(-1, -4)
+	offset.auto_track_player = false
+	_check(
+		offset.chunk_to_world(Vector2i(0, 0)).distance_to(Vector3(-32, 0, -128)) < EPSILON,
+		"chunk_origin places a biome's first chunk in world space"
+	)
+	_check(
+		offset.world_to_chunk(Vector3(-32, 0, -128)) == Vector2i(0, 0),
+		"world_to_chunk inverts chunk_to_world"
+	)
+	_check(
+		offset.chunk_to_world(Vector2i(1, 2)).distance_to(Vector3(0, 0, -64)) < EPSILON,
+		"biome chunks keep one chunk_size spacing in both axes"
+	)
+	offset.free()
+
+	var plains := ChunkManager.new()
+	plains.chunk_size = REAL_CHUNK_SIZE
+	plains.auto_track_player = false
+	_check(
+		plains.chunk_to_world(Vector2i(0, 0)).distance_to(Vector3(0, 0, 0)) < EPSILON,
+		"the plains chunk set keeps the world origin at chunk (0, 0)"
+	)
+	_check(
+		plains.chunk_to_world(Vector2i(-1, -1)).distance_to(Vector3(-32, 0, -32)) < EPSILON,
+		"the plains chunk set reaches one chunk west and north of the origin"
+	)
+	plains.free()
+
+	for biome in BIOMES:
+		_check_biome_chunk(biome)
+
+	await _frames(2)
+
+
+func _check_biome_chunk(biome: String) -> void:
+	var directory: String = BIOMES[biome]["directory"]
+	var prop: String = BIOMES[biome]["prop"]
+	var ground: String = BIOMES[biome]["ground"]
+
+	var packed := load("%s/chunk_1_1.tscn" % directory) as PackedScene
+	_check(packed != null, "the %s centre chunk loads" % biome)
+	if packed == null:
+		return
+
+	var instance := packed.instantiate() as Node3D
+	_check(instance != null, "the %s centre chunk instantiates" % biome)
+	if instance == null:
+		return
+
+	_check(
+		instance.find_child(ground, true, false) != null,
+		"the %s chunk has walkable ground (%s)" % [biome, ground]
+	)
+	_check(
+		instance.find_child(prop, true, false) != null,
+		"the %s chunk has its signature scenery (%s)" % [biome, prop]
+	)
+	instance.free()
 
 
 func _wait_for_chunks(manager: ChunkManager, count: int) -> bool:
