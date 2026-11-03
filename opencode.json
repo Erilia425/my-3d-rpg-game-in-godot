@@ -5,8 +5,12 @@
       "godot": {
         "type": "local",
         "command": [
-          "C:\\Users\\summe\\AppData\\Local\\Programs\\Python\\Python314\\Scripts\\godot-editor-mcp.exe"
-        ]
+          "C:\\Users\\summe\\AppData\\Roaming\\Python\\Python315\\Scripts\\godot-editor-mcp.exe"
+        ],
+        "environment": {
+          "GODOT_MCP_DEFAULT_TOOLSETS": "all",
+          "GODOT_MCP_PROJECT_DIR": "C:\\Users\\summe\\Downloads\\RPG Game"
+        }
       }
     }
   }
