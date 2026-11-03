@@ -1,7 +1,13 @@
-[gd_scene load_steps=18 format=3]
+[gd_scene load_steps=25 format=3]
 
 [ext_resource type="Script" path="res://features/player/player_controller.gd" id="1_player"]
 [ext_resource type="Script" path="res://features/interaction/interaction_component.gd" id="2_interaction"]
+[ext_resource type="Script" path="res://features/stats/health_component.gd" id="3_health"]
+[ext_resource type="Script" path="res://features/stats/stats_component.gd" id="4_stats"]
+[ext_resource type="Script" path="res://features/inventory/inventory_component.gd" id="5_inventory"]
+[ext_resource type="Script" path="res://features/inventory/equipment_component.gd" id="6_equipment"]
+[ext_resource type="Script" path="res://features/combat/attack_component.gd" id="7_attack"]
+[ext_resource type="Script" path="res://features/player/player_combat.gd" id="8_combat"]
 
 [sub_resource type="CapsuleShape3D" id="CapsuleShape3D_player"]
 radius = 0.35
@@ -288,8 +294,73 @@ tracks/4/keys = {
 "values": [Vector3(0, 0, 0), Vector3(0.12, 0, 0)]
 }
 
+[sub_resource type="Animation" id="Animation_attack"]
+resource_name = "attack"
+length = 0.41
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath("Model/ShoulderR:rotation")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0, 0.1, 0.22, 0.41),
+"transitions": PackedFloat32Array(1, 1, 1, 1),
+"update": 0,
+"values": [Vector3(0, 0, 0.06), Vector3(-1.2, 0, 0.1), Vector3(1, 0, 0.06), Vector3(0, 0, 0.06)]
+}
+tracks/1/type = "value"
+tracks/1/imported = false
+tracks/1/enabled = true
+tracks/1/path = NodePath("Model/ShoulderL:rotation")
+tracks/1/interp = 1
+tracks/1/loop_wrap = true
+tracks/1/keys = {
+"times": PackedFloat32Array(0, 0.1, 0.22, 0.41),
+"transitions": PackedFloat32Array(1, 1, 1, 1),
+"update": 0,
+"values": [Vector3(0, 0, -0.06), Vector3(-0.25, 0, -0.1), Vector3(0.3, 0, -0.06), Vector3(0, 0, -0.06)]
+}
+tracks/2/type = "value"
+tracks/2/imported = false
+tracks/2/enabled = true
+tracks/2/path = NodePath("Model/Torso:rotation")
+tracks/2/interp = 1
+tracks/2/loop_wrap = true
+tracks/2/keys = {
+"times": PackedFloat32Array(0, 0.1, 0.22, 0.41),
+"transitions": PackedFloat32Array(1, 1, 1, 1),
+"update": 0,
+"values": [Vector3(0, 0, 0), Vector3(0, 0.3, 0), Vector3(0, -0.22, 0), Vector3(0, 0, 0)]
+}
+tracks/3/type = "value"
+tracks/3/imported = false
+tracks/3/enabled = true
+tracks/3/path = NodePath("Model/HipL:rotation")
+tracks/3/interp = 1
+tracks/3/loop_wrap = true
+tracks/3/keys = {
+"times": PackedFloat32Array(0, 0.41),
+"transitions": PackedFloat32Array(1, 1),
+"update": 0,
+"values": [Vector3(0, 0, 0), Vector3(0, 0, 0)]
+}
+tracks/4/type = "value"
+tracks/4/imported = false
+tracks/4/enabled = true
+tracks/4/path = NodePath("Model/HipR:rotation")
+tracks/4/interp = 1
+tracks/4/loop_wrap = true
+tracks/4/keys = {
+"times": PackedFloat32Array(0, 0.41),
+"transitions": PackedFloat32Array(1, 1),
+"update": 0,
+"values": [Vector3(0, 0, 0), Vector3(0, 0, 0)]
+}
+
 [sub_resource type="AnimationLibrary" id="AnimationLibrary_player"]
 _data = {
+&"attack": SubResource("Animation_attack"),
 &"idle": SubResource("Animation_idle"),
 &"jump": SubResource("Animation_jump"),
 &"run": SubResource("Animation_run"),
@@ -298,13 +369,35 @@ _data = {
 
 [node name="Player" type="CharacterBody3D" groups=["player"]]
 collision_layer = 2
-collision_mask = 1
+collision_mask = 5
 floor_snap_length = 0.2
 script = ExtResource("1_player")
 
 [node name="CollisionShape3D" type="CollisionShape3D" parent="."]
 position = Vector3(0, 0.9, 0)
 shape = SubResource("CapsuleShape3D_player")
+
+[node name="HealthComponent" type="Node" parent="."]
+unique_name_in_owner = true
+script = ExtResource("3_health")
+max_health = 100.0
+
+[node name="StatsComponent" type="Node" parent="."]
+unique_name_in_owner = true
+script = ExtResource("4_stats")
+
+[node name="InventoryComponent" type="Node" parent="."]
+unique_name_in_owner = true
+script = ExtResource("5_inventory")
+capacity = 24
+
+[node name="EquipmentComponent" type="Node" parent="."]
+unique_name_in_owner = true
+script = ExtResource("6_equipment")
+
+[node name="PlayerCombat" type="Node" parent="."]
+unique_name_in_owner = true
+script = ExtResource("8_combat")
 
 [node name="Visual" type="Node3D" parent="."]
 unique_name_in_owner = true
@@ -394,3 +487,10 @@ script = ExtResource("2_interaction")
 interaction_distance = 3.0
 collision_mask = 17
 check_interval = 0.1
+
+[node name="AttackComponent" type="Node3D" parent="Head"]
+unique_name_in_owner = true
+script = ExtResource("7_attack")
+reach = 2.4
+swing_radius = 0.8
+collision_mask = 4

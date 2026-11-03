@@ -22,8 +22,8 @@ When a request conflicts with this file, stop and ask the user which rule wins.
 | Primary development platform | Windows PC (D3D12 configured) |
 | Language | GDScript, statically typed where practical |
 | Target frame rate | 60 FPS on minimum-spec hardware (hardware TBD) |
-| Current phase | **Phase 1 — Walking Skeleton** (implemented; awaiting user acceptance) |
-| Project state | Phase 0 and Phase 1 implemented; combat and RPG systems are planned. |
+| Current phase | **Phase 3 — Persistence and World** (implemented; awaiting user acceptance) |
+| Project state | Phases 0–3 implemented; sandbox life and content are planned. |
 
 ### Design pillars
 
@@ -66,7 +66,7 @@ Do not copy Skyrim assets, names, quest text, maps, music, or lore. Use the refe
 
 ## 3. Current project state
 
-Phase 0 and Phase 1 are implemented and validated with Godot 4.7.2:
+Phase 0, Phase 1, and Phase 2 are implemented and validated with Godot 4.7.2:
 
 - `res://scenes/boot.tscn` is the main scene.
 - Six autoloads exist: `Events`, `Settings`, `SaveManager`, `SceneRouter`, `Game`, `Debug`.
@@ -89,12 +89,87 @@ Phase 1 adds a playable walking skeleton:
 - `features/interaction/interaction_component.gd` — ray from the head along the
   active camera, 3 m reach, emits prompts through `Events`.
 - `features/interaction/door.tscn` — hinged door that opens and closes.
-- `features/interaction/chest.tscn` — one-shot chest; grants a placeholder item.
+- `features/interaction/chest.tscn` — one-shot chest; grants its `loot_id` to the
+  interactor's inventory and stays closed when the inventory is full.
 - `features/ui/hud.tscn` — crosshair, `[E]` interaction prompt, item toast.
 - `SceneRouter` fades to black and back around scene changes.
 
-Still deferred: saving, inventory, combat, quests, NPC schedules, and streaming.
-The chest does not yet move items into an inventory; that is Phase 2.
+Phase 2 adds the core RPG loop:
+
+- `data/items/item_data.gd` — one `ItemData` resource class describing every
+  item (kind, stack size, value, equip slot, damage, armor, restore amounts).
+  Definitions live in `data/items/*.tres`; runtime counts never do.
+- `core/utils/item_database.gd` — static `ItemDatabase` mapping ids to preloaded
+  definitions. No autoload; add new items to both the folder and this table.
+- `features/inventory/inventory_component.gd` — stacks, capacity (slots), add,
+  remove, query, and `inventory_changed` / `item_added` / `item_removed`.
+- `features/inventory/equipment_component.gd` — main-hand and body slots; moves
+  items out of the inventory and derives attack damage and armor.
+- `features/stats/health_component.gd` — health pool with damage, heal, death,
+  and revive. `features/stats/stats_component.gd` — stamina with regeneration.
+  (Magicka is deferred until spells exist.)
+- `features/combat/attack_component.gd` — sphere sweep in front of the active
+  camera; damages the closest living enemy in reach.
+- `features/combat/enemy.tscn` — placeholder enemy: idle, chase, melee attack,
+  death. 40 health, 8 damage; flat armor reduction applies on the player side.
+- `features/player/player_combat.gd` — attack input, stamina cost, swing
+  animation, and a placeholder respawn on death.
+- `features/ui/hud.tscn` / `hud.gd` — health and stamina bars, equipped-weapon
+  readout, and an inventory panel (**I**) that equips or uses the selected item.
+- `features/player/player.tscn` — one player scene now carries
+  `HealthComponent`, `StatsComponent`, `InventoryComponent`,
+  `EquipmentComponent`, `PlayerCombat`, and `AttackComponent`, plus an `attack`
+  clip. Player collision mask became `world + enemy` (5) so bodies collide.
+
+Phase 3 adds persistence, world time, and streaming:
+
+- `core/autoload/save_manager.gd` — version-1 JSON saves at
+  `user://saves/slot_<n>/save.json`, written atomically through a temp file.
+  `build_save_dict()`, `write_save_dict()`, `read_slot()`, `apply_save()`, and
+  `delete_slot()` are public so tests and tools can work without the disk.
+  `collect_saveables()` and `get_saved_at()` are public too.
+- `features/world/world_clock.gd` — `class_name WorldClock`, a static service
+  (no autoload) holding `day` and `hour`. `Game` advances it while playing;
+  `SaveManager` persists it under `world.time`.
+- The **saveable contract**: a node joins the `saveable` group and implements
+  `get_save_id() -> StringName`, `save_data() -> Dictionary`, and
+  `load_data(data: Dictionary) -> void`.
+  - `features/player/player_controller.gd` — aggregate saveable id `player`:
+    position, yaw, pitch, camera mode, health, stamina, inventory, equipment.
+  - `features/interaction/chest.gd` — id per instance, `{"open": bool}`.
+  - `features/interaction/door.gd` — id per instance, `{"open": bool}`.
+  - `features/combat/enemy.gd` — id per instance, position, yaw, health, `dead`.
+- `core/autoload/game.gd` — advances the clock, resets it on new game, and
+  `load_game()` reads the slot, reloads the recorded scene, then applies the
+  save. Save/load UI lives in `features/ui/pause_menu.tscn`.
+- `features/ui/hud.tscn` / `hud.gd` — `TimeLabel` plus a 0.5 s `ClockTimer`
+  showing `WorldClock.get_time_string()`.
+- `features/world/chunk_manager.gd` — `class_name ChunkManager`, streams
+  `<chunk_directory>/chunk_<x>_<z>.tscn` within `load_radius` of a tracked node
+  using threaded loads and a 0.25 s timer. A missing chunk file is remembered
+  and skipped.
+- `features/world/area_gate.gd` — `class_name AreaGate`, an `Area3D` doorway
+  that calls `Game.travel_to()`. It arms only after the player has been outside
+  it, so arriving inside a gate never bounces the player straight back.
+- **Save slots:** slot 0 is the manual/quicksave slot, slot 1 is the autosave
+  slot. `Game.autosave()` can never overwrite a manual save. `Game.quick_save()`
+  (**F5**) writes slot 0, `Game.quick_load()` (**F9**) loads the newest slot, and
+  `Game.continue_game()` does the same from the main menu.
+- **Autosave:** `Game` autosaves after every finished gameplay scene change
+  (new game, load door). Autosave is suppressed while `load_game()` or
+  `travel_to()` is mid-flight, then triggered explicitly after travel.
+- `scenes/overworld.tscn` — the first exterior: sun, sky, a spawn pad, a stone
+  return arch, a `ChunkManager`, and the player. Reached through the room's back
+  door.
+- `features/world/chunks/` — a generated 3×3 meadow (32 m chunks) with ground,
+  rocks, and trees. `ChunkManager` streams it around the player.
+- `scenes/test_room.tscn` — door, three chests, and the enemy carry stable save
+  ids; the back door has a threshold pad and an `ExitGate` to the overworld.
+- `tests/phase3_smoke.tscn` covers all of the above; `tests/fixtures/chunks/`
+  holds two tiny fixture chunks used only by that test.
+
+Still deferred: more chunk content and biomes, the town exterior, quests, NPC
+schedules, dialogue, and spells.
 
 The project folder path contains a space (`rpg game`). This is harmless; do not
 rename or move it without permission.
@@ -417,6 +492,8 @@ func load_data(data: Dictionary) -> void
 - Save only persistent state. Do not save transient state such as current velocity, particle positions, or UI hover states.
 - Never save `NodePath`s or scene file paths. Save stable IDs.
 - Autosave on major transitions, rest/wait, and manual save. Never autosave every frame.
+  *Phase 3 note:* only manual save from the pause menu exists so far. Autosave
+  needs its own slot first so it cannot overwrite a manual save; it is deferred.
 - Do not save from inside a physics callback. Defer to the next idle frame.
 - Keep save work under 100 ms, or move it to a thread later.
 
@@ -557,16 +634,59 @@ Before reporting a task complete:
 - Scene transition uses a fade/loading screen.
 - Pause menu works during gameplay.
 
+### Phase 2 acceptance criteria
+
+- A chest puts its item into the player's inventory; the toast names the item.
+- **I** opens an inventory that lists stacks; Equip/Use acts on the selection.
+- Equipping the iron sword raises damage; equipping armor raises armor value.
+- Left click swings, costs stamina, and damages an enemy in front of you.
+- The enemy notices the player inside 6 m, chases, and hits in melee.
+- Armor reduces incoming damage; the HUD bars follow health and stamina.
+- Three swings with the equipped sword defeat the enemy.
+- Drunk potions heal and are consumed.
+
+### Phase 3 acceptance criteria
+
+- Esc → **Save Game** writes a slot; **Load Game** restores the same moment.
+- Reloading restores the player's position, health, stamina, inventory, and equipment.
+- Opened chests, opened doors, and defeated enemies stay that way after loading.
+- The HUD clock shows a day and time that matches the save.
+- **Continue** on the main menu loads the newest save or autosave.
+- A corrupt or future-version save is rejected without crashing.
+- Chunks stream in and out of range without a hitch.
+- **F5** quick saves and **F9** quick loads; an autosave never overwrites a
+  manual save.
+- Walking through the room's back door reaches the exterior and the stone arch
+  returns inside, keeping inventory and opened objects.
+
 ### Verification commands
 
 ```text
 Godot_v4.7.2-stable_win64_console.exe --headless --path . tests/phase0_smoke.tscn
 Godot_v4.7.2-stable_win64_console.exe --headless --path . tests/phase1_smoke.tscn
+Godot_v4.7.2-stable_win64_console.exe --headless --path . tests/phase2_smoke.tscn
+Godot_v4.7.2-stable_win64_console.exe --headless --path . tests/phase3_smoke.tscn
 ```
 
-Both must print `PHASE0_SMOKE_OK` / `PHASE1_SMOKE_OK`. The Phase 1 test loads the
-real test room and drives the player: camera toggle, camera collision, walk,
-sprint, jump, gravity, door, chest, HUD, fade overlay, and pause.
+Each must print its own `PHASE0_SMOKE_OK` / `PHASE1_SMOKE_OK` / `PHASE2_SMOKE_OK` /
+`PHASE3_SMOKE_OK`.
+The Phase 1 test loads the real test room and drives the player: camera toggle,
+camera collision, walk, sprint, jump, gravity, door, chest, HUD, fade overlay,
+and pause. The Phase 2 test loads the same room and covers item definitions, the
+item database, stacking and capacity, equip/unequip, health, stamina, chest loot
+reaching the inventory, the inventory panel, enemy aggro and damage, armor
+reduction, sword swings killing the enemy, and drinking a potion. The Phase 3
+test covers the world clock, the version-1 save format, the slot model,
+`newest_slot()` selection, quicksave and autosave isolation (temporarily backing
+up and restoring slots 0 and 1), the saveable contract, a write/read/apply round
+trip, corrupt and future-version saves, chunk streaming from fixtures and the
+real chunk set, the room's exit gate, the HUD clock, and the pause-menu
+save/load buttons.
+
+New `class_name` scripts are registered from `.godot/global_script_class_cache.cfg`,
+which only the editor writes. After adding one, open the project in the editor
+once (or run `--headless --editor --quit`), otherwise a headless test fails with
+`Identifier "<ClassName>" not declared in the current scope`.
 
 ### Future automation
 
@@ -582,8 +702,8 @@ sprint, jump, gravity, door, chest, HUD, fade overlay, and pause.
 |---|---|---|---|
 | 0 | Foundations: repo, folders, boot flow, services, input, pause, settings, debug | S | **Implemented — awaiting acceptance** |
 | 1 | Walking skeleton: player, both cameras, interaction, doors/chests, transitions | M | **Implemented — awaiting acceptance** |
-| 2 | Core RPG loop: items, inventory, equipment, stats, combat, one enemy, HUD | L | Not started |
-| 3 | Persistence and world: save/load, chunks, time, persistent objects | L | Not started |
+| 2 | Core RPG loop: items, inventory, equipment, stats, combat, one enemy, HUD | L | **Implemented — awaiting acceptance** |
+| 3 | Persistence and world: save/load, chunks, time, persistent objects | L | **Implemented — awaiting acceptance** |
 | 4 | Sandbox life: NPC schedules, dialogue, quests, shops, crafting | XL | Not started |
 | 5 | Content and UX: menus, character creation, keybinds, audio, localization | L | Not started |
 | 6 | Performance and release: profiling, LOD, pooling, export, QA | M | Not started |
@@ -659,6 +779,31 @@ The user is a beginner. Adapt explanations accordingly:
 | 2026-11-01 | Godot Editor MCP addon (v2026.10.20.1) installed at `addons/godot_mcp/` and enabled; server registered project-scoped in `opencode.json`. Tool-only, no runtime dependency, no game code references it. |
 | 2026-11-01 | `project.godot` lost its explicit `[audio] buses/default_bus_layout` line when Godot saved after the plugin was enabled. Harmless: the engine default is the same `res://default_bus_layout.tres`; all six buses verified intact by the Phase 0 smoke test. |
 | 2026-11-01 | The Phase 1 door prompt assertion was made deterministic: the door swings -100 deg into the room, so it leaves the 3 m interaction ray mid-swing and a fixed-frame wait raced it. The prompt is now read immediately after `interact()`. |
+| 2026-11-01 | Phase 2 uses one `ItemData` resource with `Kind` and `EquipSlot` enums instead of a class per item type; inventory and UI stay generic. Splitting into subclasses is deferred until abilities need it. |
+| 2026-11-01 | Items are looked up through a static `ItemDatabase` class of preloaded resources. No autoload was added (the six approved services are unchanged); add new items to `data/items/` and to the table. |
+| 2026-11-01 | Phase 2 implements stamina only. Magicka is deferred until spells exist so the HUD does not show a dead resource. |
+| 2026-11-01 | Armor is a flat damage reduction (`maxf(damage - armor, 1.0)`), not a percentage. Percentage mitigation waits for the full stat system. |
+| 2026-11-01 | Melee swings use a sphere sweep (2.4 m reach, 0.8 m radius) instead of a ray: a swing should be forgiving to aim and a ray can slip past a thin capsule. |
+| 2026-11-01 | The inventory panel does not pause the game. It calls `player.set_ui_blocked(true)` and releases the mouse, so it cannot conflict with the pause menu. |
+| 2026-11-01 | `player_combat.gd` lives beside `player_controller.gd` rather than inside it, so the controller stays about movement and cameras. `PlayerController` gained a `class_name` so the HUD and combat script can be typed instead of using `CharacterBody3D`. |
+| 2026-11-01 | The player collision mask changed from `world` (1) to `world + enemy` (5) so the player body and the enemy collide; the enemy body uses layer `enemy` and mask `world + player` (3). |
+| 2026-11-01 | Chests resolve their `loot_id` through `ItemDatabase` and call the interactor's `add_item()`. If the inventory is full the chest stays closed, so loot is never lost silently. Chest `loot_name` was removed in favour of the definition's `display_name`. |
+| 2026-11-01 | Phase 2 implemented; smoke test added at `tests/phase2_smoke.tscn` (129 checks). |
+| 2026-11-02 | Phase 3 implemented. Saves are version-1 JSON at `user://saves/slot_<n>/save.json`, written to a temp file and renamed into place. |
+| 2026-11-02 | `WorldClock` is a static `class_name` service, not a seventh autoload: one world per process, and `Game` owns the decision to advance it. |
+| 2026-11-02 | The player root is the aggregate saveable (`player`); components expose `save_data`/`load_data` and never write files. Chests, doors, and enemies carry an exported `save_id` set in the scene. |
+| 2026-11-02 | A save taken at the instant of death reloads at 1 HP rather than leaving the player permanently dead. |
+| 2026-11-02 | `Game.load_game()` reads the slot, reloads the recorded scene, then applies. Callers must not `await` it from a scene that the load replaces; the coroutine lives on the `Game` autoload instead. |
+| 2026-11-02 | Chunk streaming is `ChunkManager` (`chunk_<x>_<z>.tscn`, threaded loads, 0.25 s timer). A missing file is remembered, not retried, so an absent chunk costs one check and no repeated I/O. |
+| 2026-11-02 | Two save slots are enough for now: slot 0 is manual/quicksave, slot 1 is autosave. A separate autosave slot is what makes "autosave after every scene change" safe, because it can never overwrite a deliberate save. More slots wait for a save-slot UI. |
+| 2026-11-02 | **F5** quicksaves slot 0 and **F9** quick loads, because a save system nobody can reach mid-playtest is not verifiable. Quick load picks the newest of the two slots rather than always slot 0. |
+| 2026-11-02 | Autosave runs after a finished gameplay scene change (and after travel), never mid-frame. It is suppressed while `load_game()` or `travel_to()` is in flight, otherwise the intermediate state would be written over the destination. |
+| 2026-11-02 | `Game.travel_to()` erases the outgoing player position/yaw/pitch from `world_state` and then records the arrival point, so an immediate autosave or quicksave in the new scene stores the spawn, not the old room's coordinates. |
+| 2026-11-02 | `AreaGate` arms only after the player has been outside it. Without that rule, arriving inside a gate volume would immediately bounce the player back to the scene they just left. |
+| 2026-11-02 | The exterior is its own `scenes/overworld.tscn` reached through the room's back door, not chunks bolted onto the interior. Interiors and exteriors stay separate scenes so the streaming system never has to reason about indoor geometry. |
+| 2026-11-02 | Chunk content is a generated 3×3 meadow (32 m chunks, ground/rocks/trees) in `features/world/chunks/`. Placeholder content is generated by a throwaway script and deleted afterwards rather than hand-authored, so the layout stays reproducible and reviewable. |
+| 2026-11-02 | The Phase 3 suite asserts the overworld's *existence and gate wiring* instead of `load()`ing it. Instantiating a second player and HUD inside the test process left resources alive at exit; the scene itself is verified by the headless boot check. |
+| 2026-11-02 | Phase 3 smoke test added at `tests/phase3_smoke.tscn` (149 checks), with fixture chunks in `tests/fixtures/chunks/`. |
 
 ## 16. Open questions
 

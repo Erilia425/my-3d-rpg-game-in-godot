@@ -1,0 +1,175 @@
+[gd_scene load_steps=20 format=3]
+
+[ext_resource type="Script" path="res://features/world/overworld.gd" id="1_world"]
+[ext_resource type="PackedScene" path="res://features/player/player.tscn" id="2_player"]
+[ext_resource type="PackedScene" path="res://features/ui/pause_menu.tscn" id="3_pause"]
+[ext_resource type="PackedScene" path="res://features/ui/hud.tscn" id="4_hud"]
+[ext_resource type="Script" path="res://features/world/chunk_manager.gd" id="5_chunks"]
+[ext_resource type="Script" path="res://features/world/area_gate.gd" id="6_gate"]
+
+[sub_resource type="ProceduralSkyMaterial" id="ProceduralSkyMaterial_ow"]
+sky_top_color = Color(0.2, 0.38, 0.62, 1)
+sky_horizon_color = Color(0.68, 0.74, 0.82, 1)
+ground_bottom_color = Color(0.18, 0.2, 0.16, 1)
+ground_horizon_color = Color(0.58, 0.58, 0.48, 1)
+
+[sub_resource type="Sky" id="Sky_ow"]
+sky_material = SubResource("ProceduralSkyMaterial_ow")
+
+[sub_resource type="Environment" id="Environment_ow"]
+background_mode = 2
+sky = SubResource("Sky_ow")
+tonemap_mode = 2
+fog_enabled = true
+fog_light_color = Color(0.66, 0.72, 0.8, 1)
+fog_density = 0.004
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_grass"]
+albedo_color = Color(0.21, 0.32, 0.15, 1)
+roughness = 0.95
+
+[sub_resource type="BoxMesh" id="BoxMesh_pad"]
+size = Vector3(10, 0.5, 16)
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_pad"]
+size = Vector3(10, 0.5, 16)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_stone"]
+albedo_color = Color(0.42, 0.42, 0.4, 1)
+roughness = 0.85
+
+[sub_resource type="BoxMesh" id="BoxMesh_pillar"]
+size = Vector3(0.6, 3, 0.6)
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_pillar"]
+size = Vector3(0.6, 3, 0.6)
+
+[sub_resource type="BoxMesh" id="BoxMesh_lintel"]
+size = Vector3(5.4, 0.6, 0.6)
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_lintel"]
+size = Vector3(5.4, 0.6, 0.6)
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_gate"]
+size = Vector3(3.6, 2.4, 1)
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_hint"]
+bg_color = Color(0.02, 0.03, 0.04, 0.78)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.42, 0.35, 0.23, 0.9)
+corner_radius_top_left = 6
+corner_radius_top_right = 6
+corner_radius_bottom_left = 6
+corner_radius_bottom_right = 6
+
+[node name="Overworld" type="Node3D"]
+script = ExtResource("1_world")
+
+[node name="WorldEnvironment" type="WorldEnvironment" parent="."]
+environment = SubResource("Environment_ow")
+
+[node name="Sun" type="DirectionalLight3D" parent="."]
+rotation_degrees = Vector3(-50, -35, 0)
+light_color = Color(1, 0.96, 0.88, 1)
+light_energy = 1.15
+shadow_enabled = true
+
+[node name="SpawnPad" type="StaticBody3D" parent="."]
+position = Vector3(0, -0.23, 10)
+collision_layer = 1
+collision_mask = 0
+
+[node name="Mesh" type="MeshInstance3D" parent="SpawnPad"]
+mesh = SubResource("BoxMesh_pad")
+surface_material_override/0 = SubResource("StandardMaterial3D_grass")
+
+[node name="Collision" type="CollisionShape3D" parent="SpawnPad"]
+shape = SubResource("BoxShape3D_pad")
+
+[node name="GatePillarLeft" type="StaticBody3D" parent="."]
+position = Vector3(-2.4, 1.5, 16)
+collision_layer = 1
+collision_mask = 0
+
+[node name="Mesh" type="MeshInstance3D" parent="GatePillarLeft"]
+mesh = SubResource("BoxMesh_pillar")
+surface_material_override/0 = SubResource("StandardMaterial3D_stone")
+
+[node name="Collision" type="CollisionShape3D" parent="GatePillarLeft"]
+shape = SubResource("BoxShape3D_pillar")
+
+[node name="GatePillarRight" type="StaticBody3D" parent="."]
+position = Vector3(2.4, 1.5, 16)
+collision_layer = 1
+collision_mask = 0
+
+[node name="Mesh" type="MeshInstance3D" parent="GatePillarRight"]
+mesh = SubResource("BoxMesh_pillar")
+surface_material_override/0 = SubResource("StandardMaterial3D_stone")
+
+[node name="Collision" type="CollisionShape3D" parent="GatePillarRight"]
+shape = SubResource("BoxShape3D_pillar")
+
+[node name="GateLintel" type="StaticBody3D" parent="."]
+position = Vector3(0, 3.3, 16)
+collision_layer = 1
+collision_mask = 0
+
+[node name="Mesh" type="MeshInstance3D" parent="GateLintel"]
+mesh = SubResource("BoxMesh_lintel")
+surface_material_override/0 = SubResource("StandardMaterial3D_stone")
+
+[node name="Collision" type="CollisionShape3D" parent="GateLintel"]
+shape = SubResource("BoxShape3D_lintel")
+
+[node name="ReturnGate" type="Area3D" parent="."]
+position = Vector3(0, 1.2, 16)
+collision_layer = 0
+collision_mask = 2
+script = ExtResource("6_gate")
+target_scene = "res://scenes/test_room.tscn"
+target_position = Vector3(0, 0.2, -8)
+
+[node name="Collision" type="CollisionShape3D" parent="ReturnGate"]
+shape = SubResource("BoxShape3D_gate")
+
+[node name="ChunkManager" type="Node3D" parent="."]
+script = ExtResource("5_chunks")
+chunk_directory = "res://features/world/chunks"
+chunk_size = 32.0
+load_radius = 1
+
+[node name="Player" parent="." instance=ExtResource("2_player")]
+position = Vector3(0, 0.2, 10)
+
+[node name="HUD" parent="." instance=ExtResource("4_hud")]
+
+[node name="PauseMenu" parent="." instance=ExtResource("3_pause")]
+
+[node name="HintPanel" type="PanelContainer" parent="."]
+layout_mode = 3
+anchors_preset = 7
+anchor_left = 0.5
+anchor_top = 1.0
+anchor_right = 0.5
+anchor_bottom = 1.0
+offset_left = -500.0
+offset_top = -64.0
+offset_right = 500.0
+offset_bottom = -14.0
+grow_horizontal = 2
+grow_vertical = 0
+mouse_filter = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_hint")
+
+[node name="Hint" type="Label" parent="HintPanel"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.8, 0.85, 0.88, 1)
+theme_override_font_sizes/font_size = 15
+text = "WASD move   |   Shift sprint   |   Space jump   |   LMB attack   |   E interact   |   I inventory   |   V camera   |   F3 debug
+Esc pause   |   F5 quicksave   |   F9 quickload   |   Walk through the stone arch to return inside"
+horizontal_alignment = 1
+vertical_alignment = 1

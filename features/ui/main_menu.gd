@@ -1,8 +1,8 @@
 extends Control
 ## Main menu: New Game, Continue, Settings, Quit.
 ##
-## Phase 0 has no save data yet, so Continue stays disabled. Settings are
-## applied and saved immediately.
+## Continue is enabled as soon as slot 0 holds a save. Settings are applied and
+## saved immediately.
 
 @onready var continue_button: Button = %ContinueButton
 @onready var settings_panel: Control = %SettingsPanel
@@ -24,11 +24,11 @@ func _ready() -> void:
 	master_slider.value_changed.connect(_on_master_volume_changed)
 	fullscreen_check.toggled.connect(_on_fullscreen_toggled)
 
-	continue_button.disabled = not SaveManager.has_slot(0)
+	continue_button.disabled = not Game.has_any_save()
 	continue_button.tooltip_text = (
-		"Continue is available once saving is implemented in Phase 3."
+		"No save found. Start a New Game and save from the pause menu (Esc)."
 		if continue_button.disabled
-		else "Load the most recent save."
+		else "Load the most recent save or autosave."
 	)
 
 	settings_panel.visible = false
@@ -49,7 +49,7 @@ func _on_new_game_pressed() -> void:
 
 
 func _on_continue_pressed() -> void:
-	Game.load_game(0)
+	Game.continue_game()
 
 
 func _on_settings_pressed() -> void:

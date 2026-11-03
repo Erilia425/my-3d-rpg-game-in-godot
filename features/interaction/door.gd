@@ -4,6 +4,7 @@ extends StaticBody3D
 ## The door blocks the player and the third-person camera, and is detected by
 ## the interaction ray because its collision layer includes `interactable`.
 
+@export var save_id: StringName = &""
 @export var open_angle_degrees: float = -100.0
 @export var open_time: float = 0.35
 
@@ -14,6 +15,8 @@ var _tween: Tween
 
 func _ready() -> void:
 	_closed_rotation = rotation.y
+	if not save_id.is_empty():
+		add_to_group(&"saveable")
 
 
 func get_interaction_text() -> String:
@@ -34,3 +37,24 @@ func interact(_interactor: Node) -> void:
 	_tween.tween_property(self, "rotation:y", target_rotation, open_time)\
 		.set_trans(Tween.TRANS_SINE)\
 		.set_ease(Tween.EASE_IN_OUT)
+
+
+# --- persistence -----------------------------------------------------------
+
+
+func get_save_id() -> StringName:
+	return save_id
+
+
+func save_data() -> Dictionary:
+	return {"open": is_open}
+
+
+func load_data(data: Dictionary) -> void:
+	if _tween != null and _tween.is_valid():
+		_tween.kill()
+
+	is_open = bool(data.get("open", false))
+	rotation.y = _closed_rotation
+	if is_open:
+		rotation.y += deg_to_rad(open_angle_degrees)

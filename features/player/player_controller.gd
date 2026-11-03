@@ -1,4 +1,5 @@
 extends CharacterBody3D
+class_name PlayerController
 ## First/third-person player controller.
 ##
 ## New games start in first person. V toggles to third person without moving
@@ -13,6 +14,13 @@ enum CameraMode {
 const ANIMATION_BLEND_TIME := 0.15
 ## Below this horizontal speed (m/s) the player counts as standing still.
 const WALK_ANIMATION_THRESHOLD := 0.2
+
+## Stable id for the save file. There is exactly one player in a single-player
+## game, so a constant id is enough. See AGENTS.md section 8.
+const SAVE_ID := &"player"
+## A save taken at the instant of death is reloaded at 1 HP instead of leaving
+## the player permanently dead.
+const MIN_LOADED_HEALTH := 1.0
 
 @export_group("Movement")
 @export var walk_speed: float = 5.0
@@ -33,13 +41,21 @@ const WALK_ANIMATION_THRESHOLD := 0.2
 @onready var _visual: Node3D = %Visual
 @onready var _animation_player: AnimationPlayer = %AnimationPlayer
 @onready var _interaction_component: Node3D = %InteractionComponent
+@onready var _health: HealthComponent = %HealthComponent
+@onready var _stats: StatsComponent = %StatsComponent
+@onready var _inventory: InventoryComponent = %InventoryComponent
+@onready var _equipment: EquipmentComponent = %EquipmentComponent
 
 var camera_mode: CameraMode = CameraMode.FIRST_PERSON
 var _pitch := 0.0
 var _current_animation: StringName = &""
+var _ui_blocked := false
+var _attack_lock := 0.0
 
 
 func _ready() -> void:
+	add_to_group(&"saveable")
+	_equipment.setup(_inventory)
 	_set_camera_mode(CameraMode.FIRST_PERSON, false)
 	# Announce once after the whole scene is ready, so the HUD can match its
 	# crosshair to the starting perspective.
@@ -51,7 +67,7 @@ func _announce_camera_mode() -> void:
 
 
 func _unhandled_input(event: InputEvent) -> void:
-	if Game.state != Game.State.PLAYING:
+	if Game.state != Game.State.PLAYING or _ui_blocked:
 		return
 
 	if event is InputEventMouseMotion:
@@ -78,6 +94,11 @@ func _unhandled_input(event: InputEvent) -> void:
 
 func _physics_process(delta: float) -> void:
 	if Game.state != Game.State.PLAYING:
+		return
+
+	_attack_lock = maxf(_attack_lock - delta, 0.0)
+
+	if _ui_blocked:
 		return
 
 	if not is_on_floor():
@@ -113,7 +134,7 @@ func _physics_process(delta: float) -> void:
 ## Chooses the locomotion clip from the current speed and airborne state.
 ## The clips themselves live in player.tscn; this only selects and blends them.
 func _update_animation() -> void:
-	if _animation_player == null:
+	if _animation_player == null or _attack_lock > 0.0:
 		return
 
 	var horizontal_speed := Vector2(velocity.x, velocity.z).length()
@@ -165,3 +186,135 @@ func _set_camera_mode(mode: CameraMode, announce: bool = true) -> void:
 
 	if announce:
 		Events.camera_mode_changed.emit(first_person)
+
+
+# --- components and player-facing API --------------------------------------
+#
+# UI and interactables talk to the player through these, never by reaching into
+# its child nodes. See AGENTS.md section 6.
+
+
+func get_health_component() -> HealthComponent:
+	return _health
+
+
+func get_stats_component() -> StatsComponent:
+	return _stats
+
+
+func get_inventory_component() -> InventoryComponent:
+	return _inventory
+
+
+func get_equipment_component() -> EquipmentComponent:
+	return _equipment
+
+
+## Called by interactables that hand the player loot (chests, pickups).
+func add_item(data: ItemData, amount: int = 1) -> int:
+	return _inventory.add_item(data, amount)
+
+
+## Equips an item from the inventory. Returns false when it cannot be equipped.
+func try_equip(id: StringName) -> bool:
+	return _equipment.equip(id)
+
+
+## Consumes a consumable. Returns false when nothing was restored.
+func use_item(id: StringName) -> bool:
+	var data := ItemDatabase.get_item(id)
+	if data == null or not data.is_consumable() or not _inventory.has_item(id):
+		return false
+
+	var restored := 0.0
+	if data.restore_health > 0.0:
+		restored += _health.heal(data.restore_health)
+	if data.restore_stamina > 0.0:
+		restored += _stats.restore_stamina(data.restore_stamina)
+	if restored <= 0.0:
+		return false
+
+	_inventory.remove_item(id, 1)
+	Events.notification_requested.emit("Used %s" % data.display_name)
+	return true
+
+
+## UI calls this while a panel owns the mouse. Movement and look are suspended.
+func set_ui_blocked(blocked: bool) -> void:
+	_ui_blocked = blocked
+	if not blocked:
+		return
+
+	velocity = Vector3.ZERO
+	_current_animation = &""
+	if _animation_player != null:
+		_animation_player.play(&"idle", 0.1)
+
+
+func is_ui_blocked() -> bool:
+	return _ui_blocked
+
+
+## Plays the swing clip and holds the locomotion machine off until it finishes.
+func play_attack_animation() -> void:
+	if _attack_lock > 0.0 or _animation_player == null:
+		return
+
+	var clip := _animation_player.get_animation(&"attack")
+	if clip == null:
+		return
+
+	_attack_lock = clip.length
+	_current_animation = &"attack"
+	_animation_player.play(&"attack", 0.08)
+
+
+# --- persistence -----------------------------------------------------------
+#
+# The player root is the aggregate saveable: it owns position and look, and it
+# asks each component for its own slice of state. Components never write save
+# files themselves. See AGENTS.md section 8.
+
+
+func get_save_id() -> StringName:
+	return SAVE_ID
+
+
+func save_data() -> Dictionary:
+	return {
+		"position": [global_position.x, global_position.y, global_position.z],
+		"yaw": rotation.y,
+		"pitch": _pitch,
+		"third_person": camera_mode == CameraMode.THIRD_PERSON,
+		"health": _health.get_health(),
+		"stamina": _stats.get_stamina(),
+		"inventory": _inventory.save_data(),
+		"equipment": _equipment.save_data(),
+	}
+
+
+func load_data(data: Dictionary) -> void:
+	var position: Array = data.get("position", [])
+	if position.size() == 3:
+		global_position = Vector3(
+			float(position[0]), float(position[1]), float(position[2])
+		)
+		velocity = Vector3.ZERO
+
+	rotation.y = float(data.get("yaw", rotation.y))
+	_pitch = clampf(
+		float(data.get("pitch", _pitch)),
+		deg_to_rad(min_pitch_degrees),
+		deg_to_rad(max_pitch_degrees)
+	)
+	_head.rotation.x = _pitch
+
+	var third_person := bool(data.get("third_person", false))
+	_set_camera_mode(
+		CameraMode.THIRD_PERSON if third_person else CameraMode.FIRST_PERSON
+	)
+
+	_health.set_health(maxf(float(data.get("health", _health.get_max_health())), MIN_LOADED_HEALTH))
+	_stats.set_stamina(float(data.get("stamina", _stats.get_max_stamina())))
+	_inventory.load_data(data.get("inventory", {}))
+	_equipment.load_data(data.get("equipment", {}))

@@ -77,6 +77,12 @@ func reload_current() -> void:
 	goto_scene(path, true)
 
 
+## True while a fade/loading transition is in flight. Gates use this so two
+## triggers in the same frame cannot start two scene changes.
+func is_transitioning() -> bool:
+	return _transitioning
+
+
 func goto_main_menu() -> void:
 	goto_scene(MAIN_MENU, true)
 

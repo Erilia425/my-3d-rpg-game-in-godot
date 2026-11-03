@@ -1,0 +1,13 @@
+[gd_resource type="Resource" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://data/items/item_data.gd" id="1_item"]
+
+[resource]
+script = ExtResource("1_item")
+id = &"item.health_potion"
+display_name = "Health Potion"
+description = "Bitter herbs in a clay flask. Restores health."
+kind = 3
+stack_size = 5
+value = 15
+restore_health = 35.0
