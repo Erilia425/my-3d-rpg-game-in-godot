@@ -1,6 +1,8 @@
-[gd_scene load_steps=7 format=3]
+[gd_scene load_steps=9 format=3]
 
 [ext_resource type="Script" path="res://features/ui/hud.gd" id="1_hud"]
+[ext_resource type="PackedScene" path="res://features/ui/map_screen.tscn" id="2_map"]
+[ext_resource type="PackedScene" path="res://features/dialogue/dialogue_window.tscn" id="3_dialogue"]
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_prompt"]
 content_margin_left = 18.0
@@ -257,3 +259,7 @@ theme_override_colors/font_color = Color(0.62, 0.68, 0.74, 1)
 theme_override_font_sizes/font_size = 13
 text = "Select an item, then Equip or Use."
 horizontal_alignment = 1
+
+[node name="MapScreen" parent="." instance=ExtResource("2_map")]
+
+[node name="DialogueWindow" parent="." instance=ExtResource("3_dialogue")]

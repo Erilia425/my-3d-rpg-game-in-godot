@@ -6,8 +6,9 @@ extends Node
 ## Or open this scene in the editor and press F6.
 ##
 ## Loads the real test room and drives the player: camera toggle, camera
-## collision, walk/sprint/jump/gravity, animation states, door, chest, HUD,
-## fade overlay, and pause. Prints PHASE1_SMOKE_OK on success.
+## collision, walk/sprint/jump/gravity, crouch, double-tap running, hold-jump
+## stamina, animation states, door, chest, HUD, fade overlay, and pause.
+## Prints PHASE1_SMOKE_OK on success.
 
 const EPSILON := 0.05
 const ANIMATION_CLIPS := ["idle", "walk", "run", "jump"]
@@ -53,6 +54,8 @@ func _ready() -> void:
 	await _check_movement()
 	await _check_gravity_and_jump()
 	await _check_animations()
+	await _check_crouch_and_double_tap_run()
+	await _check_hold_jump()
 	await _check_door()
 	await _check_chest()
 	_check_hud()
@@ -286,6 +289,87 @@ func _check_animations() -> void:
 		_animation_player.current_animation != &"jump",
 		"landing leaves the jump animation (%s)" % _animation_player.current_animation
 	)
+
+
+func _check_crouch_and_double_tap_run() -> void:
+	var shift_press := InputEventKey.new()
+	shift_press.physical_keycode = KEY_SHIFT
+	shift_press.pressed = true
+	_check(
+		InputMap.event_is_action(shift_press, &"crouch"),
+		"a real Shift press matches the crouch action"
+	)
+	_check(
+		InputMap.action_get_events(&"sprint").is_empty(),
+		"sprint has no key of its own (running is double-tap forward)"
+	)
+
+	_place_player(Vector3(0, 0.1, 6), 0.0, 0.0)
+	await _physics_frames(10)
+	var stand_head_y := _head.position.y
+
+	Input.action_press("crouch")
+	await _physics_frames(20)
+	_check(_player.is_crouching(), "holding crouch enters the crouch state")
+	_check(
+		_head.position.y < stand_head_y - 0.1,
+		"crouching lowers the camera (%.2f -> %.2f)" % [stand_head_y, _head.position.y]
+	)
+	Input.action_release("crouch")
+	await _physics_frames(20)
+	_check(not _player.is_crouching(), "releasing crouch stands the player back up")
+	_check(
+		absf(_head.position.y - stand_head_y) < 0.05,
+		"camera returns to standing height"
+	)
+
+	_place_player(Vector3(0, 0.1, 6), 0.0, 0.0)
+	await _physics_frames(6)
+	Input.action_press("move_forward")
+	await _physics_frames(2)
+	Input.action_release("move_forward")
+	await _physics_frames(3)
+	Input.action_press("move_forward")
+	await _physics_frames(20)
+	_check(_player.is_running(), "a second forward tap engages running")
+	_check(
+		_animation_player.current_animation == &"run",
+		"double-tap running plays run (%s)" % _animation_player.current_animation
+	)
+	Input.action_release("move_forward")
+	await _physics_frames(10)
+	_check(not _player.is_running(), "releasing forward stops running")
+
+
+func _check_hold_jump() -> void:
+	var stats := _player.find_child("StatsComponent", true, false) as StatsComponent
+	_check(stats != null, "player has a StatsComponent for jump stamina")
+	if stats == null:
+		return
+
+	_place_player(Vector3(0, 0.1, 6), 0.0, 0.0)
+	await _physics_frames(20)
+	var stamina_before := stats.get_stamina()
+	var hops := 0
+	var was_on_floor := true
+
+	Input.action_press("jump")
+	for _i in 90:
+		await _physics_frames(1)
+		var on_floor: bool = _player.is_on_floor()
+		if was_on_floor and not on_floor:
+			hops += 1
+		was_on_floor = on_floor
+	var stamina_after := stats.get_stamina()
+	Input.action_release("jump")
+	await _physics_frames(80)
+
+	_check(hops >= 2, "holding jump keeps hopping (%d hops)" % hops)
+	_check(
+		stamina_after < stamina_before - 5.0,
+		"holding jump spends stamina (%.1f -> %.1f)" % [stamina_before, stamina_after]
+	)
+	_check(_player.is_on_floor(), "player is on the floor after holding jump")
 
 
 func _all_tracks_resolve() -> bool:

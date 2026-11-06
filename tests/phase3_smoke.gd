@@ -8,9 +8,9 @@ extends Node
 ## Covers the world clock, the save format, the slot model, autosave and quick
 ## save, the saveable contract on the player, chests, the door and the enemy, a
 ## full write/read/apply round trip, corrupt and future-version saves, chunk
-## streaming (fixtures, the plains set, and the three biome sets), the overworld
-## scene, the HUD clock, and the pause menu save/load buttons. Prints
-## PHASE3_SMOKE_OK on success.
+## streaming (fixtures, the plains set, and the three biome sets), the town and
+## overworld scene wiring, the HUD clock, and the pause menu save/load buttons.
+## Prints PHASE3_SMOKE_OK on success.
 
 const EPSILON := 0.02
 ## Slot 9 is reserved for this test and is always deleted again.
@@ -20,6 +20,7 @@ const CHUNK_DIRECTORY := "res://tests/fixtures/chunks"
 const REAL_CHUNK_DIRECTORY := "res://features/world/chunks"
 const REAL_CHUNK_SIZE := 32.0
 const OVERWORLD_SCENE := "res://scenes/overworld.tscn"
+const TOWN_SCENE := "res://scenes/town.tscn"
 ## Biome chunk folders, the ground node each one uses, and one prop that only
 ## exists in that biome.
 const BIOMES := {
@@ -779,11 +780,13 @@ func _check_quick_save_and_autosave() -> void:
 	)
 
 
-## The overworld is content, not a service, so this suite only asserts the
-## wiring. Loading the scene here would pull a second player and HUD into the
-## process and leave their resources alive at exit.
+## The overworld and the town are content, not services, so this suite asserts
+## their wiring through `PackedScene.get_state()`. Loading them here would pull a
+## second player and HUD into the process and leave their resources alive at
+## exit.
 func _check_exterior_scene() -> void:
 	_check(ResourceLoader.exists(OVERWORLD_SCENE), "the overworld scene exists")
+	_check(ResourceLoader.exists(TOWN_SCENE), "the town scene exists")
 
 	var exit_gate := _room.get_node_or_null("ExitGate") as AreaGate
 	_check(exit_gate != null, "the test room has an exit gate at the back door")
@@ -791,14 +794,146 @@ func _check_exterior_scene() -> void:
 		return
 
 	_check(
-		String(exit_gate.target_scene) == OVERWORLD_SCENE,
-		"the room's exit gate leads to the overworld"
+		String(exit_gate.target_scene) == TOWN_SCENE,
+		"the room's exit gate leads to the town"
 	)
 	_check(exit_gate.use_target_position, "the exit gate sets an arrival point")
 	_check(
-		exit_gate.target_position.distance_to(Vector3(0, 0.2, 10)) < EPSILON,
-		"the exit gate arrives on the overworld spawn pad"
+		exit_gate.target_position.distance_to(Vector3(-40, 0.2, -19)) < EPSILON,
+		"the exit gate arrives outside the player's cottage"
 	)
+
+	_check_town_scene()
+	_check_overworld_gate()
+
+
+## Reads the town's saved scene state without instancing it.
+func _check_town_scene() -> void:
+	var packed := load(TOWN_SCENE) as PackedScene
+	_check(packed != null, "the town scene loads")
+	if packed == null:
+		return
+
+	var state := packed.get_state()
+	_check(state.get_node_count() > 150, "the town scene holds its buildings and props")
+
+	var player_index := _state_node(state, "Player")
+	_check(player_index >= 0, "the town has a player")
+	if player_index >= 0:
+		var player_transform: Transform3D = _state_value(state, player_index, "transform")
+		_check(
+			player_transform.origin.distance_to(Vector3(-40, 0.2, -19)) < EPSILON,
+			"the town starts the player outside their cottage"
+		)
+	_check(_state_node(state, "HUD") >= 0, "the town has the HUD")
+	_check(_state_node(state, "PauseMenu") >= 0, "the town has the pause menu")
+	_check(_state_node(state, "FallGuard") >= 0, "the town has a fall guard")
+	_check(_state_node(state, "Ground") >= 0, "the town has walkable ground")
+
+	var home_gate := _state_node(state, "Gates/HomeGate")
+	_check(home_gate >= 0, "the cottage has a doorway back inside")
+	_check(
+		str(_state_value(state, home_gate, "target_scene")) == "res://scenes/test_room.tscn",
+		"the cottage doorway leads to the interior"
+	)
+	var home_arrival: Vector3 = _state_value(state, home_gate, "target_position")
+	_check(
+		home_arrival.distance_to(Vector3(0, 0.2, -8)) < EPSILON,
+		"the cottage doorway arrives inside the room"
+	)
+
+	var north_gate := _state_node(state, "Gates/NorthGate")
+	_check(north_gate >= 0, "the town has a north gate")
+	_check(
+		str(_state_value(state, north_gate, "target_scene")) == OVERWORLD_SCENE,
+		"the north gate leads to the overworld"
+	)
+
+	var buildings := _direct_children(state, "Buildings")
+	_check(buildings.size() >= 40, "the town has a full street of buildings")
+	for building_name in [
+		"Chapel", "BellTower", "AuntieBellsBakery", "RowansHouse",
+		"ToothkeepersHouse", "ThreadkeepersHouse", "HiveTower",
+		"SeamstressCottage", "OldLoomTower", "HomeCottage",
+	]:
+		_check(buildings.has(building_name), "the town places %s" % building_name)
+
+	var props := _direct_children(state, "Props")
+	_check(_count_prefix(props, "Bridge") == 4, "the town has four river bridges")
+	_check(_count_prefix(props, "Stall") >= 4, "the market square has stalls")
+	_check(_count_prefix(props, "Headstone") >= 15, "the cemetery has headstones")
+	_check(_count_prefix(props, "GardenBed") >= 6, "the communal garden has beds")
+
+	var river := _state_node(state, "Water/SouthRiver")
+	_check(river >= 0, "the river runs through the town")
+	_check(bool(_state_value(state, river, "transparent")), "the river is translucent water")
+
+	var forest := _state_node(state, "Forest")
+	_check(forest >= 0, "the town is ringed by forest")
+	var forest_count: int = _state_value(state, forest, "count")
+	_check(forest_count >= 100, "the forest ring is dense")
+	var clumps: PackedVector3Array = _state_value(state, forest, "clumps")
+	_check(clumps.size() >= 10, "the forest reaches into the town edge")
+
+
+## The overworld's arch now returns to the town, not straight into the room.
+func _check_overworld_gate() -> void:
+	var packed := load(OVERWORLD_SCENE) as PackedScene
+	_check(packed != null, "the overworld scene loads")
+	if packed == null:
+		return
+
+	var state := packed.get_state()
+	var return_gate := _state_node(state, "ReturnGate")
+	_check(return_gate >= 0, "the overworld has a return gate")
+	_check(
+		str(_state_value(state, return_gate, "target_scene")) == TOWN_SCENE,
+		"the overworld returns to the town"
+	)
+	var arrival: Vector3 = _state_value(state, return_gate, "target_position")
+	_check(
+		arrival.distance_to(Vector3(52, 0.2, -56.5)) < EPSILON,
+		"the overworld returns the player to the town's north gate"
+	)
+	_check(_state_node(state, "FallGuard") >= 0, "the overworld has a fall guard")
+
+
+func _state_node(state: SceneState, path: String) -> int:
+	for i in state.get_node_count():
+		if String(state.get_node_path(i)).trim_prefix("./") == path:
+			return i
+	return -1
+
+
+func _state_value(state: SceneState, node_index: int, property_name: String) -> Variant:
+	if node_index < 0:
+		return null
+	for i in state.get_node_property_count(node_index):
+		if String(state.get_node_property_name(node_index, i)) == property_name:
+			return state.get_node_property_value(node_index, i)
+	return null
+
+
+func _direct_children(state: SceneState, parent_path: String) -> PackedStringArray:
+	var found := PackedStringArray()
+	var prefix := "./" + parent_path + "/"
+	for i in state.get_node_count():
+		var path := String(state.get_node_path(i))
+		if not path.begins_with(prefix):
+			continue
+		var rest := path.substr(prefix.length())
+		if rest.contains("/"):
+			continue
+		found.append(rest)
+	return found
+
+
+func _count_prefix(names: PackedStringArray, prefix: String) -> int:
+	var total := 0
+	for name in names:
+		if name.begins_with(prefix):
+			total += 1
+	return total
 
 
 # --- helpers --------------------------------------------------------------

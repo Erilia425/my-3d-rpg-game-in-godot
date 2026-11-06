@@ -14,6 +14,10 @@ enum State {
 const TEST_ROOM := "res://scenes/test_room.tscn"
 const OVERWORLD := "res://scenes/overworld.tscn"
 
+## Key inside the save's `world` block. The return point is not a saveable
+## object, so it rides next to the clock.
+const DOOR_RETURN_KEY := "door_return"
+
 ## Slot 0 is the player's manual/quicksave slot. Slot 1 is reserved for the
 ## autosave, so autosaving can never overwrite a deliberate save.
 const MANUAL_SLOT := 0
@@ -32,6 +36,11 @@ var current_slot: int = -1
 ## the room must still be open when you come back from the overworld. Scene
 ## loads merge into this dictionary, and every save is a snapshot of it.
 var world_state: Dictionary = {}
+
+## Where to put the player when they leave the interior they are in.
+## `{"scene": String, "position": [x, y, z]}`; empty when outdoors.
+## Stored in the save so a save made indoors still knows its doorstep.
+var _door_return: Dictionary = {}
 
 var _suppress_autosave := false
 
@@ -91,6 +100,7 @@ func new_game(slot: int = MANUAL_SLOT) -> void:
 	current_slot = slot
 	WorldClock.reset()
 	world_state.clear()
+	_door_return.clear()
 	set_state(State.PLAYING)
 	SceneRouter.goto_scene(TEST_ROOM, true)
 
@@ -132,7 +142,7 @@ func continue_game() -> bool:
 ## Snapshots the live scene into `world_state`, then writes that dictionary.
 func save_game(slot: int = MANUAL_SLOT) -> bool:
 	world_state.merge(SaveManager.collect_saveables(), true)
-	return SaveManager.write_save_dict(slot, SaveManager.build_save_dict(world_state))
+	return SaveManager.write_save_dict(slot, SaveManager.build_save_dict(world_state, _door_return_extra()))
 
 
 func autosave() -> bool:
@@ -180,6 +190,7 @@ func load_game(slot: int = MANUAL_SLOT) -> bool:
 
 	current_slot = slot
 	world_state = (data.get("saveables", {}) as Dictionary).duplicate(true)
+	_door_return = _read_door_return(data)
 
 	set_state(State.PLAYING)
 	_suppress_autosave = true
@@ -196,9 +207,10 @@ func load_game(slot: int = MANUAL_SLOT) -> bool:
 ## world time, and the state of every object seen so far.
 ##
 ## `spawn_position` is where the player appears in the destination; the position
-## they left is deliberately not carried over. Callers should not `await` this
-## from the scene that is about to be replaced.
-func travel_to(scene_path: String, spawn_position: Variant = null) -> bool:
+## they left is deliberately not carried over. `spawn_yaw` turns them on arrival
+## and is applied before the arrival snapshot, so the autosave remembers the
+## facing. Callers should not `await` this from the scene about to be replaced.
+func travel_to(scene_path: String, spawn_position: Variant = null, spawn_yaw: Variant = null) -> bool:
 	if state != State.PLAYING:
 		return false
 	if SceneRouter.is_transitioning():
@@ -217,10 +229,12 @@ func travel_to(scene_path: String, spawn_position: Variant = null) -> bool:
 	_suppress_autosave = true
 	await SceneRouter.goto_scene(scene_path, true)
 
-	if spawn_position is Vector3:
-		var player := get_tree().get_first_node_in_group("player") as Node3D
-		if player != null:
+	var player := get_tree().get_first_node_in_group("player") as Node3D
+	if player != null:
+		if spawn_position is Vector3:
 			player.global_position = spawn_position
+		if spawn_yaw is float:
+			player.rotation.y = spawn_yaw
 
 	# Record the arrival point, otherwise the autosave written just below would
 	# remember the *previous* scene's coordinates (they were erased above) and a
@@ -237,11 +251,106 @@ func travel_to(scene_path: String, spawn_position: Variant = null) -> bool:
 
 
 func _transient_save() -> Dictionary:
+	var world := {"time": WorldClock.save_data()}
+	world.merge(_door_return_extra(), true)
 	return {
 		"version": SaveManager.SAVE_VERSION,
-		"world": {"time": WorldClock.save_data()},
+		"world": world,
 		"saveables": world_state,
 	}
+
+
+# --- interiors -------------------------------------------------------------
+
+
+## Records the player's current scene and position, then loads an interior.
+##
+## `return_position` is where `exit_interior()` will put the player. The caller
+## (an `AreaGate` in `interior` mode) supplies a point just *outside* its own
+## volume, so arriving back cannot immediately re-enter the door. `return_yaw`
+## turns the player to face away from that door on the way out.
+func enter_interior(scene_path: String, return_position: Vector3, return_yaw: float = 0.0) -> bool:
+	if state != State.PLAYING or SceneRouter.is_transitioning():
+		return false
+	if scene_path.is_empty() or not ResourceLoader.exists(scene_path):
+		push_warning("Game: interior scene not found: %s" % scene_path)
+		return false
+
+	var from := _current_scene_path()
+	if from.is_empty():
+		push_warning("Game: cannot record a doorstep outside a saved scene")
+		return false
+
+	_door_return = {
+		"scene": from,
+		"position": [return_position.x, return_position.y, return_position.z],
+		"yaw": return_yaw,
+	}
+	# The interior scene owns its own arrival point, so no spawn is passed in.
+	travel_to(scene_path)
+	return true
+
+
+## Leaves the current interior and puts the player back on the recorded
+## doorstep. Returns false when there is nothing recorded (or the scene is
+## gone), leaving the player where they are.
+func exit_interior() -> bool:
+	if state != State.PLAYING or SceneRouter.is_transitioning():
+		return false
+	if _door_return.is_empty():
+		push_warning("Game: no doorstep recorded for this interior")
+		return false
+
+	var scene := String(_door_return.get("scene", ""))
+	var at: Variant = _door_return.get("position", [])
+	var yaw := float(_door_return.get("yaw", 0.0))
+	_door_return.clear()
+
+	if scene.is_empty() or not ResourceLoader.exists(scene):
+		push_warning("Game: the recorded doorstep scene is missing: %s" % scene)
+		return false
+	if not (at is Array) or (at as Array).size() != 3:
+		push_warning("Game: the recorded doorstep position is invalid")
+		return false
+
+	var point := Vector3(float(at[0]), float(at[1]), float(at[2]))
+	await travel_to(scene, point, yaw)
+	return true
+
+
+func get_door_return() -> Dictionary:
+	return _door_return.duplicate(true)
+
+
+func _door_return_extra() -> Dictionary:
+	if _door_return.is_empty():
+		return {}
+	return {DOOR_RETURN_KEY: _door_return.duplicate(true)}
+
+
+func _read_door_return(data: Dictionary) -> Dictionary:
+	var world: Dictionary = data.get("world", {})
+	var value: Variant = world.get(DOOR_RETURN_KEY, {})
+	if not (value is Dictionary):
+		return {}
+
+	var scene := String((value as Dictionary).get("scene", ""))
+	var at: Variant = (value as Dictionary).get("position", [])
+	if scene.is_empty() or not (at is Array) or (at as Array).size() != 3:
+		return {}
+
+	return {
+		"scene": scene,
+		"position": [float(at[0]), float(at[1]), float(at[2])],
+		"yaw": float((value as Dictionary).get("yaw", 0.0)),
+	}
+
+
+func _current_scene_path() -> String:
+	var scene := get_tree().current_scene
+	if scene == null:
+		return ""
+	return scene.scene_file_path
 
 
 ## Autosave on every finished gameplay scene change: starting a new game and
@@ -275,6 +384,7 @@ func toggle_pause() -> void:
 func quit_to_menu() -> void:
 	autosave()
 	world_state.clear()
+	_door_return.clear()
 	set_state(State.MAIN_MENU)
 	SceneRouter.goto_main_menu()
 

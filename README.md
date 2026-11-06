@@ -6,12 +6,25 @@ third-person cameras.
 
 ## Current status
 
-**Phase 3 — Persistence and World**
+**Phase 4 — Sandbox life (started)**
 
 Working now:
 
 - Boot screen → main menu → test room, with a fade between scenes
-- One `CharacterBody3D` player with walk, sprint, jump, gravity, and mouse look
+- **Mycelgrove Hollow**, a storybook village built from the reference map:
+  main street, chapel, bell tower, bakery, Rowan's house, the seamstress's yew
+  cottage, market, keepers' quarter, beekeeping district and Hive Tower, garden,
+  cemetery, ruins, river, bridges, and enterable interiors
+- Five villagers with a simple day/night schedule: from **08:00–18:00** Auntie
+  Bell, Rowan, the blind seamstress, and Thatch are outside their homes; from
+  **18:00–08:00** they are inside the bakery, house, yew cottage, and beekeeper
+  cottage. Thatch walks between the Honeyed Way and the Hive Tower by day.
+  Fern wanders the main street at all hours. Talk to them with **E**.
+- A full-screen **storybook map** on **M**, with a "You are here" marker in town
+- A **dialogue window** for villagers with speaker, role, multi-line text,
+  **E**/**Space** to advance, and **Esc** to close
+- One `CharacterBody3D` player with walk, double-tap run, crouch, hold-to-hop
+  jump, gravity, and mouse look
 - Idle, walk, run, jump, and sword-swing animations on a placeholder humanoid body
 - **V** toggles first and third person without moving the player
 - Third-person camera that pulls in near walls instead of clipping
@@ -52,9 +65,9 @@ Working now:
 Not built yet:
 
 - More than two fixed save slots (manual + autosave)
-- A town, a house interior, and points of interest in the exterior
+- Points of interest in the exterior
 - Blended biome edges: today the four biomes meet at straight seams
-- Quests, NPC schedules, dialogue, shops, crafting (Phase 4+)
+- Quests, dialogue, crafting, and shops (later in Phase 4)
 - Magicka and spells (they arrive with the ability system)
 - Death screen, loot drops, and enemy variety (later phases)
 
@@ -70,18 +83,21 @@ Not built yet:
 | Input | Action |
 |---|---|
 | **W A S D** | Move |
+| **W, W (hold)** | Double-tap forward to run |
+| **Left Shift** | Crouch |
+| **Space** | Jump; hold to keep hopping (costs stamina) |
 | **Mouse** | Look around |
-| **Shift** | Sprint |
-| **Space** | Jump |
 | **Left click** | Attack |
-| **E** | Interact with a door or chest |
+| **E** | Interact with a door, chest, or villager; advance dialogue |
+| **Space** | Also advances dialogue while it is open |
 | **I** | Open / close the inventory |
+| **M** | Open / close the storybook map |
 | **V** | Toggle first / third person |
-| **Esc** | Pause / resume (Save and Load live here) |
+| **Esc** | Close dialogue / map, or pause (Save and Load live here) |
 | **F5** | Quick save to the manual slot |
 | **F9** | Quick load the newest save |
 | **F3** | Toggle debug overlay |
-| **J / M** | Journal / map (future) |
+| **J** | Journal (future) |
 
 New games start in **first person**. Press **V** to switch to third person and back.
 
@@ -100,8 +116,9 @@ godot --headless --path . tests/phase3_smoke.tscn
 layers, audio buses, settings round-trip, and pause flow.
 
 `phase1_smoke` loads the real test room and drives the player: camera toggle,
-camera collision near a wall, walk, sprint, jump, gravity, the door, the chest,
-the HUD, the fade overlay, and pausing.
+camera collision near a wall, walk, double-tap running, crouch, jump, held-jump
+stamina hopping, gravity, the door, the chest, the HUD, the fade overlay, and
+pausing.
 
 `phase2_smoke` loads the same room and exercises the RPG loop: item
 definitions, the item database, stacking and capacity, equip/unequip, health,
@@ -127,11 +144,11 @@ Saves are written to `user://saves/slot_0/save.json` (manual/quicksave) and
 ## Project structure
 
 ```text
-assets/     models, textures, audio, fonts, animations
+assets/     models, textures, audio, fonts, animations, maps
 core/       autoload services, game state, save helpers
 features/   player, interaction, combat, inventory, quests, NPCs, world, UI
 data/       item, quest, NPC, ability, and loot definitions
-scenes/     boot, menus, and test maps
+scenes/     boot, menus, town, and the test room
 ui/         shared theme resources
 tests/      smoke tests
 ```

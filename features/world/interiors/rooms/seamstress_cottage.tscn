@@ -1,0 +1,36 @@
+[gd_scene load_steps=6 format=3]
+
+[ext_resource type="Script" path="res://features/world/interiors/interior_room.gd" id="1_room"]
+[ext_resource type="PackedScene" path="res://features/player/player.tscn" id="2_player"]
+[ext_resource type="PackedScene" path="res://features/ui/hud.tscn" id="3_hud"]
+[ext_resource type="PackedScene" path="res://features/ui/pause_menu.tscn" id="4_pause"]
+[ext_resource type="PackedScene" path="res://features/npc/npc.tscn" id="5_npc"]
+
+[node name="SeamstressCottageInterior" type="Node3D"]
+script = ExtResource("1_room")
+layout = &"seamstress"
+room_size = Vector2(7.40, 5.40)
+accent = 0
+
+[node name="Player" parent="." instance=ExtResource("2_player")]
+position = Vector3(0, 0.2, 1.10)
+
+[node name="HUD" parent="." instance=ExtResource("3_hud")]
+
+[node name="PauseMenu" parent="." instance=ExtResource("4_pause")]
+
+[node name="BlindSeamstress" parent="." instance=ExtResource("5_npc")]
+position = Vector3(-0.2, 0.05, -1.15)
+npc_name = "The Blind Seamstress"
+role = "Seamstress"
+greeting_lines = PackedStringArray("I know your footsteps, stranger. Stand still and let me hear your coat.", "Thread remembers what eyes forget.")
+coat_color = Color(0.38, 0.44, 0.3, 1)
+trim_color = Color(0.85, 0.82, 0.7, 1)
+skin_color = Color(0.86, 0.74, 0.62, 1)
+hair_color = Color(0.72, 0.72, 0.7, 1)
+has_blindfold = true
+long_skirt = true
+facing_degrees = 0.0
+scheduled = true
+active_from_hour = 18
+active_to_hour = 8

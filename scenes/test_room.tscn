@@ -9,6 +9,7 @@
 [ext_resource type="PackedScene" path="res://features/combat/enemy.tscn" id="7_enemy"]
 [ext_resource type="Script" path="res://features/world/chunk_manager.gd" id="8_chunks"]
 [ext_resource type="Script" path="res://features/world/area_gate.gd" id="9_gate"]
+[ext_resource type="PackedScene" path="res://features/world/dressing/cottage_dressing.tscn" id="10_dress"]
 
 [sub_resource type="ProceduralSkyMaterial" id="ProceduralSkyMaterial_main"]
 sky_top_color = Color(0.16, 0.28, 0.46, 1)
@@ -23,6 +24,9 @@ sky_material = SubResource("ProceduralSkyMaterial_main")
 background_mode = 2
 sky = SubResource("Sky_main")
 tonemap_mode = 2
+ambient_light_source = 2
+ambient_light_color = Color(0.62, 0.56, 0.46, 1)
+ambient_light_energy = 0.32
 
 [sub_resource type="BoxMesh" id="BoxMesh_floor"]
 size = Vector3(24, 0.5, 24)
@@ -213,8 +217,8 @@ position = Vector3(0, 1.2, -13.4)
 collision_layer = 0
 collision_mask = 2
 script = ExtResource("9_gate")
-target_scene = "res://scenes/overworld.tscn"
-target_position = Vector3(0, 0.2, 10)
+target_scene = "res://scenes/town.tscn"
+target_position = Vector3(-40, 0.2, -19)
 
 [node name="Collision" type="CollisionShape3D" parent="ExitGate"]
 shape = SubResource("BoxShape3D_gate")
@@ -278,6 +282,8 @@ save_id = &"chest.test_room.armor"
 position = Vector3(-6, 0, -4)
 save_id = &"enemy.test_room.grunt"
 
+[node name="Dressing" parent="." instance=ExtResource("10_dress")]
+
 [node name="ChunkManager" type="Node3D" parent="."]
 script = ExtResource("8_chunks")
 
@@ -308,7 +314,7 @@ theme_override_styles/panel = SubResource("StyleBoxFlat_hint")
 layout_mode = 2
 theme_override_colors/font_color = Color(0.8, 0.85, 0.88, 1)
 theme_override_font_sizes/font_size = 15
-text = "WASD move   |   Shift sprint   |   Space jump   |   LMB attack   |   E interact   |   I inventory   |   V camera   |   F3 debug
+text = "WASD move   |   double-tap W run   |   Shift crouch   |   Space jump (hold to hop)   |   LMB attack   |   E interact   |   I inventory   |   M map   |   V camera   |   F3 debug
 Esc pause   |   F5 quicksave   |   F9 quickload   |   Open the back door to step outside"
 horizontal_alignment = 1
 vertical_alignment = 1

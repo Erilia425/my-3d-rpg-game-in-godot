@@ -9,7 +9,8 @@ extends Node
 ##   "version": 1,
 ##   "saved_at": "2026-11-01T12:00:00",
 ##   "scene": "res://scenes/test_room.tscn",
-##   "world": { "time": { "day": 1, "hour": 8.0, ... } },
+##   "world": { "time": { "day": 1, "hour": 8.0, ... },
+##              "door_return": { "scene": "...", "position": [x, y, z] } },
 ##   "saveables": { "chest.test_room.sword": { "open": true }, ... }
 ## }
 ##
@@ -62,15 +63,20 @@ func save_slot(slot: int) -> bool:
 ## `saveables` may be passed in when the caller keeps a session-wide world state
 ## that spans more than the current scene (see `Game`). When null, only the
 ## objects in the running scene are collected.
-func build_save_dict(saveables: Variant = null) -> Dictionary:
+##
+## `world_extra` is merged into the `world` block next to the clock. `Game` uses
+## it for the interior return point, which is not a saveable object.
+func build_save_dict(saveables: Variant = null, world_extra: Dictionary = {}) -> Dictionary:
 	var entries: Dictionary = (
 		collect_saveables() if saveables == null else (saveables as Dictionary).duplicate(true)
 	)
+	var world := {"time": WorldClock.save_data()}
+	world.merge(world_extra, true)
 	return {
 		"version": SAVE_VERSION,
 		"saved_at": Time.get_datetime_string_from_system(),
 		"scene": _current_scene_path(),
-		"world": {"time": WorldClock.save_data()},
+		"world": world,
 		"saveables": entries,
 	}
 

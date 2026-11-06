@@ -19,6 +19,8 @@ extends CanvasLayer
 @onready var _item_list: ItemList = %ItemList
 @onready var _action_button: Button = %EquipButton
 @onready var _close_button: Button = %CloseButton
+@onready var _map_screen: Control = get_node_or_null("MapScreen") as Control
+@onready var _dialogue_window: Control = get_node_or_null("DialogueWindow") as Control
 
 var _interact_key := "E"
 var _inventory_key := "I"
@@ -88,6 +90,12 @@ func _bind_player() -> void:
 
 func _unhandled_input(event: InputEvent) -> void:
 	if Game.state != Game.State.PLAYING:
+		return
+	# A map or conversation owns the screen while it is open; don't stack the
+	# inventory on top.
+	if _map_screen != null and _map_screen.visible:
+		return
+	if _dialogue_window != null and _dialogue_window.visible:
 		return
 	if not event.is_action_pressed("inventory"):
 		return

@@ -16,5 +16,8 @@ signal interaction_prompt_changed(text: String)
 ## Producer: interactable world objects. Consumer: HUD.
 signal notification_requested(text: String)
 
+## Producer: Npc.interact. Consumer: DialogueWindow.
+signal dialogue_requested(speaker: String, role: String, lines: PackedStringArray)
+
 ## Producer: player camera rig. Consumer: debug overlay (and later, HUD).
 signal camera_mode_changed(is_first_person: bool)

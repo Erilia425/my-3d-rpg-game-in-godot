@@ -25,10 +25,19 @@ const MIN_LOADED_HEALTH := 1.0
 @export_group("Movement")
 @export var walk_speed: float = 5.0
 @export var sprint_speed: float = 8.0
+@export var crouch_speed: float = 2.6
 @export var jump_velocity: float = 4.8
 @export var gravity: float = 18.0
 @export var acceleration: float = 20.0
 @export var air_control: float = 0.35
+## Stamina spent on each jump. Holding jump keeps hopping until it runs out.
+@export var jump_stamina_cost: float = 12.0
+## A second forward tap inside this window starts running.
+@export var run_double_tap_window: float = 0.3
+## How far the camera/head lowers while crouching, in metres.
+@export var crouch_head_drop: float = 0.45
+## How fast the head blends in and out of the crouch height.
+@export var crouch_blend_speed: float = 10.0
 
 @export_group("Camera")
 @export var mouse_sensitivity: float = 0.0022
@@ -51,10 +60,15 @@ var _pitch := 0.0
 var _current_animation: StringName = &""
 var _ui_blocked := false
 var _attack_lock := 0.0
+var _head_stand_height := 0.0
+var _run_engaged := false
+var _crouching := false
+var _last_forward_press_msec := -100000
 
 
 func _ready() -> void:
 	add_to_group(&"saveable")
+	_head_stand_height = _head.position.y
 	_equipment.setup(_inventory)
 	_set_camera_mode(CameraMode.FIRST_PERSON, false)
 	# Announce once after the whole scene is ready, so the HUD can match its
@@ -111,8 +125,14 @@ func _physics_process(delta: float) -> void:
 		input_vector.x, 0.0, input_vector.y
 	)).normalized()
 
+	var crouching := Input.is_action_pressed("crouch") and is_on_floor()
+	_update_run_state(crouching)
+	_update_crouch(crouching, delta)
+
 	var target_speed := walk_speed
-	if Input.is_action_pressed("sprint") and input_vector.length_squared() > 0.0:
+	if crouching:
+		target_speed = crouch_speed
+	elif _run_engaged and input_vector.length_squared() > 0.0:
 		target_speed = sprint_speed
 
 	var target_velocity := direction * target_speed
@@ -123,12 +143,52 @@ func _physics_process(delta: float) -> void:
 	velocity.x = horizontal.x
 	velocity.z = horizontal.z
 
-	if Input.is_action_just_pressed("jump") and is_on_floor():
-		velocity.y = jump_velocity
+	# Holding jump keeps hopping: the next jump starts the frame the player
+	# lands. Each hop costs stamina, so the hopping stops when it runs out.
+	if Input.is_action_pressed("jump") and is_on_floor() and not crouching:
+		if _stats.spend_stamina(jump_stamina_cost):
+			velocity.y = jump_velocity
 
 	move_and_slide()
 
 	_update_animation()
+
+
+## Double-tapping forward starts running and it lasts while forward is held.
+## The separate `sprint` action still works for tests and controllers.
+func _update_run_state(crouching: bool) -> void:
+	if crouching or not Input.is_action_pressed("move_forward"):
+		_run_engaged = false
+		return
+
+	if Input.is_action_pressed("sprint"):
+		_run_engaged = true
+
+	if Input.is_action_just_pressed("move_forward"):
+		var now := Time.get_ticks_msec()
+		if now - _last_forward_press_msec <= int(run_double_tap_window * 1000.0):
+			_run_engaged = true
+		_last_forward_press_msec = now
+
+
+## Blends the head between standing and crouched height. Collision is left
+## alone so crouching can never wedge the player inside geometry.
+func _update_crouch(crouching: bool, delta: float) -> void:
+	_crouching = crouching
+	var target_height := _head_stand_height
+	if crouching:
+		target_height -= crouch_head_drop
+	_head.position.y = move_toward(
+		_head.position.y, target_height, crouch_blend_speed * delta
+	)
+
+
+func is_crouching() -> bool:
+	return _crouching
+
+
+func is_running() -> bool:
+	return _run_engaged
 
 
 ## Chooses the locomotion clip from the current speed and airborne state.

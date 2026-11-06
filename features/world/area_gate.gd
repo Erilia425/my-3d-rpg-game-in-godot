@@ -15,6 +15,11 @@ extends Area3D
 @export var target_position: Vector3 = Vector3.ZERO
 @export var use_target_position: bool = true
 
+## Interiors remember the doorstep instead of using `target_position`: the gate
+## records where the player came from and the interior's own exit brings them
+## back. Target scenes reached this way keep their authored spawn.
+@export var interior: bool = false
+
 var _armed := false
 var _travelling := false
 
@@ -52,7 +57,31 @@ func _on_body_entered(body: Node3D) -> void:
 	_armed = false
 	_travelling = true
 
+	if interior:
+		var away := _away_direction(body)
+		var back := _return_point(body, away)
+		Game.enter_interior(target_scene, back, atan2(-away.x, -away.z))
+		return
+
 	if use_target_position:
 		Game.travel_to(target_scene, target_position)
 	else:
 		Game.travel_to(target_scene)
+
+
+## Horizontal direction from the gate centre towards the approaching player.
+func _away_direction(body: Node3D) -> Vector3:
+	var away := body.global_position - global_position
+	away.y = 0.0
+	if away.length() < 0.05:
+		# Degenerate case: use the player's backward direction, which points out
+		# of a door they are walking into.
+		away = body.global_transform.basis.z
+	return away.normalized()
+
+
+## A point one step back along the player's approach, so the return trip does
+## not drop them straight back into this trigger volume.
+func _return_point(body: Node3D, away: Vector3) -> Vector3:
+	away *= 1.8
+	return Vector3(global_position.x + away.x, body.global_position.y, global_position.z + away.z)

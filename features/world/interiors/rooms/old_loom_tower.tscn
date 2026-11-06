@@ -1,0 +1,19 @@
+[gd_scene load_steps=5 format=3]
+
+[ext_resource type="Script" path="res://features/world/interiors/interior_room.gd" id="1_room"]
+[ext_resource type="PackedScene" path="res://features/player/player.tscn" id="2_player"]
+[ext_resource type="PackedScene" path="res://features/ui/hud.tscn" id="3_hud"]
+[ext_resource type="PackedScene" path="res://features/ui/pause_menu.tscn" id="4_pause"]
+
+[node name="OldLoomTowerInterior" type="Node3D"]
+script = ExtResource("1_room")
+layout = &"loom"
+room_size = Vector2(4.40, 4.40)
+accent = 0
+
+[node name="Player" parent="." instance=ExtResource("2_player")]
+position = Vector3(0, 0.2, 0.60)
+
+[node name="HUD" parent="." instance=ExtResource("3_hud")]
+
+[node name="PauseMenu" parent="." instance=ExtResource("4_pause")]
