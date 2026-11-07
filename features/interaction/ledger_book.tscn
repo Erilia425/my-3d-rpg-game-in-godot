@@ -1,0 +1,25 @@
+[gd_scene load_steps=4 format=3]
+
+[ext_resource type="Script" path="res://features/interaction/ledger_book.gd" id="1_book"]
+[ext_resource type="Texture2D" path="res://assets/from_2d/sprites/ledger_book.png" id="2_sprite"]
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_book"]
+size = Vector3(0.46, 0.3, 0.34)
+
+[node name="LedgerBook" type="StaticBody3D" groups=["interactable"]]
+collision_layer = 17
+collision_mask = 0
+script = ExtResource("1_book")
+
+[node name="Sprite" type="Sprite3D" parent="."]
+position = Vector3(0, 0.15, 0)
+texture = ExtResource("2_sprite")
+billboard = 1
+texture_filter = 0
+alpha_cut = 1
+double_sided = true
+pixel_size = 0.00175
+
+[node name="Collision" type="CollisionShape3D" parent="."]
+position = Vector3(0, 0.15, 0)
+shape = SubResource("BoxShape3D_book")

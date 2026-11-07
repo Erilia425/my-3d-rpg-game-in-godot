@@ -1,0 +1,13 @@
+[gd_resource type="Resource" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://data/items/item_data.gd" id="1_item"]
+
+[resource]
+script = ExtResource("1_item")
+id = &"item.sporebread"
+display_name = "Sporebread"
+description = "A warm loaf flecked with cave spores. Auntie Bell asked for one."
+kind = 0
+stack_size = 5
+value = 4
+tags = PackedStringArray("quest", "food")

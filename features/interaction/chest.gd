@@ -8,20 +8,40 @@ extends StaticBody3D
 @export var loot_id: StringName = &"item.iron_sword"
 @export var amount: int = 1
 @export var open_time: float = 0.4
+## Draws the chest with the 2D art carried over from the source game instead of
+## the primitive box meshes. Off by default, so existing chests keep their look.
+@export var use_sprite: bool = false
 
 ## Final lid angle once the chest is open. Shared by the tween and by loading a
 ## save, so a restored chest lands in exactly the same pose.
 const LID_OPEN_DEGREES := -105.0
+## The 2D sprite has no separate lid, so an open chest just leans back a little.
+const SPRITE_OPEN_TILT_DEGREES := -16.0
 
 var is_open := false
 var _tween: Tween
 
 @onready var _lid_pivot: Node3D = %LidPivot
+@onready var _sprite: Sprite3D = get_node_or_null("Sprite") as Sprite3D
 
 
 func _ready() -> void:
 	if not save_id.is_empty():
 		add_to_group(&"saveable")
+
+	if use_sprite:
+		_use_sprite_skin()
+
+
+## Swaps the three box meshes for one billboard of the 2D chest art. The lid
+## pivot stays so open/closed logic and saves are unchanged.
+func _use_sprite_skin() -> void:
+	for path in ["Base", "Latch", "LidPivot/Lid"]:
+		var part := get_node_or_null(path) as GeometryInstance3D
+		if part != null:
+			part.visible = false
+	if _sprite != null:
+		_sprite.visible = true
 
 
 func get_interaction_text() -> String:
@@ -57,6 +77,11 @@ func interact(interactor: Node) -> void:
 		.set_trans(Tween.TRANS_SINE)\
 		.set_ease(Tween.EASE_IN_OUT)
 
+	if _sprite != null and _sprite.visible:
+		_tween.parallel().tween_property(
+			_sprite, "rotation:x", deg_to_rad(SPRITE_OPEN_TILT_DEGREES), open_time
+		)
+
 	Events.notification_requested.emit("%s acquired" % data.display_name)
 
 
@@ -80,3 +105,5 @@ func load_data(data: Dictionary) -> void:
 
 	is_open = bool(data.get("open", false))
 	_lid_pivot.rotation.x = deg_to_rad(LID_OPEN_DEGREES) if is_open else 0.0
+	if _sprite != null:
+		_sprite.rotation.x = deg_to_rad(SPRITE_OPEN_TILT_DEGREES) if is_open else 0.0

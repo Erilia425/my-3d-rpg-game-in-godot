@@ -1,14 +1,15 @@
-[gd_scene load_steps=6 format=3]
+[gd_scene load_steps=7 format=3]
 
 [ext_resource type="Script" path="res://features/world/interiors/interior_room.gd" id="1_room"]
 [ext_resource type="PackedScene" path="res://features/player/player.tscn" id="2_player"]
 [ext_resource type="PackedScene" path="res://features/ui/hud.tscn" id="3_hud"]
 [ext_resource type="PackedScene" path="res://features/ui/pause_menu.tscn" id="4_pause"]
-[ext_resource type="PackedScene" path="res://features/npc/npc.tscn" id="5_npc"]
+[ext_resource type="PackedScene" path="res://features/npc/quest_npc.tscn" id="5_npc"]
+[ext_resource type="SpriteFrames" path="res://assets/from_2d/frames/rowan.tres" id="6_frames"]
 
 [node name="RowansHouseInterior" type="Node3D"]
 script = ExtResource("1_room")
-layout = &"longhouse"
+layout = &"hollow_house"
 room_size = Vector2(8.40, 5.90)
 accent = 1
 
@@ -23,7 +24,12 @@ position = Vector3(0, 0.2, 1.35)
 position = Vector3(0.9, 0.05, -1.7)
 npc_name = "Rowan"
 role = "Keeper of Records"
-greeting_lines = PackedStringArray("The south road needs mending. The ledger is optimistic.", "If you pass the keeper's office, tell them the survey is filed.")
+sprite_frames = ExtResource("6_frames")
+greeting_lines = PackedStringArray("Keep it safe. Some exchanges cannot be undone.")
+offers_quest = &"quest.rowan_ledger"
+offer_gift_item = &"item.ledger_page"
+offer_gift_amount = 1
+offer_lines = PackedStringArray("The ledger holds more than names.")
 coat_color = Color(0.27, 0.32, 0.4, 1)
 trim_color = Color(0.62, 0.55, 0.4, 1)
 skin_color = Color(0.8, 0.63, 0.47, 1)

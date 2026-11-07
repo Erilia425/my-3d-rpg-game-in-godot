@@ -1,0 +1,13 @@
+[gd_resource type="Resource" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://data/items/item_data.gd" id="1_item"]
+
+[resource]
+script = ExtResource("1_item")
+id = &"item.mushroom"
+display_name = "Mushroom"
+description = "A pale forest mushroom. Auntie Bell would know what to do with it."
+kind = 0
+stack_size = 10
+value = 3
+tags = PackedStringArray("forage")

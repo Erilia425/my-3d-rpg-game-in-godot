@@ -10,6 +10,11 @@ const ITEMS: Dictionary = {
 	&"item.iron_sword": preload("res://data/items/iron_sword.tres"),
 	&"item.leather_armor": preload("res://data/items/leather_armor.tres"),
 	&"item.health_potion": preload("res://data/items/health_potion.tres"),
+	&"item.mushroom": preload("res://data/items/mushroom.tres"),
+	&"item.flower": preload("res://data/items/flower.tres"),
+	&"item.sporebread": preload("res://data/items/sporebread.tres"),
+	&"item.hearth_silk": preload("res://data/items/hearth_silk.tres"),
+	&"item.ledger_page": preload("res://data/items/ledger_page.tres"),
 }
 
 

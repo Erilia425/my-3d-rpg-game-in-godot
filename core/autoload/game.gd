@@ -99,6 +99,7 @@ func get_state_name() -> StringName:
 func new_game(slot: int = MANUAL_SLOT) -> void:
 	current_slot = slot
 	WorldClock.reset()
+	QuestLog.reset()
 	world_state.clear()
 	_door_return.clear()
 	set_state(State.PLAYING)
@@ -251,7 +252,10 @@ func travel_to(scene_path: String, spawn_position: Variant = null, spawn_yaw: Va
 
 
 func _transient_save() -> Dictionary:
-	var world := {"time": WorldClock.save_data()}
+	var world := {
+		"time": WorldClock.save_data(),
+		"quests": QuestLog.save_data(),
+	}
 	world.merge(_door_return_extra(), true)
 	return {
 		"version": SaveManager.SAVE_VERSION,

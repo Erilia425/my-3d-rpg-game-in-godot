@@ -20,6 +20,19 @@ extends Node3D
 @export var accent: int = 0
 
 const EXIT_SCRIPT := preload("res://features/world/interiors/interior_exit.gd")
+const LEDGER_BOOK := preload("res://features/interaction/ledger_book.tscn")
+const CHEST := preload("res://features/interaction/chest.tscn")
+
+## 2D furniture art from the source game, drawn as upright billboards. The pixel
+## art is imported once here rather than loaded at runtime, so walking into a
+## house never stalls on disk access.
+const SPRITE_DESK := preload("res://assets/from_2d/sprites/desk.png")
+const SPRITE_TABLE := preload("res://assets/from_2d/sprites/table.png")
+const SPRITE_CHAIR := preload("res://assets/from_2d/sprites/chair.png")
+const SPRITE_BED := preload("res://assets/from_2d/sprites/bed.png")
+const SPRITE_SHELF := preload("res://assets/from_2d/sprites/shelf.png")
+const SPRITE_FIREPLACE := preload("res://assets/from_2d/sprites/fireplace.png")
+const SPRITE_LEDGER := preload("res://assets/from_2d/sprites/ledger_book.png")
 
 const DOOR_WIDTH := 1.4
 const DOOR_HEIGHT := 2.15
@@ -70,6 +83,8 @@ func _ready() -> void:
 			_loom()
 		&"abandoned":
 			_abandoned()
+		&"hollow_house":
+			_hollow_house()
 		_:
 			_cottage()
 
@@ -586,6 +601,75 @@ func _abandoned() -> void:
 	for i in 7:
 		TownParts.box(self, "Leaf", Vector3(-1.4 + (i % 4) * 0.6, 0.03, 0.2 + int(i / 4.0) * 0.7 + (i % 2) * 0.2), Vector3(0.16, 0.02, 0.1), _moss)
 	TownParts.box(self, "DustRug", Vector3(0.2, 0.02, 0.4), Vector3(2.4, 0.02, 2.0), _dark)
+
+
+## The imported 2D house: desk, table, chairs, bed, chest, shelf, and the ledger
+## book, all dressed with the source game's pixel art. The furniture is drawn as
+## upright billboards so the 2D cutouts read correctly from any angle, while the
+## room shell around them stays 3D. See the AGENTS.md decision log.
+func _hollow_house() -> void:
+	# Hearth against the back wall.
+	_sprite_prop(SPRITE_FIREPLACE, Vector3(0.0, 0.0, -_half.y + 0.5), 1.55)
+	TownParts.collision(self, Vector3(1.45, 1.25, 0.45), Vector3(0.0, 0.62, -_half.y + 0.5))
+
+	# Writing desk in the back-left corner, with Rowan's ledger open on it.
+	_sprite_prop(SPRITE_DESK, Vector3(-1.95, 0.0, -2.0), 1.0)
+	TownParts.collision(self, Vector3(1.45, 0.9, 0.7), Vector3(-1.95, 0.45, -2.0))
+	_sprite_prop(SPRITE_CHAIR, Vector3(-1.95, 0.0, -1.1), 0.95)
+	TownParts.collision(self, Vector3(0.55, 0.8, 0.5), Vector3(-1.95, 0.4, -1.1))
+
+	var ledger := LEDGER_BOOK.instantiate() as Node3D
+	ledger.name = "LedgerBook"
+	ledger.position = Vector3(-1.95, 0.95, -1.98)
+	add_child(ledger)
+
+	# Bed along the east wall.
+	_sprite_prop(SPRITE_BED, Vector3(2.55, 0.0, -1.6), 1.05)
+	TownParts.collision(self, Vector3(1.05, 0.6, 1.9), Vector3(2.55, 0.3, -1.6))
+
+	# Shelf on the east wall.
+	_sprite_prop(SPRITE_SHELF, Vector3(2.9, 0.0, 0.7), 1.3)
+	TownParts.collision(self, Vector3(1.3, 1.3, 0.45), Vector3(2.9, 0.65, 0.7))
+
+	# Table and two chairs in the middle of the room.
+	_sprite_prop(SPRITE_TABLE, Vector3(0.1, 0.0, 0.85), 0.85)
+	TownParts.collision(self, Vector3(1.5, 0.8, 0.9), Vector3(0.1, 0.4, 0.85))
+	for z in [-0.1, 1.8]:
+		_sprite_prop(SPRITE_CHAIR, Vector3(0.1, 0.0, z), 0.95)
+		TownParts.collision(self, Vector3(0.55, 0.8, 0.5), Vector3(0.1, 0.4, z))
+
+	TownParts.box(self, "Rug", Vector3(0.1, 0.02, 0.85), Vector3(2.7, 0.03, 2.2), _cloth)
+
+	# The chest by the door, holding the Sporebread Auntie Bell asks for.
+	var chest := CHEST.instantiate() as Node3D
+	chest.name = "Chest"
+	chest.position = Vector3(-2.7, 0.0, 1.7)
+	chest.rotation.y = deg_to_rad(24.0)
+	chest.set("save_id", &"chest.hollow_house.sporebread")
+	chest.set("loot_id", &"item.sporebread")
+	chest.set("use_sprite", true)
+	add_child(chest)
+
+
+## One upright billboard of 2D furniture art. `height` is the drawn size in
+## metres; the sprite's pixel size is derived from the texture so every prop keeps
+## its own aspect ratio. Upright (`BILLBOARD_FIXED_Y`) rather than full billboard,
+## so furniture does not lean over when the camera looks down.
+func _sprite_prop(texture: Texture2D, at: Vector3, height: float) -> Sprite3D:
+	if texture == null:
+		return null
+
+	var sprite := Sprite3D.new()
+	sprite.texture = texture
+	sprite.billboard = BaseMaterial3D.BILLBOARD_FIXED_Y
+	sprite.texture_filter = BaseMaterial3D.TEXTURE_FILTER_NEAREST
+	sprite.alpha_cut = SpriteBase3D.ALPHA_CUT_DISCARD
+	sprite.shaded = true
+	sprite.double_sided = true
+	sprite.pixel_size = height / float(maxi(texture.get_height(), 1))
+	sprite.position = at + Vector3(0.0, height * 0.5, 0.0)
+	add_child(sprite)
+	return sprite
 
 
 # --- lights and exit -------------------------------------------------------

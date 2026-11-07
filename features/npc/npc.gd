@@ -32,6 +32,19 @@ const SCHEDULE_CHECK_INTERVAL := 0.5
 )
 
 @export_group("Look")
+## Optional animated 2D portrait cut from the Mycelgrove Hollow art. When set,
+## the villager is drawn as an AnimatedSprite3D billboard instead of the
+## primitive body. Takes priority over `sprite_texture`.
+@export var sprite_frames: SpriteFrames
+## Animation names inside `sprite_frames` used while standing and walking.
+## Only switched to when the resource actually holds that animation.
+@export var idle_animation: StringName = &"idle"
+@export var walk_animation: StringName = &"walk"
+## Optional single 2D portrait cut from the Mycelgrove Hollow art. When set, the
+## villager is drawn as one sprite billboard instead of the primitive body, so
+## the 2D game's character art appears in the 3D street unchanged. Ignored when
+## `sprite_frames` is set.
+@export var sprite_texture: Texture2D
 @export var coat_color: Color = Color(0.42, 0.35, 0.26, 1)
 @export var trim_color: Color = Color(0.72, 0.6, 0.38, 1)
 @export var skin_color: Color = Color(0.83, 0.67, 0.51, 1)
@@ -64,6 +77,8 @@ var _schedule_check := 0.0
 var _label: Label3D
 var _role_label: Label3D
 var _model: Node3D
+var _anim_sprite: AnimatedSprite3D
+var _playing_walk := false
 
 
 func _ready() -> void:
@@ -96,6 +111,7 @@ func _physics_process(delta: float) -> void:
 		velocity.z = move_toward(velocity.z, 0.0, 24.0 * delta)
 
 	move_and_slide()
+	_update_sprite_animation()
 
 
 # --- schedule --------------------------------------------------------------
@@ -197,6 +213,14 @@ func _build_model() -> void:
 	_model.name = "Model"
 	add_child(_model)
 
+	if sprite_frames != null:
+		_build_animated_sprite()
+		return
+
+	if sprite_texture != null:
+		_build_sprite()
+		return
+
 	var coat := _material(coat_color, 0.95)
 	var coat_dark := _material(coat_color.darkened(0.28), 0.95)
 	var trim := _material(trim_color, 0.92)
@@ -246,6 +270,98 @@ func _build_model() -> void:
 			_cylinder(_model, "VeilBand", Vector3(0, 1.58, 0), 0.21, 0.22, 0.04, trim)
 			_cylinder(_model, "HatBrim", Vector3(0, 1.96, 0), 0.33, 0.33, 0.05, trim)
 			_cylinder(_model, "HatCrown", Vector3(0, 2.07, 0), 0.15, 0.17, 0.18, trim)
+
+
+## One camera-facing billboard, scaled so the villager is about 1.9 m tall.
+## Nearest-neighbour filtering keeps the pixel art crisp. The primitive body is
+## skipped entirely when a texture is supplied.
+func _build_sprite() -> void:
+	var sprite := Sprite3D.new()
+	sprite.name = "Sprite"
+	sprite.texture = sprite_texture
+	sprite.billboard = BaseMaterial3D.BILLBOARD_ENABLED
+	sprite.texture_filter = BaseMaterial3D.TEXTURE_FILTER_NEAREST
+	sprite.alpha_cut = SpriteBase3D.ALPHA_CUT_DISCARD
+	sprite.shaded = false
+	sprite.double_sided = true
+	sprite.pixel_size = 1.9 / float(sprite_texture.get_height())
+	sprite.position = Vector3(0, 0.95, 0)
+	_model.add_child(sprite)
+
+
+## Same billboard look as `_build_sprite`, driven by a `SpriteFrames` resource so
+## animated characters have a real frame pipeline. Frame height sets the scale so
+## every villager stays about 1.9 m tall whatever the source art size.
+func _build_animated_sprite() -> void:
+	var start_animation := _first_animation()
+	if start_animation == &"":
+		push_warning("Npc '%s' has SpriteFrames with no animations." % npc_name)
+		return
+
+	var height := _frame_height(start_animation)
+
+	var sprite := AnimatedSprite3D.new()
+	sprite.name = "AnimatedSprite"
+	sprite.sprite_frames = sprite_frames
+	sprite.animation = start_animation
+	sprite.frame = 0
+	sprite.billboard = BaseMaterial3D.BILLBOARD_ENABLED
+	sprite.texture_filter = BaseMaterial3D.TEXTURE_FILTER_NEAREST
+	sprite.alpha_cut = SpriteBase3D.ALPHA_CUT_DISCARD
+	sprite.shaded = false
+	sprite.double_sided = true
+	sprite.pixel_size = 1.9 / float(maxi(height, 1))
+	sprite.position = Vector3(0, 0.95, 0)
+	sprite.play(start_animation)
+	_model.add_child(sprite)
+	_anim_sprite = sprite
+
+
+## Chooses the idle or walk clip from horizontal speed, but only if the
+## SpriteFrames resource actually contains that animation. Missing clips leave
+## the current one playing, so a single-frame resource is harmless.
+func _update_sprite_animation() -> void:
+	if _anim_sprite == null or sprite_frames == null:
+		return
+
+	var moving := Vector2(velocity.x, velocity.z).length() > 0.15
+	if moving == _playing_walk:
+		return
+
+	var wanted := walk_animation if moving else idle_animation
+	if not sprite_frames.has_animation(wanted):
+		return
+
+	if wanted == _anim_sprite.animation:
+		return
+
+	_playing_walk = moving
+	_anim_sprite.play(wanted)
+
+
+func _first_animation() -> StringName:
+	if sprite_frames == null:
+		return &""
+	if sprite_frames.has_animation(idle_animation):
+		return idle_animation
+	var names := sprite_frames.get_animation_names()
+	if names.is_empty():
+		return &""
+	return StringName(names[0])
+
+
+func _frame_height(animation: StringName) -> int:
+	if sprite_frames == null:
+		return 0
+	if not sprite_frames.has_animation(animation):
+		return 0
+	var count := sprite_frames.get_frame_count(animation)
+	if count <= 0:
+		return 0
+	var texture := sprite_frames.get_frame_texture(animation, 0)
+	if texture == null:
+		return 0
+	return texture.get_height()
 
 
 func _build_labels() -> void:

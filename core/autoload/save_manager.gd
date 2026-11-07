@@ -70,7 +70,10 @@ func build_save_dict(saveables: Variant = null, world_extra: Dictionary = {}) ->
 	var entries: Dictionary = (
 		collect_saveables() if saveables == null else (saveables as Dictionary).duplicate(true)
 	)
-	var world := {"time": WorldClock.save_data()}
+	var world := {
+		"time": WorldClock.save_data(),
+		"quests": QuestLog.save_data(),
+	}
 	world.merge(world_extra, true)
 	return {
 		"version": SAVE_VERSION,
@@ -161,6 +164,8 @@ func apply_save(data: Dictionary) -> bool:
 	var world: Dictionary = data.get("world", {})
 	if world.has("time"):
 		WorldClock.load_data(world["time"])
+	if world.has("quests"):
+		QuestLog.load_data(world["quests"])
 
 	var entries: Dictionary = data.get("saveables", {})
 	for node in get_tree().get_nodes_in_group("saveable"):
