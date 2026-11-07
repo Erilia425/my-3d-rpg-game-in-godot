@@ -1,4 +1,4 @@
-[gd_scene load_steps=32 format=3]
+[gd_scene load_steps=40 format=3]
 
 [ext_resource type="Script" path="res://features/world/test_room.gd" id="1_room"]
 [ext_resource type="PackedScene" path="res://features/player/player.tscn" id="2_player"]
@@ -10,6 +10,14 @@
 [ext_resource type="Script" path="res://features/world/chunk_manager.gd" id="8_chunks"]
 [ext_resource type="Script" path="res://features/world/area_gate.gd" id="9_gate"]
 [ext_resource type="PackedScene" path="res://features/world/dressing/cottage_dressing.tscn" id="10_dress"]
+[ext_resource type="PackedScene" path="res://features/combat/guest.tscn" id="11_guest"]
+[ext_resource type="Texture2D" path="res://assets/from_2d/sprites/desk.png" id="12_desk"]
+[ext_resource type="Texture2D" path="res://assets/from_2d/sprites/chair.png" id="13_chair"]
+[ext_resource type="Texture2D" path="res://assets/from_2d/sprites/bed.png" id="14_bed"]
+[ext_resource type="Texture2D" path="res://assets/from_2d/sprites/shelf.png" id="15_shelf"]
+[ext_resource type="Texture2D" path="res://assets/from_2d/sprites/table.png" id="16_table"]
+[ext_resource type="Texture2D" path="res://assets/from_2d/sprites/ledger_book.png" id="17_ledger"]
+[ext_resource type="Texture2D" path="res://assets/from_2d/sprites/chest.png" id="18_chest_sprite"]
 
 [sub_resource type="ProceduralSkyMaterial" id="ProceduralSkyMaterial_main"]
 sky_top_color = Color(0.16, 0.28, 0.46, 1)
@@ -318,3 +326,90 @@ text = "WASD move   |   double-tap W run   |   Shift crouch   |   Space jump (ho
 Esc pause   |   F5 quicksave   |   F9 quickload   |   Open the back door to step outside"
 horizontal_alignment = 1
 vertical_alignment = 1
+
+[node name="Furniture" type="Node3D" parent="."]
+
+[node name="Desk" type="Sprite3D" parent="Furniture"]
+position = Vector3(-10.5, 0.475, -8)
+texture_filter = 0
+pixel_size = 0.003094
+texture = ExtResource("12_desk")
+billboard = 2
+alpha_cut = 1
+shaded = true
+double_sided = true
+
+[node name="Shelf" type="Sprite3D" parent="Furniture"]
+position = Vector3(-10.8, 0.65, -4)
+texture_filter = 0
+pixel_size = 0.005138
+texture = ExtResource("15_shelf")
+billboard = 2
+alpha_cut = 1
+shaded = true
+double_sided = true
+
+[node name="Bed" type="Sprite3D" parent="Furniture"]
+position = Vector3(-10.7, 0.5, 0.5)
+texture_filter = 0
+pixel_size = 0.004237
+texture = ExtResource("14_bed")
+billboard = 2
+alpha_cut = 1
+shaded = true
+double_sided = true
+
+[node name="Table" type="Sprite3D" parent="Furniture"]
+position = Vector3(10.5, 0.425, -5)
+texture_filter = 0
+pixel_size = 0.00512
+texture = ExtResource("16_table")
+billboard = 2
+alpha_cut = 1
+shaded = true
+double_sided = true
+
+[node name="Chair" type="Sprite3D" parent="Furniture"]
+position = Vector3(9.4, 0.475, -4)
+texture_filter = 0
+pixel_size = 0.006051
+texture = ExtResource("13_chair")
+billboard = 2
+alpha_cut = 1
+shaded = true
+double_sided = true
+
+[node name="ChairB" type="Sprite3D" parent="Furniture"]
+position = Vector3(9.4, 0.475, -6)
+texture_filter = 0
+pixel_size = 0.006051
+texture = ExtResource("13_chair")
+billboard = 2
+alpha_cut = 1
+shaded = true
+double_sided = true
+
+[node name="LedgerBook" type="Sprite3D" parent="Furniture"]
+position = Vector3(10.5, 0.95, -5)
+texture_filter = 0
+pixel_size = 0.001628
+texture = ExtResource("17_ledger")
+billboard = 2
+alpha_cut = 1
+shaded = true
+double_sided = true
+
+[node name="ChestSprite" type="Sprite3D" parent="Furniture"]
+position = Vector3(10.8, 0.35, -1)
+texture_filter = 0
+pixel_size = 0.005109
+texture = ExtResource("18_chest_sprite")
+billboard = 2
+alpha_cut = 1
+shaded = true
+double_sided = true
+
+[node name="Guest" parent="." instance=ExtResource("11_guest")]
+position = Vector3(10.5, 0, 10.5)
+save_id = &"enemy.test_room.guest"
+detection_range = 4.0
