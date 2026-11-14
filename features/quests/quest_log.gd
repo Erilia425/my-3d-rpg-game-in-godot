@@ -14,6 +14,15 @@ extends RefCounted
 
 const SPOREBREAD := &"quest.sporebread"
 const ROWAN_LEDGER := &"quest.rowan_ledger"
+const THATCH_HIVE := &"quest.thatch_hive"
+const SEAMSTRESS_THREAD := &"quest.seamstress_thread"
+## Small one-line errands in the two outlying villages. They are deliberately
+## simple: a single delivery and a single reward, so the villages have a reason
+## to be visited without growing a second quest system.
+const ASHFALL_MUSHROOMS := &"quest.ashfall_mushrooms"
+const ASHFALL_SNAGS := &"quest.ashfall_snags"
+const THORNRIDGE_STONE := &"quest.thornridge_stone"
+const THORNRIDGE_ORE := &"quest.thornridge_ore"
 
 const DEFS: Dictionary = {
 	SPOREBREAD: {
@@ -22,7 +31,31 @@ const DEFS: Dictionary = {
 	},
 	ROWAN_LEDGER: {
 		"title": "The Ledger's Debt",
-		"summary": "Read Rowan's ledger in the keeper's office.",
+		"summary": "Fern found a page torn from your ledger. Read the ledger on your desk.",
+	},
+	THATCH_HIVE: {
+		"title": "Flowers for the Hive",
+		"summary": "Bring Thatch one Flower for the Hive Tower's bees.",
+	},
+	SEAMSTRESS_THREAD: {
+		"title": "Thread for the Seamstress",
+		"summary": "Bring the Blind Seamstress one Hearth-Silk Thread.",
+	},
+	ASHFALL_MUSHROOMS: {
+		"title": "Mushrooms for the Pot",
+		"summary": "Bring Maren Ash two Mushrooms for the village pot.",
+	},
+	ASHFALL_SNAGS: {
+		"title": "Deadfall for the Boardwalk",
+		"summary": "Bring Pell three Spruce Logs for the bog boardwalk.",
+	},
+	THORNRIDGE_STONE: {
+		"title": "Stone for the Causeway",
+		"summary": "Bring Bryn Thorne three Fieldstone for the bridge repairs.",
+	},
+	THORNRIDGE_ORE: {
+		"title": "Ore for the Quarry",
+		"summary": "Bring Sable two Iron Ore from the hills.",
 	},
 }
 
@@ -30,11 +63,32 @@ const DEFS: Dictionary = {
 ## array so lookups stay O(1) and duplicates are impossible.
 static var _active: Dictionary = {}
 static var _completed: Dictionary = {}
+## Named one-shot world events (gifts given, places visited). Kept here so they
+## ride along in the same save block as quest progress without new autoloads.
+static var _flags: Dictionary = {}
 
 
 static func reset() -> void:
 	_active.clear()
 	_completed.clear()
+	_flags.clear()
+
+
+## Records a one-shot world event by name. Returns true only the first time, so
+## callers can gate a reward on it.
+static func set_flag(flag: StringName) -> bool:
+	if flag == &"" or _flags.has(flag):
+		return false
+	_flags[flag] = true
+	return true
+
+
+static func has_flag(flag: StringName) -> bool:
+	return _flags.has(flag)
+
+
+static func clear_flag(flag: StringName) -> void:
+	_flags.erase(flag)
 
 
 static func start(id: StringName) -> bool:
@@ -50,6 +104,22 @@ static func is_active(id: StringName) -> bool:
 
 static func is_completed(id: StringName) -> bool:
 	return _completed.has(id)
+
+
+## Quest ids currently in progress, in the order they were started.
+static func get_active_ids() -> Array[StringName]:
+	var ids: Array[StringName] = []
+	for id: Variant in _active.keys():
+		ids.append(StringName(id))
+	return ids
+
+
+## Quest ids already finished, in the order they were completed.
+static func get_completed_ids() -> Array[StringName]:
+	var ids: Array[StringName] = []
+	for id: Variant in _completed.keys():
+		ids.append(StringName(id))
+	return ids
 
 
 ## Marks a quest finished. Returns true only on the first completion, so callers
@@ -94,6 +164,7 @@ static func save_data() -> Dictionary:
 	return {
 		"active": _active.keys(),
 		"completed": _completed.keys(),
+		"flags": _flags.keys(),
 	}
 
 
@@ -105,3 +176,5 @@ static func load_data(data: Dictionary) -> void:
 		_active[StringName(id)] = true
 	for id: Variant in data.get("completed", []):
 		_completed[StringName(id)] = true
+	for flag: Variant in data.get("flags", []):
+		_flags[StringName(flag)] = true

@@ -19,5 +19,9 @@ signal notification_requested(text: String)
 ## Producer: Npc.interact. Consumer: DialogueWindow.
 signal dialogue_requested(speaker: String, role: String, lines: PackedStringArray)
 
+## Producer: Game when the world clock crosses midnight. Consumer: regrowing
+## gather nodes (stumps and ore seams come back while the player plays).
+signal day_changed(day: int)
+
 ## Producer: player camera rig. Consumer: debug overlay (and later, HUD).
 signal camera_mode_changed(is_first_person: bool)

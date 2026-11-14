@@ -12,17 +12,18 @@ enum State {
 }
 
 const TEST_ROOM := "res://scenes/test_room.tscn"
-const OVERWORLD := "res://scenes/overworld.tscn"
 
 ## Key inside the save's `world` block. The return point is not a saveable
 ## object, so it rides next to the clock.
 const DOOR_RETURN_KEY := "door_return"
 
 ## Slot 0 is the player's manual/quicksave slot. Slot 1 is reserved for the
-## autosave, so autosaving can never overwrite a deliberate save.
+## autosave, so autosaving can never overwrite a deliberate save. Slots 2-5 are
+## extra manual slots chosen in the pause menu.
 const MANUAL_SLOT := 0
 const AUTOSAVE_SLOT := 1
-const SAVE_SLOTS: Array[int] = [MANUAL_SLOT, AUTOSAVE_SLOT]
+const MANUAL_SLOTS: Array[int] = [0, 2, 3, 4, 5]
+const SAVE_SLOTS: Array[int] = [0, 1, 2, 3, 4, 5]
 
 ## Must match `PlayerController.SAVE_ID`. Kept here so core code does not have
 ## to reach into a feature class.
@@ -33,8 +34,8 @@ var state: State = State.BOOT
 var current_slot: int = -1
 
 ## Saveable state that outlives a single scene: doors and chests you opened in
-## the room must still be open when you come back from the overworld. Scene
-## loads merge into this dictionary, and every save is a snapshot of it.
+## the room must still be open when you come back to the town. Scene loads merge
+## into this dictionary, and every save is a snapshot of it.
 var world_state: Dictionary = {}
 
 ## Where to put the player when they leave the interior they are in.
@@ -43,6 +44,9 @@ var world_state: Dictionary = {}
 var _door_return: Dictionary = {}
 
 var _suppress_autosave := false
+## Last world day seen, so `day_changed` fires once per midnight instead of
+## every frame.
+var _last_day: int = WorldClock.START_DAY
 
 
 func _ready() -> void:
@@ -57,6 +61,10 @@ func _ready() -> void:
 func _process(delta: float) -> void:
 	if state == State.PLAYING:
 		WorldClock.advance(delta)
+		var today := WorldClock.get_day()
+		if today != _last_day:
+			_last_day = today
+			Events.day_changed.emit(today)
 
 
 func set_state(new_state: State) -> void:
@@ -99,7 +107,14 @@ func get_state_name() -> StringName:
 func new_game(slot: int = MANUAL_SLOT) -> void:
 	current_slot = slot
 	WorldClock.reset()
+	_last_day = WorldClock.get_day()
 	QuestLog.reset()
+	DiscoveryLog.reset()
+	Progression.reset()
+	Ledger.reset()
+	WorldMap.reset()
+	ExplorationLog.reset()
+	MovementStats.reset()
 	world_state.clear()
 	_door_return.clear()
 	set_state(State.PLAYING)
@@ -198,6 +213,7 @@ func load_game(slot: int = MANUAL_SLOT) -> bool:
 	await SceneRouter.goto_scene(scene_path, true)
 	SaveManager.apply_save(data)
 	_suppress_autosave = false
+	_last_day = WorldClock.get_day()
 	return true
 
 
@@ -237,15 +253,20 @@ func travel_to(scene_path: String, spawn_position: Variant = null, spawn_yaw: Va
 		if spawn_yaw is float:
 			player.rotation.y = spawn_yaw
 
+	# Restore the carried state *before* reading the arrival entry. The new scene
+	# spawns a brand-new player with an empty inventory, so collecting first and
+	# then applying would overwrite the bag we brought from the previous scene.
+	SaveManager.apply_save(_transient_save())
+
 	# Record the arrival point, otherwise the autosave written just below would
 	# remember the *previous* scene's coordinates (they were erased above) and a
 	# quick load would drop the player at the scene default. Only the player
 	# entry is refreshed; chest and door state from earlier scenes is kept.
+	# This runs after apply_save, so it records the restored inventory too.
 	var arrival := SaveManager.collect_saveables()
 	if arrival.has(PLAYER_ENTRY_ID):
 		world_state[PLAYER_ENTRY_ID] = arrival[PLAYER_ENTRY_ID]
 
-	SaveManager.apply_save(_transient_save())
 	_suppress_autosave = false
 	autosave()
 	return true
@@ -255,6 +276,12 @@ func _transient_save() -> Dictionary:
 	var world := {
 		"time": WorldClock.save_data(),
 		"quests": QuestLog.save_data(),
+		"discoveries": DiscoveryLog.save_data(),
+		"progression": Progression.save_data(),
+		"ledger": Ledger.save_data(),
+		"map": WorldMap.save_data(),
+		"exploration": ExplorationLog.save_data(),
+		"movement": MovementStats.save_data(),
 	}
 	world.merge(_door_return_extra(), true)
 	return {

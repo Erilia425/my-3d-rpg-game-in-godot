@@ -1,4 +1,4 @@
-[gd_scene load_steps=40 format=3]
+[gd_scene load_steps=46 format=3]
 
 [ext_resource type="Script" path="res://features/world/test_room.gd" id="1_room"]
 [ext_resource type="PackedScene" path="res://features/player/player.tscn" id="2_player"]
@@ -18,6 +18,8 @@
 [ext_resource type="Texture2D" path="res://assets/from_2d/sprites/table.png" id="16_table"]
 [ext_resource type="Texture2D" path="res://assets/from_2d/sprites/ledger_book.png" id="17_ledger"]
 [ext_resource type="Texture2D" path="res://assets/from_2d/sprites/chest.png" id="18_chest_sprite"]
+[ext_resource type="PackedScene" path="res://features/interaction/bed.tscn" id="19_bed"]
+[ext_resource type="PackedScene" path="res://features/interaction/chair.tscn" id="20_chair"]
 
 [sub_resource type="ProceduralSkyMaterial" id="ProceduralSkyMaterial_main"]
 sky_top_color = Color(0.16, 0.28, 0.46, 1)
@@ -104,6 +106,18 @@ corner_radius_top_left = 6
 corner_radius_top_right = 6
 corner_radius_bottom_left = 6
 corner_radius_bottom_right = 6
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_desk_solid"]
+size = Vector3(0.55, 0.95, 1.2)
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_shelf_solid"]
+size = Vector3(0.4, 1.3, 1.25)
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_table_solid"]
+size = Vector3(0.9, 0.85, 1.46)
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_hearth_solid"]
+size = Vector3(1.6, 3.7, 3.4)
 
 [node name="TestRoom" type="Node3D"]
 script = ExtResource("1_room")
@@ -292,8 +306,30 @@ save_id = &"enemy.test_room.grunt"
 
 [node name="Dressing" parent="." instance=ExtResource("10_dress")]
 
+[node name="Bed" parent="Dressing" index="4"]
+visible = false
+
+[node name="Table" parent="Dressing" index="5"]
+visible = false
+
+[node name="Seating" parent="Dressing" index="6"]
+visible = false
+
+[node name="Shelf" parent="Dressing" index="7"]
+visible = false
+
+[node name="Mushrooms" parent="Dressing" index="10"]
+visible = false
+
+[node name="TableLight" parent="Dressing" index="15"]
+visible = false
+
+[node name="BedLight" parent="Dressing" index="16"]
+visible = false
+
 [node name="ChunkManager" type="Node3D" parent="."]
 script = ExtResource("8_chunks")
+enabled = false
 
 [node name="Player" parent="." instance=ExtResource("2_player")]
 position = Vector3(0, 0.1, 7)
@@ -331,83 +367,130 @@ vertical_alignment = 1
 
 [node name="Desk" type="Sprite3D" parent="Furniture"]
 position = Vector3(-10.5, 0.475, -8)
+rotation = Vector3(0, 1.5708, 0)
 texture_filter = 0
 pixel_size = 0.003094
 texture = ExtResource("12_desk")
-billboard = 2
+billboard = 0
 alpha_cut = 1
 shaded = true
 double_sided = true
 
 [node name="Shelf" type="Sprite3D" parent="Furniture"]
-position = Vector3(-10.8, 0.65, -4)
+position = Vector3(-10.8, 0.65, -6)
+rotation = Vector3(0, 1.5708, 0)
 texture_filter = 0
 pixel_size = 0.005138
 texture = ExtResource("15_shelf")
-billboard = 2
+billboard = 0
 alpha_cut = 1
 shaded = true
 double_sided = true
 
 [node name="Bed" type="Sprite3D" parent="Furniture"]
 position = Vector3(-10.7, 0.5, 0.5)
+rotation = Vector3(0, 1.5708, 0)
 texture_filter = 0
 pixel_size = 0.004237
 texture = ExtResource("14_bed")
-billboard = 2
+billboard = 0
 alpha_cut = 1
 shaded = true
 double_sided = true
 
 [node name="Table" type="Sprite3D" parent="Furniture"]
 position = Vector3(10.5, 0.425, -5)
+rotation = Vector3(0, -1.5708, 0)
 texture_filter = 0
 pixel_size = 0.00512
 texture = ExtResource("16_table")
-billboard = 2
+billboard = 0
 alpha_cut = 1
 shaded = true
 double_sided = true
 
 [node name="Chair" type="Sprite3D" parent="Furniture"]
 position = Vector3(9.4, 0.475, -4)
+rotation = Vector3(0, -1.5708, 0)
 texture_filter = 0
 pixel_size = 0.006051
 texture = ExtResource("13_chair")
-billboard = 2
+billboard = 0
 alpha_cut = 1
 shaded = true
 double_sided = true
 
 [node name="ChairB" type="Sprite3D" parent="Furniture"]
 position = Vector3(9.4, 0.475, -6)
+rotation = Vector3(0, -1.5708, 0)
 texture_filter = 0
 pixel_size = 0.006051
 texture = ExtResource("13_chair")
-billboard = 2
+billboard = 0
 alpha_cut = 1
 shaded = true
 double_sided = true
 
 [node name="LedgerBook" type="Sprite3D" parent="Furniture"]
 position = Vector3(10.5, 0.95, -5)
+rotation = Vector3(0, -1.5708, 0)
 texture_filter = 0
 pixel_size = 0.001628
 texture = ExtResource("17_ledger")
-billboard = 2
+billboard = 0
 alpha_cut = 1
 shaded = true
 double_sided = true
 
 [node name="ChestSprite" type="Sprite3D" parent="Furniture"]
 position = Vector3(10.8, 0.35, -1)
+rotation = Vector3(0, -1.5708, 0)
 texture_filter = 0
 pixel_size = 0.005109
 texture = ExtResource("18_chest_sprite")
-billboard = 2
+billboard = 0
 alpha_cut = 1
 shaded = true
 double_sided = true
+
+[node name="DeskSolid" type="StaticBody3D" parent="Furniture"]
+position = Vector3(-10.5, 0.475, -8)
+collision_mask = 0
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="Furniture/DeskSolid"]
+shape = SubResource("BoxShape3D_desk_solid")
+
+[node name="ShelfSolid" type="StaticBody3D" parent="Furniture"]
+position = Vector3(-10.8, 0.65, -6)
+collision_mask = 0
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="Furniture/ShelfSolid"]
+shape = SubResource("BoxShape3D_shelf_solid")
+
+[node name="TableSolid" type="StaticBody3D" parent="Furniture"]
+position = Vector3(10.5, 0.425, -5)
+collision_mask = 0
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="Furniture/TableSolid"]
+shape = SubResource("BoxShape3D_table_solid")
+
+[node name="HearthSolid" type="StaticBody3D" parent="Furniture"]
+position = Vector3(-11, 1.85, -3)
+collision_mask = 0
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="Furniture/HearthSolid"]
+shape = SubResource("BoxShape3D_hearth_solid")
+
+[node name="BedInteract" parent="Furniture" instance=ExtResource("19_bed")]
+position = Vector3(-10.7, 0, 0.5)
+
+[node name="ChairInteract" parent="Furniture" instance=ExtResource("20_chair")]
+position = Vector3(9.4, 0, -4)
+rotation = Vector3(0, -0.833, 0)
+
+[node name="ChairBInteract" parent="Furniture" instance=ExtResource("20_chair")]
+position = Vector3(9.4, 0, -6)
+rotation = Vector3(0, -2.309, 0)
 
 [node name="Guest" parent="." instance=ExtResource("11_guest")]
 position = Vector3(10.5, 0, 10.5)

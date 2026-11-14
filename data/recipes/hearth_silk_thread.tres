@@ -1,0 +1,12 @@
+[gd_resource type="Resource" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://data/recipes/recipe_data.gd" id="1_recipe"]
+
+[resource]
+script = ExtResource("1_recipe")
+id = &"recipe.hearth_silk_thread"
+display_name = "Hearth-Silk Thread"
+output_id = &"item.hearth_silk_thread"
+output_amount = 1
+ingredient_ids = Array[StringName]([&"item.hearth_silk", &"item.flower"])
+ingredient_amounts = Array[int]([1, 1])

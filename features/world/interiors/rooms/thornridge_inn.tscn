@@ -1,0 +1,40 @@
+[gd_scene load_steps=7 format=3]
+
+[ext_resource type="Script" path="res://features/world/interiors/interior_room.gd" id="1_room"]
+[ext_resource type="PackedScene" path="res://features/player/player.tscn" id="2_player"]
+[ext_resource type="PackedScene" path="res://features/ui/hud.tscn" id="3_hud"]
+[ext_resource type="PackedScene" path="res://features/ui/pause_menu.tscn" id="4_pause"]
+[ext_resource type="PackedScene" path="res://features/npc/npc.tscn" id="5_npc"]
+[ext_resource type="PackedScene" path="res://features/interaction/chest.tscn" id="6_chest"]
+
+[node name="ThornridgeInnInterior" type="Node3D"]
+script = ExtResource("1_room")
+layout = &"longhouse"
+room_size = Vector2(9.2, 7.0)
+accent = 2
+
+[node name="Player" parent="." instance=ExtResource("2_player")]
+position = Vector3(-0.6, 0.2, 1.6)
+
+[node name="HUD" parent="." instance=ExtResource("3_hud")]
+
+[node name="PauseMenu" parent="." instance=ExtResource("4_pause")]
+
+[node name="Wren" parent="." instance=ExtResource("5_npc")]
+position = Vector3(1.0, 0.05, 0.6)
+npc_name = "Wren"
+role = "Innkeeper"
+greeting_lines = PackedStringArray("Beds are clean. Roads are not.", "Sit by the fire. The wind comes off the peaks like a knife.")
+coat_color = Color(0.3, 0.36, 0.28, 1)
+trim_color = Color(0.85, 0.83, 0.77, 1)
+skin_color = Color(0.77, 0.62, 0.48, 1)
+hair_color = Color(0.32, 0.24, 0.18, 1)
+long_skirt = true
+facing_degrees = 190.0
+
+[node name="ThornridgeInnChest" parent="." instance=ExtResource("6_chest")]
+position = Vector3(-2.0, 0, 2.3)
+save_id = &"chest.thornridge_inn"
+loot_id = &"item.sporebread"
+amount = 2
+use_sprite = true

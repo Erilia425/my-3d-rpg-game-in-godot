@@ -1,0 +1,15 @@
+[gd_resource type="Resource" load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://data/items/item_data.gd" id="1_item"]
+[ext_resource type="Texture2D" path="res://assets/icons/items/gnome_statue.svg" id="2_icon"]
+
+[resource]
+script = ExtResource("1_item")
+id = &"item.gnome_statue"
+display_name = "Gnome Statue"
+icon = ExtResource("2_icon")
+description = "A painted garden gnome, chipped at the hat. Its face has been repainted so many times nobody knows what it first looked like."
+kind = 0
+stack_size = 3
+value = 25
+tags = PackedStringArray("odd", "decor")

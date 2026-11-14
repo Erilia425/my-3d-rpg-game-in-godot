@@ -1,0 +1,72 @@
+[gd_scene load_steps=10 format=3]
+
+[ext_resource type="Script" path="res://features/combat/guest.gd" id="1_guest"]
+[ext_resource type="Script" path="res://features/stats/health_component.gd" id="2_health"]
+
+[sub_resource type="CapsuleShape3D" id="CapsuleShape3D_guest"]
+radius = 0.36
+height = 1.6
+
+[sub_resource type="CapsuleMesh" id="CapsuleMesh_guest"]
+radius = 0.34
+height = 1.5
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_body"]
+albedo_color = Color(0.46, 0.55, 0.44, 1)
+roughness = 0.88
+
+[sub_resource type="SphereMesh" id="SphereMesh_head"]
+radius = 0.17
+height = 0.34
+radial_segments = 16
+rings = 8
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_head"]
+albedo_color = Color(0.62, 0.68, 0.55, 1)
+roughness = 0.8
+
+[sub_resource type="BoxMesh" id="BoxMesh_eye"]
+size = Vector3(0.05, 0.04, 0.03)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_eye"]
+albedo_color = Color(1, 0.85, 0.45, 1)
+emission_enabled = true
+emission = Color(0.95, 0.7, 0.18, 1)
+emission_energy_multiplier = 2.0
+
+[node name="Guest" type="CharacterBody3D" groups=["enemy"]]
+collision_layer = 4
+collision_mask = 3
+floor_snap_length = 0.2
+script = ExtResource("1_guest")
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="."]
+position = Vector3(0, 0.8, 0)
+shape = SubResource("CapsuleShape3D_guest")
+
+[node name="Visual" type="Node3D" parent="."]
+unique_name_in_owner = true
+
+[node name="Body" type="MeshInstance3D" parent="Visual"]
+position = Vector3(0, 0.78, 0)
+mesh = SubResource("CapsuleMesh_guest")
+surface_material_override/0 = SubResource("StandardMaterial3D_body")
+
+[node name="Head" type="MeshInstance3D" parent="Visual"]
+position = Vector3(0, 1.66, 0)
+mesh = SubResource("SphereMesh_head")
+surface_material_override/0 = SubResource("StandardMaterial3D_head")
+
+[node name="EyeL" type="MeshInstance3D" parent="Visual"]
+position = Vector3(-0.07, 1.68, -0.15)
+mesh = SubResource("BoxMesh_eye")
+surface_material_override/0 = SubResource("StandardMaterial3D_eye")
+
+[node name="EyeR" type="MeshInstance3D" parent="Visual"]
+position = Vector3(0.07, 1.68, -0.15)
+mesh = SubResource("BoxMesh_eye")
+surface_material_override/0 = SubResource("StandardMaterial3D_eye")
+
+[node name="HealthComponent" type="Node" parent="."]
+script = ExtResource("2_health")
+max_health = 3.0

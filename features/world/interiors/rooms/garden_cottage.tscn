@@ -1,9 +1,12 @@
-[gd_scene load_steps=5 format=3]
+[gd_scene load_steps=8 format=3]
 
 [ext_resource type="Script" path="res://features/world/interiors/interior_room.gd" id="1_room"]
 [ext_resource type="PackedScene" path="res://features/player/player.tscn" id="2_player"]
 [ext_resource type="PackedScene" path="res://features/ui/hud.tscn" id="3_hud"]
 [ext_resource type="PackedScene" path="res://features/ui/pause_menu.tscn" id="4_pause"]
+[ext_resource type="PackedScene" path="res://features/npc/npc.tscn" id="5_npc"]
+[ext_resource type="SpriteFrames" path="res://assets/from_2d/frames/little_eli.tres" id="6_eli"]
+[ext_resource type="Script" path="res://features/interaction/stuffed_rabbit.gd" id="7_rabbit"]
 
 [node name="GardenCottageInterior" type="Node3D"]
 script = ExtResource("1_room")
@@ -17,3 +20,17 @@ position = Vector3(0, 0.2, 1.10)
 [node name="HUD" parent="." instance=ExtResource("3_hud")]
 
 [node name="PauseMenu" parent="." instance=ExtResource("4_pause")]
+
+[node name="LittleEli" parent="." instance=ExtResource("5_npc")]
+position = Vector3(1.2, 0.05, -1.2)
+npc_name = "Little Eli"
+role = "Child"
+sprite_frames = ExtResource("6_eli")
+model_scale = 0.72
+greeting_lines = PackedStringArray("Mister Rabbit says you smell like outside.", "I'm not scared. I'm just holding him tight so he isn't.", "The garden used to have herbs. Now it just has quiet.")
+facing_degrees = 180.0
+
+[node name="MisterRabbit" type="StaticBody3D" parent="."]
+position = Vector3(1.95, 0, -1.6)
+rotation = Vector3(0, -2.35, 0)
+script = ExtResource("7_rabbit")

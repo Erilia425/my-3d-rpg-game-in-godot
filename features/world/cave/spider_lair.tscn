@@ -1,0 +1,48 @@
+[gd_scene load_steps=9 format=3]
+
+[ext_resource type="Script" path="res://features/world/cave/wild_caves.gd" id="1_cave"]
+[ext_resource type="PackedScene" path="res://features/player/player.tscn" id="2_player"]
+[ext_resource type="PackedScene" path="res://features/ui/hud.tscn" id="3_hud"]
+[ext_resource type="PackedScene" path="res://features/ui/pause_menu.tscn" id="4_pause"]
+[ext_resource type="Script" path="res://features/audio/music_player.gd" id="5_music"]
+[ext_resource type="AudioStream" path="res://assets/audio/music/cave_theme.wav" id="6_track"]
+[ext_resource type="PackedScene" path="res://features/npc/quest_npc.tscn" id="7_npc"]
+[ext_resource type="Script" path="res://features/npc/spider_mother.gd" id="8_mother"]
+
+[node name="SpiderLair" type="Node3D"]
+script = ExtResource("1_cave")
+fixed_seed = 20261114
+chamber_min = 3
+chamber_max = 4
+spider_count = 2
+seam_count = 1
+is_lair = true
+
+[node name="Player" parent="." instance=ExtResource("2_player")]
+position = Vector3(0, 0.2, 2.5)
+
+[node name="HUD" parent="." instance=ExtResource("3_hud")]
+
+[node name="PauseMenu" parent="." instance=ExtResource("4_pause")]
+
+[node name="Music" type="Node" parent="."]
+script = ExtResource("5_music")
+track = ExtResource("6_track")
+volume_db = -20.0
+fade_in = 5.0
+
+[node name="SpiderMother" parent="." instance=ExtResource("7_npc")]
+position = Vector3(0, 0.05, -2.6)
+script = ExtResource("8_mother")
+npc_name = "The Spider Mother"
+role = "Keeper of Unfinished Memories"
+greeting_lines = PackedStringArray("My children are not finished memories. They are still becoming.", "The houses sleep on my web. Do not cut the pale strands.", "Lirael Marrow, if you need a name for me. Few do.")
+gift_item = &"item.hearth_silk_thread"
+gift_amount = 1
+gift_lines = PackedStringArray("One thread. It remembers being part of something.", "Weave it well and it will hold.")
+gift_after_lines = PackedStringArray("The web is thinner than it was. Walk gently.", "My children are watching. That is not a threat.")
+coat_color = Color(0.3, 0.26, 0.32, 1)
+trim_color = Color(0.66, 0.62, 0.68, 1)
+skin_color = Color(0.72, 0.68, 0.7, 1)
+hair_color = Color(0.2, 0.18, 0.22, 1)
+facing_degrees = 180.0

@@ -12,7 +12,13 @@ extends CanvasLayer
 @onready var _health_label: Label = %HealthLabel
 @onready var _health_bar: ProgressBar = %HealthBar
 @onready var _stamina_bar: ProgressBar = %StaminaBar
+@onready var _memory_bar: ProgressBar = %MemoryBar
+@onready var _memory_label: Label = %MemoryLabel
+@onready var _silk_label: Label = %SilkLabel
+@onready var _anchor_label: Label = %AnchorLabel
+@onready var _ledger_label: Label = %LedgerLabel
 @onready var _weapon_label: Label = %WeaponLabel
+@onready var _tool_label: Label = %ToolLabel
 @onready var _time_label: Label = %TimeLabel
 @onready var _clock_timer: Timer = %ClockTimer
 @onready var _inventory_panel: Control = %InventoryPanel
@@ -20,7 +26,11 @@ extends CanvasLayer
 @onready var _action_button: Button = %EquipButton
 @onready var _close_button: Button = %CloseButton
 @onready var _map_screen: Control = get_node_or_null("MapScreen") as Control
+@onready var _journal: Control = get_node_or_null("QuestJournal") as Control
+@onready var _ledger_shop: Control = get_node_or_null("LedgerShopPanel") as Control
 @onready var _dialogue_window: Control = get_node_or_null("DialogueWindow") as Control
+@onready var _minimap: Control = get_node_or_null("Minimap") as Control
+@onready var _field_notes: Control = get_node_or_null("FieldNotes") as Control
 
 var _interact_key := "E"
 var _inventory_key := "I"
@@ -32,6 +42,11 @@ var _health: HealthComponent
 var _stats: StatsComponent
 var _inventory: InventoryComponent
 var _equipment: EquipmentComponent
+## True while the Anchor spell holds. Display only; `StatsComponent` owns it.
+var _anchor_held := false
+## Last escalation tier the HUD spoke about, so a rising Ledger says one line
+## per tier instead of one per clock tick.
+var _ledger_tier := -1
 
 
 func _ready() -> void:
@@ -52,6 +67,10 @@ func _ready() -> void:
 	_close_button.pressed.connect(close_inventory)
 	_item_list.item_selected.connect(_on_item_selected)
 	_clock_timer.timeout.connect(_refresh_clock)
+
+	%ShopButton.pressed.connect(_open_book_tab.bind("Shop"))
+	%SkillsButton.pressed.connect(_open_book_tab.bind("Skills"))
+	%LedgerButton.pressed.connect(_open_book_tab.bind("Ledger"))
 
 	_bind_player()
 	_refresh_clock()
@@ -75,8 +94,17 @@ func _bind_player() -> void:
 
 	if _stats != null:
 		_stats.stamina_changed.connect(_on_stamina_changed)
+		_stats.mana_changed.connect(_on_memory_changed)
+		_stats.silk_changed.connect(_on_silk_changed)
+		_stats.anchoring_changed.connect(_on_anchoring_changed)
+		_stats.anchor_guard_changed.connect(_on_anchor_guard_changed)
 		_stamina_bar.max_value = _stats.get_max_stamina()
 		_stamina_bar.value = _stats.get_stamina()
+		_memory_bar.max_value = _stats.get_max_memory()
+		_memory_bar.value = _stats.get_memory()
+		_on_memory_changed(_stats.get_memory(), _stats.get_max_memory())
+		_on_silk_changed(_stats.get_silk(), _stats.get_max_silk())
+		_on_anchoring_changed(_stats.get_anchoring(), _stats.get_max_anchoring())
 
 	if _inventory != null:
 		_inventory.inventory_changed.connect(_refresh_inventory)
@@ -94,6 +122,12 @@ func _unhandled_input(event: InputEvent) -> void:
 	# A map or conversation owns the screen while it is open; don't stack the
 	# inventory on top.
 	if _map_screen != null and _map_screen.visible:
+		return
+	if _journal != null and _journal.visible:
+		return
+	if _ledger_shop != null and _ledger_shop.visible:
+		return
+	if _field_notes != null and _field_notes.visible:
 		return
 	if _dialogue_window != null and _dialogue_window.visible:
 		return
@@ -132,6 +166,13 @@ func close_inventory() -> void:
 		Input.mouse_mode = Input.MOUSE_MODE_CAPTURED
 
 
+## Opens the Ledger, Shop or Skills tab from the inventory's book buttons.
+func _open_book_tab(tab_name: String) -> void:
+	close_inventory()
+	if _ledger_shop != null and _ledger_shop.has_method("open"):
+		_ledger_shop.call("open", tab_name)
+
+
 func _refresh_inventory() -> void:
 	if _inventory == null:
 		return
@@ -144,7 +185,10 @@ func _refresh_inventory() -> void:
 		var amount := int(stack["amount"])
 		var suffix := "" if amount <= 1 else " x%d" % amount
 		_item_list.add_item(data.display_name + suffix)
-		_item_list.set_item_metadata(_item_list.item_count - 1, data.id)
+		var row := _item_list.item_count - 1
+		if data.icon != null:
+			_item_list.set_item_icon(row, data.icon)
+		_item_list.set_item_metadata(row, data.id)
 
 	_update_action_button()
 
@@ -201,11 +245,100 @@ func _refresh_equipment() -> void:
 	var weapon := _equipment.get_weapon()
 	_weapon_label.text = "Unarmed" if weapon == null else weapon.display_name
 
+	# The tool belt is a separate slot, so an axe stays in hand while the sword
+	# is equipped. Both are shown so the player can see what E will allow.
+	var tool := _equipment.get_equipped(ItemData.EquipSlot.TOOL)
+	_tool_label.text = "Tools: none" if tool == null else "Tool: %s" % tool.display_name
+
 
 ## The clock advances every frame but the label only redraws twice a second.
+## The Ledger word rides along because it is also a slow, qualitative display.
 ## See the "no per-frame UI" rule in AGENTS.md section 10.2.
 func _refresh_clock() -> void:
 	_time_label.text = WorldClock.get_time_string()
+	_ledger_label.text = "Ledger: %s" % Ledger.get_state_word()
+	_note_ledger_escalation()
+	_note_places()
+	_refresh_minimap()
+
+
+## The escalation is the one part of the Ledger the world acts on, so a rise is
+## spoken once. Quiet on the way down: relief does not need announcing.
+func _note_ledger_escalation() -> void:
+	var tier := Ledger.get_escalation()
+	if tier == _ledger_tier:
+		return
+	var rising := tier > _ledger_tier
+	_ledger_tier = tier
+	if not rising:
+		return
+	var line := Ledger.get_escalation_line(tier)
+	if not line.is_empty():
+		_on_notification_requested(line)
+
+
+## Records where the player stands for the Field Notes checklist. Only the
+## continuous town counts by position: interiors place the player near the
+## origin, which would falsely tick the market, so they are counted by scene
+## instead. The first visit to a place writes one line down, once.
+func _note_places() -> void:
+	if _player == null or Game.state != Game.State.PLAYING:
+		return
+	var scene := get_tree().current_scene
+	if scene == null:
+		return
+
+	if scene.scene_file_path != "res://scenes/town.tscn":
+		_note_room(scene)
+		return
+
+	for id in ExplorationLog.check(_player.global_position):
+		_announce_place(id)
+
+
+## An interior is entered, not walked into: the scene itself is the proof.
+func _note_room(scene: Node) -> void:
+	var id := ExplorationLog.note_scene(scene.scene_file_path, scene.name)
+	if id.is_empty():
+		return
+	Events.notification_requested.emit(
+		"Field notes: %s" % ExplorationLog.get_room_title(id)
+	)
+
+
+## A first visit to a named place is written down in Field Notes' own voice, so
+## the tick arrives with a sentence rather than a bare toast.
+func _announce_place(id: StringName) -> void:
+	var title := ExplorationLog.get_title(id)
+	var line := ExplorationLog.get_line(id)
+	if line.is_empty():
+		Events.notification_requested.emit("Field notes: %s" % title)
+		return
+	# A conversation already on screen keeps the screen; the note waits for the
+	# next visit instead of stacking two panels on top of each other.
+	if _dialogue_window != null and _dialogue_window.visible:
+		Events.notification_requested.emit("Field notes: %s" % title)
+		return
+	Events.dialogue_requested.emit(
+		"Field Notes", title, PackedStringArray([line])
+	)
+
+
+## The minimap rides the half-second tick. It hides while a full-screen panel
+## owns the screen, so the corner stays quiet during reading.
+func _refresh_minimap() -> void:
+	if _minimap == null:
+		return
+	var busy := (
+		_inventory_panel.visible
+		or (_map_screen != null and _map_screen.visible)
+		or (_field_notes != null and _field_notes.visible)
+		or (_dialogue_window != null and _dialogue_window.visible)
+	)
+	_minimap.visible = _player != null and Game.state == Game.State.PLAYING and not busy
+	if not _minimap.visible or _player == null:
+		return
+	_minimap.call("refresh_view", _player.global_position, _player.global_rotation.y)
 
 
 # --- event handlers --------------------------------------------------------
@@ -256,6 +389,38 @@ func _on_health_changed(current: float, maximum: float) -> void:
 func _on_stamina_changed(current: float, maximum: float) -> void:
 	_stamina_bar.max_value = maximum
 	_stamina_bar.value = current
+
+
+func _on_memory_changed(current: float, maximum: float) -> void:
+	_memory_bar.max_value = maximum
+	_memory_bar.value = current
+	_memory_label.text = "Memory %d / %d" % [roundi(current), roundi(maximum)]
+
+
+func _on_silk_changed(current: float, _maximum: float) -> void:
+	_silk_label.text = "Silk %d" % roundi(current)
+
+
+func _on_anchoring_changed(_current: int, _maximum: int) -> void:
+	_render_anchors()
+
+
+## The Anchors row names the held state too, so a player can tell a spent tooth
+## from one that is still working. The count itself stays owned by the stats.
+func _on_anchor_guard_changed(active: bool) -> void:
+	_anchor_held = active
+	_render_anchors()
+
+
+func _render_anchors() -> void:
+	if _stats == null:
+		return
+	var text := "Anchors %d/%d" % [
+		_stats.get_anchoring(), _stats.get_max_anchoring()
+	]
+	if _anchor_held:
+		text += " (held)"
+	_anchor_label.text = text
 
 
 func _on_player_damaged(_amount: float) -> void:

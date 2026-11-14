@@ -1,10 +1,12 @@
-[gd_scene load_steps=6 format=3]
+[gd_scene load_steps=7 format=3]
 
 [ext_resource type="Script" path="res://features/world/interiors/interior_room.gd" id="1_room"]
 [ext_resource type="PackedScene" path="res://features/player/player.tscn" id="2_player"]
 [ext_resource type="PackedScene" path="res://features/ui/hud.tscn" id="3_hud"]
 [ext_resource type="PackedScene" path="res://features/ui/pause_menu.tscn" id="4_pause"]
 [ext_resource type="PackedScene" path="res://features/npc/npc.tscn" id="5_npc"]
+[ext_resource type="SpriteFrames" path="res://assets/from_2d/frames/thatch.tres" id="6_thatch"]
+[ext_resource type="Script" path="res://features/npc/magic_teacher.gd" id="7_teacher"]
 
 [node name="BeekeeperCottageInterior" type="Node3D"]
 script = ExtResource("1_room")
@@ -20,9 +22,12 @@ position = Vector3(0, 0.2, 1.10)
 [node name="PauseMenu" parent="." instance=ExtResource("4_pause")]
 
 [node name="Thatch" parent="." instance=ExtResource("5_npc")]
+script = ExtResource("7_teacher")
+curriculum = &"thatch"
 position = Vector3(-0.7, 0.05, -1.25)
 npc_name = "Thatch"
 role = "Beekeeper"
+sprite_frames = ExtResource("6_thatch")
 greeting_lines = PackedStringArray("Bees keep no schedule. I just follow them.", "The Hive Tower hums louder before rain.")
 coat_color = Color(0.62, 0.48, 0.2, 1)
 trim_color = Color(0.82, 0.7, 0.38, 1)

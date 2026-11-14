@@ -20,6 +20,7 @@ var _spawn_position := Vector3.ZERO
 func _ready() -> void:
 	_spawn_position = _player.global_position
 	_health.died.connect(_on_died)
+	_attack.hit_landed.connect(_on_hit_landed)
 
 
 func _unhandled_input(event: InputEvent) -> void:
@@ -41,10 +42,19 @@ func try_attack() -> bool:
 		Events.notification_requested.emit("Too tired to swing")
 		return false
 
-	_attack.damage = _equipment.get_attack_damage()
+	_attack.damage = _equipment.get_attack_damage() + _player.get_bonus_damage()
 	_player.play_attack_animation()
 	_attack.try_hit()
 	return true
+
+
+## Hearth Draught: every landed melee hit returns a little health.
+func _on_hit_landed(_target: Node, _damage: float) -> void:
+	if not Progression.has_skill(Progression.SKILL_HEAL_STEAL):
+		return
+	if _health.is_dead():
+		return
+	_health.heal(3.0)
 
 
 func _on_died() -> void:

@@ -7,8 +7,10 @@ extends Node3D
 ## primitives at `_ready()` (`TownBuilding`, `TownProp`), so the saved scene stays
 ## a short list of placements instead of thousands of hand-placed nodes.
 ##
-## Only the player's own cottage is enterable; it leads to `scenes/test_room.tscn`
-## through an `AreaGate`. The north gate leads out to `scenes/overworld.tscn`.
+## The player's cottage is enterable; it leads to `scenes/test_room.tscn` through
+## an `AreaGate`, and the rest of the village doors open their own interiors. The
+## wider world grows around the village from the sibling `Realm` node
+## (`TownRealm`) rather than through a gate to another scene.
 ## See AGENTS.md sections 4, 7, and 10.
 
 func _ready() -> void:

@@ -20,6 +20,15 @@ enum State {
 @export var attack_cooldown: float = 1.2
 @export var gravity: float = 18.0
 @export var save_id: StringName = &""
+## Rewards granted only on a real kill, never when a save restores a corpse.
+@export var xp_reward: int = 6
+@export var coin_reward: int = 2
+## Optional item dropped where the enemy fell. Empty disables drops.
+@export var drop_item: StringName = &""
+@export var drop_amount: int = 1
+@export_range(0.0, 1.0) var drop_chance: float = 1.0
+
+const DROP_SCENE := preload("res://features/interaction/world_pickup.tscn")
 
 var state: State = State.IDLE
 
@@ -142,6 +151,7 @@ func _apply_dead(animated: bool, notify: bool) -> void:
 
 	if notify:
 		Events.notification_requested.emit("Enemy defeated")
+		_award_rewards()
 
 	if _visual == null:
 		return
@@ -153,6 +163,30 @@ func _apply_dead(animated: bool, notify: bool) -> void:
 	else:
 		_visual.scale = Vector3(1.0, 0.1, 1.0)
 		_visual.position.y = -0.7
+
+
+## Grants XP, coins, and a loot drop exactly once, on a genuine kill.
+func _award_rewards() -> void:
+	Progression.add_xp(xp_reward)
+	if coin_reward > 0:
+		Progression.add_coins(coin_reward)
+
+	if drop_item.is_empty():
+		return
+	if drop_chance < 1.0 and randf() > drop_chance:
+		return
+
+	var scene := get_tree().current_scene
+	if scene == null:
+		return
+
+	var drop := DROP_SCENE.instantiate() as StaticBody3D
+	drop.set("item_id", drop_item)
+	drop.set("amount", drop_amount)
+	if not save_id.is_empty():
+		drop.set("save_id", StringName("%s.drop" % save_id))
+	scene.add_child(drop)
+	drop.global_position = global_position + Vector3(0.35, 0.0, 0.35)
 
 
 ## Reverses `_apply_dead`. Used when a save says the enemy is still alive.

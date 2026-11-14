@@ -1,0 +1,15 @@
+[gd_resource type="Resource" load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://data/items/item_data.gd" id="1_item"]
+[ext_resource type="Texture2D" path="res://assets/icons/items/ledger.svg" id="2_icon"]
+
+[resource]
+script = ExtResource("1_item")
+id = &"item.ledger"
+display_name = "Rowan's Ledger"
+icon = ExtResource("2_icon")
+description = "A battered book of names, exchanges, and debts. Loose pages can be tucked back inside."
+kind = 0
+stack_size = 1
+value = 0
+tags = PackedStringArray("quest", "document", "ledger")

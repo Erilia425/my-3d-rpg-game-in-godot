@@ -9,6 +9,7 @@ const SETTINGS_PATH := "user://settings.cfg"
 const DEFAULTS := {
 	"audio/master_volume": 0.8,
 	"audio/music_volume": 0.8,
+	"audio/ambience_volume": 0.8,
 	"audio/sfx_volume": 1.0,
 	"display/fullscreen": false,
 }
@@ -55,6 +56,7 @@ func set_setting(key: StringName, value: Variant) -> void:
 func apply_all() -> void:
 	_apply_bus_volume("Master", float(get_setting("audio/master_volume", 0.8)))
 	_apply_bus_volume("Music", float(get_setting("audio/music_volume", 0.8)))
+	_apply_bus_volume("Ambience", float(get_setting("audio/ambience_volume", 0.8)))
 	_apply_bus_volume("SFX", float(get_setting("audio/sfx_volume", 1.0)))
 
 	if DisplayServer.get_name() == "headless":

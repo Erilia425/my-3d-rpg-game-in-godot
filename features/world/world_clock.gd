@@ -39,6 +39,16 @@ static func advance(delta: float) -> void:
 		day += 1
 
 
+## Jumps the clock forward to `hour_of_day` (0-24), rolling the day over when
+## that hour has already passed today. Used by sleeping: the player rests from
+## dusk to morning without waiting in real time.
+static func rest_until(hour_of_day: float) -> void:
+	var target := fposmod(hour_of_day, HOURS_PER_DAY)
+	if hour >= target:
+		day += 1
+	hour = target
+
+
 static func get_day() -> int:
 	return day
 

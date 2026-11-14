@@ -1,0 +1,212 @@
+class_name ChunkDressing
+extends RefCounted
+## Colours a streamed chunk's primitive blockout to fit the biome.
+##
+## The chunk scenes are generated blockouts: each prop is a plain-coloured mesh.
+## This helper leaves every collision shape and transform alone and only changes
+## what is *seen*: ground boxes get the pixel-art grass texture, and each prop
+## body gains a small clump of primitive 3D meshes (a trunk and canopy, or a few
+## boulders) tinted for the biome. Hiding a mesh never touches its
+## `StaticBody3D`, so walking into a tree or a rock feels the same.
+##
+## It is opt-in through `ChunkManager.biome`. An empty biome does nothing, which
+## keeps test fixtures and any future un-themed manager exactly as authored.
+
+const GRASS_TEXTURE: Texture2D = preload("res://assets/from_2d/materials/grass.png")
+const TREE_TEXTURE: Texture2D = preload("res://assets/from_2d/sprites/tree.png")
+const ROCK_TEXTURE: Texture2D = preload("res://assets/from_2d/sprites/rock.png")
+const MUSHROOM_TEXTURE: Texture2D = preload("res://assets/from_2d/sprites/mushroom.png")
+
+## Root-level meshes that are scenery in their own right, not props to replace.
+const KEPT_MESHES: Array[StringName] = [&"Water", &"FrozenPond", &"SnowDrift"]
+
+
+static func apply(root: Node3D, biome: StringName) -> void:
+	if root == null or biome == &"":
+		return
+
+	var palette := _palette(biome)
+	_texture_ground(root, palette)
+
+	for child in root.get_children():
+		if child is StaticBody3D:
+			if _is_ground(child):
+				continue
+			_dress_prop(child, palette)
+		elif child is MeshInstance3D and not KEPT_MESHES.has(child.name):
+			_dress_loose_mesh(root, child, palette)
+
+
+## Ground and seafloor bodies keep their box and collision; only the surface
+## material changes. The texture repeats so a 32 m chunk does not look like one
+## giant stretched blade of grass.
+static func _texture_ground(root: Node3D, palette: Dictionary) -> void:
+	for child in root.get_children():
+		if not child is StaticBody3D or not _is_ground(child):
+			continue
+		var mesh := child.get_node_or_null("Mesh") as MeshInstance3D
+		if mesh == null:
+			continue
+		mesh.material_override = TownParts.material(
+			palette.ground_tint,
+			0.96,
+			0.0,
+			GRASS_TEXTURE,
+			Vector3(16, 16, 1)
+		)
+
+
+static func _is_ground(body: Node3D) -> bool:
+	return body.name == &"Ground" or body.name == &"Seafloor"
+
+
+## A prop body (tree, rock, cactus, pillar...) gains a few 3D meshes at its
+## origin. `height` comes from the authored meshes so the new shapes match the
+## old silhouette closely enough that collisions still make sense. The original
+## meshes are hidden rather than freed, so the body keeps its collision.
+static func _dress_prop(body: StaticBody3D, palette: Dictionary) -> void:
+	var height := 1.0
+	var has_canopy := false
+	var has_trunk := false
+	var found_mesh := false
+
+	for child in body.get_children():
+		if child is not MeshInstance3D:
+			continue
+		found_mesh = true
+		if child.name == &"Canopy":
+			has_canopy = true
+		if child.name == &"Trunk":
+			has_trunk = true
+		var aabb := (child as MeshInstance3D).get_aabb()
+		height = maxf(height, aabb.end.y + child.position.y)
+		child.visible = false
+
+	if not found_mesh:
+		return
+
+	if has_canopy or has_trunk:
+		_build_tree(body, height, palette.tree_tint)
+	else:
+		_build_rocks(body, maxf(height, 1.2), palette.rock_tint)
+
+
+## Loose decorative meshes (`Arm`, `Branch`, `DryShrub`, generated
+## `@MeshInstance3D@N` nodes) have no body of their own. A small 3D clump is
+## parented to the chunk root at the same spot, and the original mesh is hidden.
+static func _dress_loose_mesh(root: Node3D, mesh: MeshInstance3D, palette: Dictionary) -> void:
+	var aabb := mesh.get_aabb()
+	var height := maxf(aabb.size.y, 0.6)
+	if mesh.name == &"DryShrub":
+		_build_shrub(root, mesh.position, height, palette.shrub_tint)
+	else:
+		# Limbs and shells are small set dressing; a rock clump reads well enough
+		# at this size and keeps one shape path for every odd-shaped mesh.
+		_build_rocks(root, height, palette.rock_tint, mesh.position)
+	mesh.visible = false
+
+
+## Trunk plus a clump of canopy spheres. `tint` multiplies a base bark/leaf
+## colour, so ice, desert, and ocean chunks share one shape and still feel
+## different.
+static func _build_tree(parent: Node3D, height: float, tint: Color) -> void:
+	var bark := TownParts.material(Color(0.3, 0.21, 0.13, 1) * tint, 0.96)
+	var leaf := TownParts.material(Color(0.25, 0.36, 0.17, 1) * tint, 0.97)
+	var leaf_dark := TownParts.material(Color(0.19, 0.29, 0.13, 1) * tint, 0.97)
+	var trunk_height := maxf(height * 0.58, 0.5)
+	TownParts.cylinder(
+		parent, "TreeTrunk3D", Vector3(0, trunk_height * 0.5, 0),
+		maxf(height * 0.05, 0.08), maxf(height * 0.09, 0.12), trunk_height, bark, Vector3.ZERO, 7
+	)
+	var radius := maxf(height * 0.3, 0.45)
+	var canopy_y := maxf(height * 0.68, trunk_height)
+	TownParts.sphere(parent, "TreeCanopy3DA", Vector3(0, canopy_y, 0), radius, radius * 1.9, leaf)
+	TownParts.sphere(parent, "TreeCanopy3DB", Vector3(radius * 0.55, canopy_y - radius * 0.3, 0.12), radius * 0.7, radius * 1.4, leaf_dark)
+	TownParts.sphere(parent, "TreeCanopy3DC", Vector3(-radius * 0.5, canopy_y + radius * 0.18, -0.14), radius * 0.62, radius * 1.2, leaf)
+
+
+## Three overlapping boulders replace the old rock billboard.
+static func _build_rocks(parent: Node3D, size: float, tint: Color, at: Vector3 = Vector3.ZERO) -> void:
+	var stone := TownParts.material(Color(0.47, 0.45, 0.42, 1) * tint, 0.95)
+	var stone_dark := TownParts.material(Color(0.37, 0.35, 0.33, 1) * tint, 0.96)
+	TownParts.sphere(parent, "Rock3DA", at + Vector3(0, size * 0.38, 0), size * 0.58, size * 0.8, stone)
+	TownParts.sphere(parent, "Rock3DB", at + Vector3(size * 0.34, size * 0.24, size * 0.12), size * 0.32, size * 0.5, stone_dark)
+	TownParts.sphere(parent, "Rock3DC", at + Vector3(-size * 0.32, size * 0.18, -size * 0.1), size * 0.26, size * 0.42, stone)
+
+
+## A small cluster of caps and stems, used where the old art drew a shrub.
+static func _build_shrub(parent: Node3D, at: Vector3, height: float, tint: Color) -> void:
+	var stem := TownParts.material(Color(0.85, 0.79, 0.65, 1) * tint, 0.95)
+	var cap := TownParts.material(Color(0.7, 0.29, 0.24, 1) * tint, 0.85, 0.18)
+	for i in 3:
+		var angle := TAU * i / 3.0
+		var offset := Vector3(cos(angle) * height * 0.16, 0, sin(angle) * height * 0.16)
+		var stem_h := height * 0.6
+		TownParts.cylinder(
+			parent, "ShrubStem3D%d" % i, at + offset + Vector3(0, stem_h * 0.5, 0),
+			height * 0.05, height * 0.08, stem_h, stem, Vector3.ZERO, 6
+		)
+		TownParts.sphere(
+			parent, "ShrubCap3D%d" % i, at + offset + Vector3(0, stem_h + height * 0.08, 0),
+			height * 0.3, height * 0.3, cap
+		)
+
+
+## The shared billboard recipe from `TownProp._sprite()`: FIXED_Y so the art
+## stays upright, nearest filtering so pixels stay crisp, and discard alpha so it
+## never writes over the world behind it.
+static func _billboard(
+	parent: Node3D,
+	sprite_name: String,
+	texture: Texture2D,
+	height: float,
+	tint: Color,
+	at: Vector3 = Vector3.ZERO
+) -> Sprite3D:
+	var sprite := Sprite3D.new()
+	sprite.name = sprite_name
+	sprite.texture = texture
+	sprite.billboard = BaseMaterial3D.BILLBOARD_FIXED_Y
+	sprite.texture_filter = BaseMaterial3D.TEXTURE_FILTER_NEAREST
+	sprite.alpha_cut = SpriteBase3D.ALPHA_CUT_DISCARD
+	sprite.shaded = false
+	sprite.double_sided = true
+	sprite.modulate = tint
+	sprite.pixel_size = height / float(maxi(texture.get_height(), 1))
+	sprite.position = at + Vector3(0, height * 0.5, 0)
+	parent.add_child(sprite)
+	return sprite
+
+
+## One colour set per biome. Tints multiply the same handful of 2D textures, so
+## a desert shrub and an ice shrub share art but still feel like different places.
+static func _palette(biome: StringName) -> Dictionary:
+	match biome:
+		&"ice":
+			return {
+				"ground_tint": Color(0.78, 0.88, 0.95, 1),
+				"tree_tint": Color(0.82, 0.9, 1.0, 1),
+				"rock_tint": Color(0.72, 0.82, 0.9, 1),
+				"shrub_tint": Color(0.7, 0.82, 0.9, 1),
+			}
+		&"desert":
+			return {
+				"ground_tint": Color(0.86, 0.76, 0.52, 1),
+				"tree_tint": Color(0.72, 0.72, 0.42, 1),
+				"rock_tint": Color(0.88, 0.74, 0.52, 1),
+				"shrub_tint": Color(0.7, 0.6, 0.36, 1),
+			}
+		&"ocean":
+			return {
+				"ground_tint": Color(0.76, 0.72, 0.55, 1),
+				"tree_tint": Color(0.6, 0.78, 0.68, 1),
+				"rock_tint": Color(0.62, 0.72, 0.7, 1),
+				"shrub_tint": Color(0.56, 0.72, 0.62, 1),
+			}
+		_:
+			return {
+				"ground_tint": Color(0.66, 0.74, 0.55, 1),
+				"tree_tint": Color(1, 1, 1, 1),
+				"rock_tint": Color(0.86, 0.86, 0.8, 1),
+				"shrub_tint": Color(0.82, 0.86, 0.68, 1),
+			}

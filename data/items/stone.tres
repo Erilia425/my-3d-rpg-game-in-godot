@@ -1,0 +1,15 @@
+[gd_resource type="Resource" load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://data/items/item_data.gd" id="1_item"]
+[ext_resource type="Texture2D" path="res://assets/icons/items/stone.svg" id="2_icon"]
+
+[resource]
+script = ExtResource("1_item")
+id = &"item.stone"
+display_name = "Fieldstone"
+icon = ExtResource("2_icon")
+description = "A hand-sized stone from the fields and riverbanks. Axe heads and pickaxe weights need one."
+kind = 0
+stack_size = 50
+value = 1
+tags = PackedStringArray("gather", "stone")

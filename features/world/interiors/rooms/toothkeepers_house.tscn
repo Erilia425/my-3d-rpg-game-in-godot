@@ -1,9 +1,11 @@
-[gd_scene load_steps=5 format=3]
+[gd_scene load_steps=7 format=3]
 
 [ext_resource type="Script" path="res://features/world/interiors/interior_room.gd" id="1_room"]
 [ext_resource type="PackedScene" path="res://features/player/player.tscn" id="2_player"]
 [ext_resource type="PackedScene" path="res://features/ui/hud.tscn" id="3_hud"]
 [ext_resource type="PackedScene" path="res://features/ui/pause_menu.tscn" id="4_pause"]
+[ext_resource type="PackedScene" path="res://features/npc/npc.tscn" id="5_npc"]
+[ext_resource type="Script" path="res://features/npc/magic_teacher.gd" id="6_teacher"]
 
 [node name="ToothkeepersHouseInterior" type="Node3D"]
 script = ExtResource("1_room")
@@ -17,3 +19,21 @@ position = Vector3(0, 0.2, 1.35)
 [node name="HUD" parent="." instance=ExtResource("3_hud")]
 
 [node name="PauseMenu" parent="." instance=ExtResource("4_pause")]
+
+[node name="CorinVale" parent="." instance=ExtResource("5_npc")]
+script = ExtResource("6_teacher")
+curriculum = &"corin"
+position = Vector3(0.8, 0.05, -0.4)
+npc_name = "Corin Vale"
+role = "Toothkeeper"
+greeting_lines = PackedStringArray("Every tooth is a name. I only keep them safe.", "Do not improvise in this room, please. Ritual wants exactness.", "The square keeps its own accounts. So do I.")
+coat_color = Color(0.34, 0.32, 0.28, 1)
+trim_color = Color(0.68, 0.62, 0.46, 1)
+skin_color = Color(0.8, 0.66, 0.52, 1)
+hair_color = Color(0.6, 0.58, 0.52, 1)
+has_apron = true
+facing_degrees = 180.0
+model_scale = 0.92
+scheduled = true
+active_from_hour = 18
+active_to_hour = 8

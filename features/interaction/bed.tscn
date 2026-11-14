@@ -1,0 +1,15 @@
+[gd_scene load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://features/interaction/bed.gd" id="1_bed"]
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_bed"]
+size = Vector3(0.55, 1, 0.45)
+
+[node name="Bed" type="StaticBody3D" groups=["interactable"]]
+collision_layer = 17
+collision_mask = 0
+script = ExtResource("1_bed")
+
+[node name="Collision" type="CollisionShape3D" parent="."]
+position = Vector3(0, 0.5, 0)
+shape = SubResource("BoxShape3D_bed")

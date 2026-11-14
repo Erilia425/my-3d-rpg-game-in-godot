@@ -1,0 +1,16 @@
+[gd_scene load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://features/magic/memory_stone.gd" id="1_stone"]
+
+[sub_resource type="CylinderShape3D" id="CylinderShape3D_stone"]
+radius = 0.45
+height = 1.7
+
+[node name="MemoryStone" type="StaticBody3D" groups=["interactable", "memory"]]
+collision_layer = 17
+collision_mask = 0
+script = ExtResource("1_stone")
+
+[node name="Collision" type="CollisionShape3D" parent="."]
+position = Vector3(0, 0.85, 0)
+shape = SubResource("CylinderShape3D_stone")

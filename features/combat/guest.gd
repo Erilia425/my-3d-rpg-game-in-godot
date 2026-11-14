@@ -48,6 +48,11 @@ const SMOKE_SIZE_METRES := 0.9
 @export_group("Persistence")
 @export var save_id: StringName = &""
 
+@export_group("The Ledger")
+## True for Guests that answer the player's Ledger. A fixed, authored encounter
+## sets this false so its difficulty cannot drift with the player's imbalance.
+@export var answers_the_ledger: bool = true
+
 var state: State = State.WANDER
 
 var _target: Node3D
@@ -72,12 +77,32 @@ func _ready() -> void:
 		_health.died.connect(_on_died)
 
 	_fit_sprite_height()
+	_answer_the_ledger()
 
 	_target = get_tree().get_first_node_in_group("player") as Node3D
 	_pick_wander_direction()
 
 	if not save_id.is_empty():
 		add_to_group(&"saveable")
+
+
+## A Guest the Ledger sent arrives already changed by how loudly the record is
+## speaking. The multiplier is read once, on arrival, so a Guest already in the
+## world keeps the strength it came with and a save restores it unchanged.
+func _answer_the_ledger() -> void:
+	if not answers_the_ledger:
+		return
+
+	var scale := Ledger.get_escalation_scale()
+	if is_equal_approx(scale, 1.0):
+		return
+
+	attack_damage *= scale
+	detection_range *= scale
+
+	if _health != null:
+		_health.max_health = roundf(_health.max_health * scale)
+		_health.set_health(_health.max_health)
 
 
 ## Frame height sets the scale, so the spirit is about 1.9 m tall whatever the

@@ -1,0 +1,22 @@
+[gd_scene load_steps=4 format=3]
+
+[ext_resource type="Script" path="res://features/crafting/crafting_station.gd" id="1_craft"]
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_bench"]
+size = Vector3(1.8, 1.0, 0.9)
+
+[sub_resource type="BoxMesh" id="BoxMesh_bench"]
+size = Vector3(1.8, 1.0, 0.9)
+
+[node name="CraftingStation" type="StaticBody3D" groups=["interactable"]]
+collision_layer = 17
+collision_mask = 0
+script = ExtResource("1_craft")
+
+[node name="Mesh" type="MeshInstance3D" parent="."]
+position = Vector3(0, 0.5, 0)
+mesh = SubResource("BoxMesh_bench")
+
+[node name="Collision" type="CollisionShape3D" parent="."]
+position = Vector3(0, 0.5, 0)
+shape = SubResource("BoxShape3D_bench")

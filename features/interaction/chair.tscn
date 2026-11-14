@@ -1,0 +1,15 @@
+[gd_scene load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://features/interaction/chair.gd" id="1_chair"]
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_chair"]
+size = Vector3(0.5, 0.95, 0.5)
+
+[node name="Chair" type="StaticBody3D" groups=["interactable"]]
+collision_layer = 16
+collision_mask = 0
+script = ExtResource("1_chair")
+
+[node name="Collision" type="CollisionShape3D" parent="."]
+position = Vector3(0, 0.475, 0)
+shape = SubResource("BoxShape3D_chair")

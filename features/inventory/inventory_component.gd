@@ -85,6 +85,46 @@ func has_item(id: StringName, minimum: int = 1) -> bool:
 	return get_amount(id) >= minimum
 
 
+## Total count of every stack whose item carries `tag`. A recipe uses this so
+## "2 wood" can be met by spruce logs, birch logs, or seasoned deadfall.
+func get_amount_with_tag(tag: StringName) -> int:
+	var total := 0
+	for stack in _stacks:
+		var data := stack["data"] as ItemData
+		if data != null and data.tags.has(String(tag)):
+			total += int(stack["amount"])
+	return total
+
+
+## Removes `amount` items that carry `tag`, newest stacks first. Returns false
+## and changes nothing when there are not enough.
+func remove_by_tag(tag: StringName, amount: int = 1) -> bool:
+	if amount <= 0 or get_amount_with_tag(tag) < amount:
+		return false
+
+	var removed: Dictionary = {}
+	var remaining := amount
+	var index := _stacks.size() - 1
+	while remaining > 0 and index >= 0:
+		var stack := _stacks[index]
+		var data := stack["data"] as ItemData
+		if data != null and data.tags.has(String(tag)):
+			var taken := mini(int(stack["amount"]), remaining)
+			stack["amount"] = int(stack["amount"]) - taken
+			remaining -= taken
+			removed[stack["id"]] = int(removed.get(stack["id"], 0)) + taken
+			if int(stack["amount"]) <= 0:
+				_stacks.remove_at(index)
+		index -= 1
+
+	inventory_changed.emit()
+	for id in removed:
+		var data := ItemDatabase.get_item(id)
+		if data != null:
+			item_removed.emit(data, int(removed[id]))
+	return true
+
+
 ## Copy of the stacks, safe for UI code to read.
 func get_slots() -> Array[Dictionary]:
 	return _stacks.duplicate(true)

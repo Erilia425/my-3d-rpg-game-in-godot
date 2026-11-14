@@ -1,0 +1,193 @@
+[gd_scene load_steps=4 format=3]
+
+[ext_resource type="Script" path="res://features/ui/ledger_shop_panel.gd" id="1_panel"]
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_paper"]
+content_margin_left = 22.0
+content_margin_top = 18.0
+content_margin_right = 22.0
+content_margin_bottom = 18.0
+bg_color = Color(0.84, 0.76, 0.58, 1)
+border_width_left = 3
+border_width_top = 3
+border_width_right = 3
+border_width_bottom = 3
+border_color = Color(0.3, 0.22, 0.13, 1)
+corner_radius_top_left = 4
+corner_radius_top_right = 4
+corner_radius_bottom_left = 4
+corner_radius_bottom_right = 4
+shadow_color = Color(0.02, 0.015, 0.01, 0.7)
+shadow_size = 16
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_footer"]
+content_margin_left = 22.0
+content_margin_top = 7.0
+content_margin_right = 22.0
+content_margin_bottom = 7.0
+bg_color = Color(0.12, 0.09, 0.06, 0.94)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.5, 0.4, 0.26, 0.9)
+corner_radius_top_left = 6
+corner_radius_top_right = 6
+corner_radius_bottom_left = 6
+corner_radius_bottom_right = 6
+
+[node name="LedgerShopPanel" type="Control"]
+visible = false
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1_panel")
+
+[node name="Backdrop" type="ColorRect" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+color = Color(0.04, 0.035, 0.025, 1)
+
+[node name="Margin" type="MarginContainer" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 60.0
+offset_top = 40.0
+offset_right = -60.0
+offset_bottom = -92.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="Paper" type="PanelContainer" parent="Margin"]
+layout_mode = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_paper")
+
+[node name="VBox" type="VBoxContainer" parent="Margin/Paper"]
+layout_mode = 2
+theme_override_constants/separation = 6
+
+[node name="Header" type="HBoxContainer" parent="Margin/Paper/VBox"]
+layout_mode = 2
+theme_override_constants/separation = 14
+
+[node name="Title" type="Label" parent="Margin/Paper/VBox/Header"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.24, 0.16, 0.09, 1)
+theme_override_font_sizes/font_size = 30
+text = "The Ledger"
+
+[node name="Spacer" type="Control" parent="Margin/Paper/VBox/Header"]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="CoinsLabel" type="Label" parent="Margin/Paper/VBox/Header"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_colors/font_color = Color(0.42, 0.28, 0.1, 1)
+theme_override_font_sizes/font_size = 18
+text = "Coins: 0"
+vertical_alignment = 1
+
+[node name="LevelLabel" type="Label" parent="Margin/Paper/VBox/Header"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_colors/font_color = Color(0.36, 0.28, 0.18, 1)
+theme_override_font_sizes/font_size = 15
+text = "Level 1"
+vertical_alignment = 1
+
+[node name="Rule" type="HSeparator" parent="Margin/Paper/VBox"]
+layout_mode = 2
+
+[node name="Tabs" type="TabContainer" parent="Margin/Paper/VBox"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_vertical = 3
+
+[node name="Shop" type="ScrollContainer" parent="Margin/Paper/VBox/Tabs"]
+layout_mode = 2
+horizontal_scroll_mode = 0
+
+[node name="ShopList" type="VBoxContainer" parent="Margin/Paper/VBox/Tabs/Shop"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 10
+
+[node name="Skills" type="ScrollContainer" parent="Margin/Paper/VBox/Tabs"]
+visible = false
+layout_mode = 2
+horizontal_scroll_mode = 0
+
+[node name="SkillList" type="VBoxContainer" parent="Margin/Paper/VBox/Tabs/Skills"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 10
+
+[node name="Ledger" type="ScrollContainer" parent="Margin/Paper/VBox/Tabs"]
+visible = false
+layout_mode = 2
+horizontal_scroll_mode = 0
+
+[node name="LedgerList" type="VBoxContainer" parent="Margin/Paper/VBox/Tabs/Ledger"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 10
+
+[node name="Footer" type="PanelContainer" parent="."]
+layout_mode = 1
+anchors_preset = 7
+anchor_left = 0.5
+anchor_top = 1.0
+anchor_right = 0.5
+anchor_bottom = 1.0
+offset_left = -330.0
+offset_top = -62.0
+offset_right = 330.0
+offset_bottom = -16.0
+grow_horizontal = 2
+grow_vertical = 0
+mouse_filter = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_footer")
+
+[node name="Row" type="HBoxContainer" parent="Footer"]
+layout_mode = 2
+theme_override_constants/separation = 18
+alignment = 1
+
+[node name="Title" type="Label" parent="Footer/Row"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.96, 0.87, 0.66, 1)
+theme_override_font_sizes/font_size = 20
+text = "The Ledger"
+
+[node name="Subtitle" type="Label" parent="Footer/Row"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.78, 0.7, 0.55, 1)
+theme_override_font_sizes/font_size = 13
+text = "Shop, skills and lore"
+vertical_alignment = 1
+
+[node name="Hint" type="Label" parent="Footer/Row"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.66, 0.58, 0.45, 1)
+theme_override_font_sizes/font_size = 13
+text = "Esc closes"
+vertical_alignment = 1
+
+[node name="CloseButton" type="Button" parent="Footer/Row"]
+layout_mode = 2
+text = "Close"
+
+[connection signal="pressed" from="Footer/Row/CloseButton" to="." method="close"]

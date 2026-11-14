@@ -13,12 +13,41 @@
 [ext_resource type="Script" path="res://features/ui/hud.gd" id="11_2dnfj"]
 [ext_resource type="PackedScene" path="res://features/ui/pause_menu.tscn" id="12_8m6oo"]
 [ext_resource type="Script" path="res://features/ui/pause_menu.gd" id="13_uvrjk"]
-[ext_resource type="PackedScene" path="res://features/npc/npc.tscn" id="14_npc"]
 [ext_resource type="SpriteFrames" path="res://assets/from_2d/frames/auntie_bell.tres" id="15_bell"]
-[ext_resource type="SpriteFrames" path="res://assets/from_2d/frames/rowan.tres" id="16_rowan"]
 [ext_resource type="SpriteFrames" path="res://assets/from_2d/frames/seamstress.tres" id="17_seam"]
 [ext_resource type="SpriteFrames" path="res://assets/from_2d/frames/fern.tres" id="18_fern"]
 [ext_resource type="PackedScene" path="res://features/npc/quest_npc.tscn" id="19_questnpc"]
+[ext_resource type="SpriteFrames" path="res://assets/from_2d/frames/mossy_villager.tres" id="20_mossy"]
+[ext_resource type="PackedScene" path="res://features/combat/guest.tscn" id="21_guest"]
+[ext_resource type="SpriteFrames" path="res://assets/from_2d/frames/wisp.tres" id="22_wisp"]
+[ext_resource type="Script" path="res://features/world/ambient_wisp.gd" id="23_wisp"]
+[ext_resource type="Texture2D" path="res://assets/from_2d/materials/grass.png" id="24_grass"]
+[ext_resource type="Texture2D" path="res://assets/from_2d/sprites/river_water.png" id="25_river"]
+[ext_resource type="Texture2D" path="res://assets/from_2d/sprites/dirt_bank.png" id="26_dirt"]
+[ext_resource type="Texture2D" path="res://assets/from_2d/sprites/grassy_bank.png" id="27_grassy"]
+[ext_resource type="Texture2D" path="res://assets/from_2d/sprites/water_ripple.png" id="28_ripple"]
+[ext_resource type="SpriteFrames" path="res://assets/from_2d/frames/thatch.tres" id="29_thatch"]
+[ext_resource type="PackedScene" path="res://features/combat/ghost_spider.tscn" id="30_spider"]
+[ext_resource type="PackedScene" path="res://features/interaction/world_pickup.tscn" id="31_pickup"]
+[ext_resource type="PackedScene" path="res://features/crafting/crafting_station.tscn" id="32_craft"]
+[ext_resource type="Texture2D" path="res://assets/from_2d/sprites/mushroom.png" id="33_mushroom"]
+[ext_resource type="Texture2D" path="res://assets/from_2d/sprites/flower.png" id="34_flower"]
+[ext_resource type="Script" path="res://features/world/fog_surge.gd" id="35_fog"]
+[ext_resource type="Script" path="res://features/world/town/town_realm.gd" id="36_realm"]
+[ext_resource type="PackedScene" path="res://features/gathering/gather_node.tscn" id="37_gather"]
+[ext_resource type="Texture2D" path="res://assets/from_2d/sprites/tree.png" id="38_tree"]
+[ext_resource type="Texture2D" path="res://assets/from_2d/sprites/rock.png" id="39_rock"]
+[ext_resource type="PackedScene" path="res://features/interaction/moving_storage_cart.tscn" id="40_movingstorage"]
+[ext_resource type="PackedScene" path="res://features/interaction/moving_merchant_cart.tscn" id="41_movingmerchant"]
+[ext_resource type="PackedScene" path="res://features/interaction/vending_machine.tscn" id="42_vending"]
+[ext_resource type="PackedScene" path="res://features/interaction/lore_well.tscn" id="43_lorewell"]
+[ext_resource type="PackedScene" path="res://features/quests/bounty_board.tscn" id="44_board"]
+[ext_resource type="PackedScene" path="res://features/world/town/garden_plot.tscn" id="45_garden"]
+[ext_resource type="Script" path="res://features/world/ambient_audio.gd" id="46_ambient"]
+[ext_resource type="Script" path="res://features/audio/music_player.gd" id="47_music"]
+[ext_resource type="Script" path="res://features/world/weather.gd" id="49_weather"]
+[ext_resource type="AudioStream" path="res://assets/audio/music/hollow_theme.wav" id="48_theme"]
+[ext_resource type="Script" path="res://features/npc/magic_teacher.gd" id="50_teacher"]
 
 [sub_resource type="ProceduralSkyMaterial" id="ProceduralSkyMaterial_qflhy"]
 sky_top_color = Color(0.22, 0.42, 0.66, 1)
@@ -38,7 +67,10 @@ fog_light_color = Color(0.74, 0.78, 0.72, 1)
 fog_density = 0.0022
 
 [sub_resource type="StandardMaterial3D" id="StandardMaterial3D_s6ipg"]
-albedo_color = Color(0.23, 0.33, 0.17, 1)
+albedo_color = Color(0.66, 0.74, 0.55, 1)
+albedo_texture = ExtResource("24_grass")
+texture_filter = 0
+uv1_scale = Vector3(60, 60, 1)
 roughness = 0.97
 
 [sub_resource type="BoxMesh" id="BoxMesh_8qite"]
@@ -395,6 +427,12 @@ script = ExtResource("1_icc4n")
 
 [node name="WorldEnvironment" type="WorldEnvironment" parent="." unique_id=1830194970]
 environment = SubResource("Environment_5qoex")
+
+[node name="FogSurge" type="Node3D" parent="." unique_id=1317713204]
+script = ExtResource("35_fog")
+
+[node name="AmbientAudio" type="Node" parent="."]
+script = ExtResource("46_ambient")
 
 [node name="Sun" type="DirectionalLight3D" parent="." unique_id=1697532264]
 transform = Transform3D(0.8290376, 0.41556132, -0.37417305, 0, 0.66913056, 0.74314487, 0.5591929, -0.61609507, 0.5547344, 0, 0, 0)
@@ -1026,6 +1064,8 @@ color = Color(0.42, 0.36, 0.26, 1)
 surface_height = 0.02
 ripples = false
 seed_value = 45351
+albedo_texture = ExtResource("26_dirt")
+uv_scale = Vector3(0.5, 0.5, 0.5)
 
 [node name="EastBank" type="Node3D" parent="Water" unique_id=20243520]
 script = ExtResource("2_b0eaf")
@@ -1035,6 +1075,8 @@ color = Color(0.42, 0.36, 0.26, 1)
 surface_height = 0.02
 ripples = false
 seed_value = 7473
+albedo_texture = ExtResource("27_grassy")
+uv_scale = Vector3(0.5, 0.5, 0.5)
 
 [node name="SouthRiver" type="Node3D" parent="Water" unique_id=718678514]
 script = ExtResource("2_b0eaf")
@@ -1044,6 +1086,9 @@ color = Color(0.16, 0.34, 0.42, 0.62)
 surface_height = 0.055
 transparent = true
 seed_value = 42499
+albedo_texture = ExtResource("25_river")
+uv_scale = Vector3(0.5, 0.5, 0.5)
+ripple_texture = ExtResource("28_ripple")
 
 [node name="EastRiver" type="Node3D" parent="Water" unique_id=2007628007]
 script = ExtResource("2_b0eaf")
@@ -1053,6 +1098,9 @@ color = Color(0.16, 0.34, 0.42, 0.62)
 surface_height = 0.057
 transparent = true
 seed_value = 42525
+albedo_texture = ExtResource("25_river")
+uv_scale = Vector3(0.5, 0.5, 0.5)
+ripple_texture = ExtResource("28_ripple")
 
 [node name="Buildings" type="Node3D" parent="." unique_id=1201917696]
 
@@ -1091,6 +1139,7 @@ wall_color = Color(0.75, 0.61, 0.4, 1)
 roof_color = Color(0.47, 0.31, 0.19, 1)
 facing_degrees = 8.0
 label = "Auntie Bell's Bakery"
+owner_name = "Auntie Bell"
 seed_value = 90598
 
 [node name="RowansHouse" type="Node3D" parent="Buildings" unique_id=996802287]
@@ -1104,6 +1153,7 @@ wall_color = Color(0.77, 0.7, 0.55, 1)
 roof_color = Color(0.52, 0.4, 0.22, 1)
 facing_degrees = -6.0
 label = "Rowan's House"
+owner_name = "Rowan"
 seed_value = 4430
 
 [node name="ToothkeepersHouse" type="Node3D" parent="Buildings" unique_id=795914429]
@@ -1115,6 +1165,7 @@ wall_color = Color(0.8, 0.69, 0.47, 1)
 roof_color = Color(0.39, 0.32, 0.21, 1)
 facing_degrees = -14.0
 label = "Toothkeeper's House"
+owner_name = "Corin Vale"
 seed_value = 14673
 
 [node name="ChapelCottage" type="Node3D" parent="Buildings" unique_id=761647691]
@@ -1245,6 +1296,7 @@ wall_color = Color(0.57, 0.6, 0.47, 1)
 roof_color = Color(0.4, 0.45, 0.27, 1)
 facing_degrees = 135.0
 label = "Seamstress's Yew Cottage"
+owner_name = "The Blind Seamstress"
 seed_value = 32993
 
 [node name="OldLoomTower" type="Node3D" parent="Buildings" unique_id=1467186949]
@@ -1292,6 +1344,7 @@ wall_color = Color(0.8, 0.69, 0.47, 1)
 roof_color = Color(0.39, 0.32, 0.21, 1)
 facing_degrees = 90.0
 label = "Threadkeeper's House"
+is_home = true
 seed_value = 88859
 
 [node name="ThreadCottage" type="Node3D" parent="Buildings" unique_id=770314530]
@@ -2511,6 +2564,9 @@ outer_radius = 96.0
 clumps = PackedVector3Array(-58, 8, -46, -52, 7, -58, -30, 8, -64, 34, 8, -64, 58, 9, -52, 68, 8, -34, 76, 7, -16, 78, 7, 6, 66, 8, 26, 44, 8, 60, 16, 8, 62, -10, 8, 64, -40, 8, 58, -62, 8, 40, -72, 8, 16, -70, 8, -16)
 avoid = PackedVector3Array(52, 11, -60, 72.7, 10, -2.8, -26, 8, 32.2, 6.2, 8, 40.6, 52, 8, 46, 80, 12, 14, -7.1, 7.700877, 14.5, 6.9, 5.2526913, 12.6, -28, 7.936329, 14.5, 25, 7.550901, 9.5, 55, 7.153882, 14.5, -15, 6.609772, 17, 16.5, 6.609772, 21.5, 38.5, 6.609772, 14, 29, 6.776243, 20.5, 35.5, 7, -3.2, -14, 6.609772, -8, -26, 6.609772, -6, 47, 6.609772, -11, -40, 7, -27.5, -52, 6.609772, -27.5, -31.5, 6.609772, -27.5, -23.5, 6.609772, -27.5, -15.5, 6.609772, -27.5, -44, 7, -49, -15, 5.535534, -57, -34, 6.609772, -44, -27, 6.069705, -38, 36, 8.519202, -22, 46.5, 6.609772, -28, 49.5, 6.609772, -41.5, 61, 5.535534, -38, 34, 7, -34, 54.5, 6.069705, -31.5, 25, 6.609772, -27, 23, 6.069705, -45, 6, 7.315073, -47, 0, 8.403124, -70, 11, 8.403124, -75, 23, 8.363961, -77, 68, 6.609772, 18, 58, 6.069705, -4, -52, 6.609772, 2, -58, 6.609772, 20, -19, 6.609772, 29, 70, 6.609772, -16, 8, 6.069705, 49, 16.5, 6.069705, 54, -50, 6.069705, 43.5, -43.5, 5.535534, 51, -39, 6.2426405, 44.5, -98, 4.3, 13, -96, 4.3, 12.6, -94, 4.3, 12.2, -92, 4.3, 11.8, -90, 4.3, 11.4, -88, 4.3, 11, -86, 4.3, 10.6, -84, 4.3, 10.2, -82, 4.3, 9.8, -80, 4.3, 9.4, -78, 4.3, 9, -78, 4.3, 9, -76, 4.3, 8.8, -74, 4.3, 8.6, -72, 4.3, 8.4, -70, 4.3, 8.2, -68, 4.3, 8, -66, 4.3, 7.8, -64, 4.3, 7.6, -62, 4.3, 7.4, -60, 4.3, 7.2, -58, 4.3, 7, -58, 4.3, 7, -56, 4.3, 6.888889, -54, 4.3, 6.7777777, -52, 4.3, 6.6666665, -50, 4.3, 6.5555553, -48, 4.3, 6.4444447, -46, 4.3, 6.3333335, -44, 4.3, 6.2222223, -42, 4.3, 6.111111, -40, 4.3, 6, -40, 4.3, 6, -38, 4.3, 5.7, -36, 4.3, 5.4, -34, 4.3, 5.1, -32, 4.3, 4.8, -30, 4.3, 4.5, -28, 4.3, 4.2, -26, 4.3, 3.9, -24, 4.3, 3.6, -22, 4.3, 3.3000002, -20, 4.3, 3, -20, 4.3, 3, -18, 4.3, 2.75, -16, 4.3, 2.5, -14, 4.3, 2.25, -12, 4.3, 2, -10, 4.3, 1.75, -8, 4.3, 1.5, -6, 4.3, 1.25, -4, 4.3, 1, -4, 4.3, 1, -2, 4.3, 0.75, 0, 4.3, 0.5, 2, 4.3, 0.25, 4, 4.3, 0, 6, 4.3, -0.25, 8, 4.3, -0.5, 10, 4.3, -0.75, 12, 4.3, -1, 12, 4.3, -1, 14, 4.3, -0.85714287, 16, 4.3, -0.71428573, 18, 4.3, -0.57142854, 20, 4.3, -0.4285714, 22, 4.3, -0.28571427, 24, 4.3, -0.14285713, 26, 4.3, 0, 26, 4.3, 0, 28, 4.3, 0.42857146, 30, 4.3, 0.8571429, 32, 4.3, 1.2857143, 34, 4.3, 1.7142859, 36, 4.3, 2.142857, 38, 4.3, 2.5714285, 40, 4.3, 3, 40, 4.3, 3, 42, 4.3, 3.4285715, 44, 4.3, 3.857143, 46, 4.3, 4.285714, 48, 4.3, 4.714286, 50, 4.3, 5.142857, 52, 4.3, 5.5714283, 54, 4.3, 6, 54, 4.3, 6, 56, 4.3, 6.571429, 58, 4.3, 7.142857, 60, 4.3, 7.714286, 62, 4.3, 8.285714, 64, 4.3, 8.857143, 66, 4.3, 9.428572, 68, 4.3, 10, 68, 4.3, 10, 70, 4.3, 10.333333, 72, 4.3, 10.666667, 74, 4.3, 11, 76, 4.3, 11.333333, 78, 4.3, 11.666667, 80, 4.3, 12, 82, 4.3, 12.333334, 84, 4.3, 12.666667, 86, 4.3, 13, -56, 4, -21, -54, 4, -21.1, -52, 4, -21.2, -50, 4, -21.3, -48, 4, -21.4, -48, 4, -21.4, -46, 4, -21.45, -44, 4, -21.5, -42, 4, -21.55, -40, 4, -21.6, -40, 4, -21.6, -38, 4, -21.55, -36, 4, -21.5, -34, 4, -21.45, -32, 4, -21.4, -32, 4, -21.4, -30, 4, -21.3, -28, 4, -21.2, -26, 4, -21.1, -24, 4, -21, -24, 4, -21, -22, 4, -20.333334, -20, 4, -19.666666, -18, 4, -19, -18, 4, -19, -16, 4, -17.333334, -14, 4, -15.666666, -12, 4, -14, -12, 4, -14, -10.333333, 4, -12, -8.666666, 4, -10, -7, 4, -8, -7, 4, -8, -5.6666665, 4, -6, -4.333333, 4, -4, -3, 4, -2, 4, 4, -2, 4.8, 4, -4, 5.6, 4, -6, 6.4, 4, -8, 7.2, 4, -10, 8, 4, -12, 8, 4, -12, 8.833333, 4, -14, 9.666667, 4, -16, 10.5, 4, -18, 11.333334, 4, -20, 12.166666, 4, -22, 13, 4, -24, 13, 4, -24, 14.2, 4, -26, 15.4, 4, -28, 16.6, 4, -30, 17.8, 4, -32, 19, 4, -34, 19, 4, -34, 20.4, 4, -35.6, 21.8, 4, -37.2, 23.2, 4, -38.8, 24.6, 4, -40.4, 26, 4, -42, 26, 4, -42, 27.8, 4, -43.4, 29.6, 4, -44.8, 31.4, 4, -46.2, 33.2, 4, -47.6, 35, 4, -49, 35, 4, -49, 36.8, 4, -50.2, 38.6, 4, -51.4, 40.4, 4, -52.6, 42.2, 4, -53.8, 44, 4, -55, 44, 4, -55, 46, 4, -56.25, 48, 4, -57.5, 50, 4, -58.75, 52, 4, -60, 52, 4, -60, 52.8, 4, -62, 53.6, 4, -64, 54.4, 4, -66, 55.2, 4, -68, 56, 4, -70, 22, 3.8, -2, 24, 3.8, -3.6666667, 26, 3.8, -5.3333335, 28, 3.8, -7, 28, 3.8, -7, 30, 3.8, -8.666667, 32, 3.8, -10.333334, 34, 3.8, -12, 34, 3.8, -12, 35.75, 3.8, -13.25, 37.5, 3.8, -14.5, 39.25, 3.8, -15.75, 41, 3.8, -17, 41, 3.8, -17, 43, 3.8, -17.666666, 45, 3.8, -18.333334, 47, 3.8, -19, 47, 3.8, -19, 49.333332, 3.8, -20, 51.666668, 3.8, -21, 54, 3.8, -22, 54, 3.8, -22, 56, 3.8, -23.333334, 58, 3.8, -24.666666, 60, 3.8, -26, 60, 3.8, -26, 61.666668, 3.8, -27.666666, 63.333332, 3.8, -29.333334, 65, 3.8, -31, 65, 3.8, -31, 66, 3.8, -33, 67, 3.8, -35, 68, 3.8, -37, 68, 3.8, -37, 69, 3.8, -39, 70, 3.8, -41, 71, 3.8, -43, 72, 3.8, -45, 38, 3.5, -46, 36.25, 3.5, -47.25, 34.5, 3.5, -48.5, 32.75, 3.5, -49.75, 31, 3.5, -51, 31, 3.5, -51, 29, 3.5, -52.333332, 27, 3.5, -53.666668, 25, 3.5, -55, 25, 3.5, -55, 23, 3.5, -56.333332, 21, 3.5, -57.666668, 19, 3.5, -59, 19, 3.5, -59, 17, 3.5, -60.5, 15, 3.5, -62, 19, 3.5, -34, 18.2, 3.5, -36, 17.4, 3.5, -38, 16.6, 3.5, -40, 15.8, 3.5, -42, 15, 3.5, -44, 15, 3.5, -44, 14.2, 3.5, -46, 13.4, 3.5, -48, 12.6, 3.5, -50, 11.8, 3.5, -52, 11, 3.5, -54, 11, 3.5, -54, 10.25, 3.5, -56, 9.5, 3.5, -58, 8.75, 3.5, -60, 8, 3.5, -62, 8, 3.5, -62, 7, 3.5, -64.5, 6, 3.5, -67, -58, 3.6, -30, -56, 3.6, -30.5, -54, 3.6, -31, -52, 3.6, -31.5, -52, 3.6, -31.5, -50, 3.6, -32, -48, 3.6, -32.5, -46, 3.6, -33, -46, 3.6, -33, -44, 3.6, -33.333332, -42, 3.6, -33.666668, -40, 3.6, -34, -40, 3.6, -34, -38, 3.6, -33.666668, -36, 3.6, -33.333332, -34, 3.6, -33, -34, 3.6, -33, -32, 3.6, -33, -30, 3.6, -33, -28, 3.6, -33, -28, 3.6, -33, -26, 3.6, -33.666668, -24, 3.6, -34.333332, -22, 3.6, -35, -22, 3.6, -35, -20.333334, 3.6, -36.333332, -18.666666, 3.6, -37.666668, -17, 3.6, -39, -17, 3.6, -39, -15.833333, 3.6, -41, -14.666666, 3.6, -43, -13.5, 3.6, -45, -13.5, 3.6, -45, -12.5, 3.6, -47, -11.5, 3.6, -49, -10.5, 3.6, -51, -10.5, 3.6, -51, -10.5, 3.6, -53.333332, -10.5, 3.6, -55.666668, -10.5, 3.6, -58, -10.5, 3.6, -58, -10.5, 3.6, -60, -10.5, 3.6, -62, -10.5, 3.6, -64, -62, 4.1, 30, -60, 4.1, 30.1, -58, 4.1, 30.2, -56, 4.1, 30.3, -54, 4.1, 30.4, -52, 4.1, 30.5, -52, 4.1, 30.5, -50, 4.1, 30.583334, -48, 4.1, 30.666666, -46, 4.1, 30.75, -44, 4.1, 30.833334, -42, 4.1, 30.916666, -40, 4.1, 31, -40, 4.1, 31, -37.666668, 4.1, 31.2, -35.333332, 4.1, 31.4, -33, 4.1, 31.6, -33, 4.1, 31.6, -30.666666, 4.1, 31.800001, -28.333332, 4.1, 32, -26, 4.1, 32.2, -26, 4.1, 32.2, -23.666666, 4.1, 32.4, -21.333332, 4.1, 32.6, -19, 4.1, 32.8, -19, 4.1, 32.8, -16.75, 4.1, 33.1, -14.5, 4.1, 33.4, -12.25, 4.1, 33.7, -10, 4.1, 34, -10, 4.1, 34, -8, 4.1, 34.75, -6, 4.1, 35.5, -4, 4.1, 36.25, -2, 4.1, 37, -2, 4.1, 37, 0.049999952, 4.1, 37.9, 2.1, 4.1, 38.8, 4.1499996, 4.1, 39.699997, 6.2, 4.1, 40.6, 6.2, 4.1, 40.6, 8.559999, 4.1, 40.879997, 10.92, 4.1, 41.16, 13.280001, 4.1, 41.44, 15.64, 4.1, 41.72, 18, 4.1, 42, 18, 4.1, 42, 20, 4.1, 42.166668, 22, 4.1, 42.333332, 24, 4.1, 42.5, 26, 4.1, 42.666668, 28, 4.1, 42.833332, 30, 4.1, 43, 30, 4.1, 43, 32, 4.1, 43.333332, 34, 4.1, 43.666668, 36, 4.1, 44, 38, 4.1, 44.333332, 40, 4.1, 44.666668, 42, 4.1, 45, 42, 4.1, 45, 44, 4.1, 45.2, 46, 4.1, 45.4, 48, 4.1, 45.6, 50, 4.1, 45.8, 52, 4.1, 46, 52, 4.1, 46, 54, 4.1, 46.25, 56, 4.1, 46.5, 58, 4.1, 46.75, 60, 4.1, 47, 62, 4.1, 47.25, 64, 4.1, 47.5, 64, 4.1, 47.5, 66, 4.1, 47.714287, 68, 4.1, 47.92857, 70, 4.1, 48.142857, 72, 4.1, 48.357143, 74, 4.1, 48.57143, 76, 4.1, 48.785713, 78, 4.1, 49, -30, 3.7, 20, -28, 3.7, 20.5, -26, 3.7, 21, -24, 3.7, 21.5, -22, 3.7, 22, -22, 3.7, 22, -20, 3.7, 22.666666, -18, 3.7, 23.333334, -16, 3.7, 24, -16, 3.7, 24, -13.666666, 3.7, 24.866667, -11.333333, 3.7, 25.733334, -9, 3.7, 26.6, -9, 3.7, 26.6, -6.6666665, 3.7, 26.733334, -4.333333, 3.7, 26.866667, -2, 3.7, 27, -2, 3.7, 27, 0, 3.7, 26.333334, 2, 3.7, 25.666666, 4, 3.7, 25, 4, 3.7, 25, 6, 3.7, 24, 8, 3.7, 23, 10, 3.7, 22, 10, 3.7, 22, 12, 3.7, 20, 14, 3.7, 18, 14, 3.7, 18, 14.666667, 3.7, 16, 15.333333, 3.7, 14, 16, 3.7, 12, 44, 3.8, 4, 46, 3.8, 3.6, 48, 3.8, 3.2, 50, 3.8, 2.8, 52, 3.8, 2.4, 54, 3.8, 2, 54, 3.8, 2, 56, 3.8, 1.6, 58, 3.8, 1.2, 60, 3.8, 0.79999995, 62, 3.8, 0.39999998, 64, 3.8, 0, 64, 3.8, 0, 66.175, 3.8, -0.7, 68.35, 3.8, -1.4, 70.524994, 3.8, -2.1, 72.7, 3.8, -2.8, 72.7, 3.8, -2.8, 74.56, 3.8, -3.6399999, 76.42, 3.8, -4.48, 78.28, 3.8, -5.3199997, 80.14, 3.8, -6.16, 82, 3.8, -7, -7.1, 3.225, 7.4, -7.5069237, 3.225, 4.4446154, -7.913847, 3.225, 1.4892306, 6.9, 3.225, 9.654, 6.5733385, 3.225, 7.190708, 6.2466764, 3.225, 4.7274156, 5.920015, 3.225, 2.264123, 5.5933533, 3.225, -0.19916916, -28.537209, 3.225, 10.677566, -28.851852, 3.225, 8.592434, -29.166494, 3.225, 6.5073023, -29.481138, 3.225, 4.4221706, 25.408707, 3.225, 5.6114197, 26.02766, 3.225, 2.8749897, 26.646612, 3.225, 0.13855982, 55.945915, 3.225, 10.706144, 57.06177, 3.225, 6.8747916, -16.37106, 3.225, 13.606506, -16.612741, 3.225, 11.424692, -16.854424, 3.225, 9.242877, -17.096104, 3.225, 7.0610623, -17.337786, 3.225, 4.8792477, -17.579468, 3.225, 2.6974335, 13.707882, 3.225, 19.942673, 14.167629, 3.225, 17.497112, 39.99658, 3.225, 10.665522, 41.33105, 3.225, 8.443681, 42.665527, 3.225, 6.2218404, 44, 3.225, 4, 29, 3.225, 16.59, 26.7905, 3.225, 15.953501, 24.581, 3.225, 15.317, 22.3715, 3.225, 14.6805, 20.161999, 3.225, 14.044001, 17.9525, 3.225, 13.407501, 15.743, 3.225, 12.771001, 35.5, 3.225, 0.45999992, 35.054245, 3.225, 1.9401952, -15.830001, 3.225, -4.830347, -15.410361, 3.225, -2.4464362, -14.990723, 3.225, -0.06252527, -14.571083, 3.225, 2.3213854, -24.748207, 3.225, -2.560725, -24.48079, 3.225, -0.5098522, -24.213371, 3.225, 1.5410206, -23.945953, 3.225, 3.591893, 44.675976, 3.225, -13.740019, 42.166355, 3.225, -14.890271, 39.656734, 3.225, -16.040524, -40, 3.225, -23.84, -40, 3.225, -21.6, -52.12773, 3.225, -23.84223, -51.944836, 3.225, -21.202759, -31.372269, 3.225, -23.84223, -31.546434, 3.225, -21.377321, -23.563875, 3.225, -23.840557, -24, 3.225, -21, -15.436125, 3.225, -23.840557, -16.718063, 3.225, -21.420279, -18, 3.225, -19, -46.58801, 3.225, -46.41199, -46.490005, 3.225, -44.17666, -46.392006, 3.225, -41.941326, -46.294006, 3.225, -39.705994, -46.196003, 3.225, -37.470665, -46.098, 3.225, -35.235332, -46, 3.225, -33, -12.053907, 3.225, -58.104607, -10.248517, 3.225, -58.994144, -8.443126, 3.225, -59.883686, -6.637735, 3.225, -60.773224, -4.8323445, 3.225, -61.662766, -3.0269537, 3.225, -62.552303, -1.2215624, 3.225, -63.44184, 0.583828, 3.225, -64.33138, 2.3892183, 3.225, -65.220924, 4.1946087, 3.225, -66.11046, 6, 3.225, -67, -37.16965, 3.225, -42.170002, -37.87724, 3.225, -40.127502, -38.584824, 3.225, -38.085, -39.29241, 3.225, -36.0425, -40, 3.225, -34, -29.191906, 3.225, -35.38779, -28.806232, 3.225, -33, 31.839998, 3.225, -22, 31.291428, 3.225, -19.857143, 30.742855, 3.225, -17.714285, 30.194284, 3.225, -15.571428, 29.645714, 3.225, -13.428571, 29.097141, 3.225, -11.285714, 28.54857, 3.225, -9.142857, 28, 3.225, -7, 46.5, 3.225, -31.66, 45.4375, 3.225, -33.4525, 44.375, 3.225, -35.245, 43.3125, 3.225, -37.0375, 42.25, 3.225, -38.83, 41.1875, 3.225, -40.622498, 40.125, 3.225, -42.415, 39.0625, 3.225, -44.2075, 38, 3.225, -46, 49.5, 3.225, -45.16, 48.4, 3.225, -47.128, 47.3, 3.225, -49.096, 46.2, 3.225, -51.064, 45.1, 3.225, -53.032, 44, 3.225, -55, 61, 3.225, -41.05, 59.868538, 3.225, -42.800335, 58.73708, 3.225, -44.550674, 57.605618, 3.225, -46.30101, 56.47416, 3.225, -48.05135, 55.342697, 3.225, -49.801685, 54.211235, 3.225, -51.552025, 53.079777, 3.225, -53.30236, 51.948315, 3.225, -55.052696, 50.816856, 3.225, -56.803032, 49.685394, 3.225, -58.55337, 30.34, 3.225, -34, 28.799381, 3.225, -35.479294, 27.258762, 3.225, -36.958584, 25.718142, 3.225, -38.437874, 24.177523, 3.225, -39.917168, 57.800755, 3.225, -32.300224, 59.840603, 3.225, -33.24018, 61.88045, 3.225, -34.180134, 63.920303, 3.225, -35.12009, 65.96015, 3.225, -36.060043, 68, 3.225, -37, 23.748207, 3.225, -23.560724, 21.598566, 3.225, -23.648579, 19.448925, 3.225, -23.736435, 17.299282, 3.225, -23.82429, 15.149641, 3.225, -23.912146, 13, 3.225, -24, 20.046854, 3.225, -43.295002, 17.97715, 3.225, -42.5132, 15.907444, 3.225, -41.73139, 68.66246, 3.225, 14.403196, 69.22798, 3.225, 12.351057, 69.79351, 3.225, 10.298919, 56.83371, 3.225, -0.7956481, 57.56809, 3.225, 1.286382, -55.66, 3.225, 2.0000002, -56.83, 3.225, 4.5, -58, 3.225, 7, -61.53529, 3.225, 19.052723, -61.65527, 3.225, 16.724882, -61.77525, 3.225, 14.397041, -61.895226, 3.225, 12.0692005, -62.015205, 3.225, 9.74136, -62.135185, 3.225, 7.413519, -19.85474, 3.225, 32.137478, -22.36102, 3.225, 32.511913, 70, 3.225, -12.34, 71.06525, 3.225, -10.131241, 72.13049, 3.225, -7.9224806, 73.19574, 3.225, -5.713721, 74.26099, 3.225, -3.504961, 9.441128, 3.225, 45.90949, 9.636016, 3.225, 43.47014, 9.830904, 3.225, 41.030785, 15.617427, 3.225, 50.706192, 15.93558, 3.225, 48.49672, 16.253735, 3.225, 46.28725, 16.571888, 3.225, 44.07778, 16.890041, 3.225, 41.86831, -51.704998, 3.225, 40.546852, -51.764, 3.225, 38.537483, -51.822998, 3.225, 36.52811, -51.882, 3.225, 34.51874, -51.940998, 3.225, 32.50937, -52, 3.225, 30.5, -43.4544, 3.225, 47.845325, -43.672256, 3.225, 45.71259, -43.890118, 3.225, 43.579857, -44.10798, 3.225, 41.44712, -44.325836, 3.225, 39.314384, -44.543694, 3.225, 37.181652, -44.761555, 3.225, 35.048916, -44.979416, 3.225, 32.916183, -45.197273, 3.225, 30.783447)
 
+[node name="Realm" type="Node3D" parent="."]
+script = ExtResource("36_realm")
+
 [node name="Gates" type="Node3D" parent="." unique_id=1895541000]
 
 [node name="HomeGate" type="Area3D" parent="Gates" unique_id=561946205]
@@ -2523,17 +2579,6 @@ target_position = Vector3(0, 0.2, -8)
 
 [node name="Collision" type="CollisionShape3D" parent="Gates/HomeGate" unique_id=1212858962]
 shape = SubResource("BoxShape3D_5dkcy")
-
-[node name="NorthGate" type="Area3D" parent="Gates" unique_id=649608707]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 52, 1.2, -60)
-collision_layer = 0
-collision_mask = 2
-script = ExtResource("6_ie20d")
-target_scene = "res://scenes/overworld.tscn"
-target_position = Vector3(0, 0.2, 10)
-
-[node name="Collision" type="CollisionShape3D" parent="Gates/NorthGate" unique_id=351839050]
-shape = SubResource("BoxShape3D_j6kvq")
 
 [node name="ChapelDoor" type="Area3D" parent="Gates" unique_id=845107095]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -7.1, 1.2, 7.65)
@@ -2964,42 +3009,6 @@ interior = true
 [node name="Collision" type="CollisionShape3D" parent="Gates/GoneHouseBDoor" unique_id=1475034729]
 shape = SubResource("BoxShape3D_xrh2o")
 
-[node name="NorthArch" type="StaticBody3D" parent="." unique_id=40804560]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 52, 0, -60)
-collision_mask = 0
-
-[node name="Stone1" type="MeshInstance3D" parent="NorthArch" unique_id=698436929]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -2.3, 1.6, 0)
-material_override = SubResource("StandardMaterial3D_v4ebs")
-mesh = SubResource("BoxMesh_blje5")
-
-[node name="StoneShape1" type="CollisionShape3D" parent="NorthArch" unique_id=2025763765]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -2.3, 1.6, 0)
-shape = SubResource("BoxShape3D_mmual")
-
-[node name="Stone2" type="MeshInstance3D" parent="NorthArch" unique_id=1210753777]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 2.3, 1.6, 0)
-material_override = SubResource("StandardMaterial3D_v4ebs")
-mesh = SubResource("BoxMesh_4u62a")
-
-[node name="StoneShape2" type="CollisionShape3D" parent="NorthArch" unique_id=175262539]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 2.3, 1.6, 0)
-shape = SubResource("BoxShape3D_rum8i")
-
-[node name="Stone3" type="MeshInstance3D" parent="NorthArch" unique_id=1108644079]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 3.45, 0)
-material_override = SubResource("StandardMaterial3D_v4ebs")
-mesh = SubResource("BoxMesh_v316n")
-
-[node name="StoneShape3" type="CollisionShape3D" parent="NorthArch" unique_id=850382341]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 3.45, 0)
-shape = SubResource("BoxShape3D_wtqw3")
-
-[node name="Moss" type="MeshInstance3D" parent="NorthArch" unique_id=2082864120]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 3.86, 0)
-material_override = SubResource("StandardMaterial3D_n6k1i")
-mesh = SubResource("BoxMesh_mbjbr")
-
 [node name="WelcomeSign" type="Node3D" parent="." unique_id=541276948]
 transform = Transform3D(-4.371139e-08, 0, 1, 0, 1, 0, -1, 0, -4.371139e-08, -82, 0, 12)
 
@@ -3072,7 +3081,7 @@ theme_override_styles/panel = SubResource("StyleBoxFlat_rdhor")
 layout_mode = 2
 theme_override_font_sizes/font_size = 15
 theme_override_colors/font_color = Color(0.8, 0.85, 0.88, 1)
-text = "WASD move   |   double-tap W run   |   Shift crouch   |   Space jump (hold to hop)   |   LMB attack   |   E interact   |   I inventory   |   M map   |   V camera   |   F3 debug
+text = "WASD move   |   double-tap W run   |   Shift crouch   |   Space jump (hold to hop, double jump in air)   |   LMB attack   |   E interact   |   I inventory   |   M map   |   V camera   |   F flashlight   |   F3 debug
 Esc pause   |   F5 quicksave   |   F9 quickload   |   Your cottage door leads back inside
 Mycelgrove Hollow: market square, chapel hill, keepers' quarter, beekeeper district, old quarter, forest edge"
 horizontal_alignment = 1
@@ -3081,7 +3090,7 @@ vertical_alignment = 1
 [node name="Villagers" type="Node3D" parent="."]
 
 [node name="AuntieBell" parent="Villagers" instance=ExtResource("19_questnpc")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -26.84, 0.05, 9.09)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 12, 0.05, -5)
 npc_name = "Auntie Bell"
 role = "Baker"
 sprite_frames = ExtResource("15_bell")
@@ -3091,6 +3100,10 @@ deliver_item = &"item.sporebread"
 deliver_amount = 1
 reward_item = &"item.hearth_silk"
 reward_amount = 1
+reward_favor = 6
+reward_xp = 25
+reward_coins = 15
+unlock_discovery = &"discovery.fungal_record"
 offer_lines = PackedStringArray("Welcome to Mycelgrove Hollow, dear.", "You look like you've wandered a long way.", "Are you looking for something?", "If you have time, could you bring me some Sporebread?")
 waiting_lines = PackedStringArray("If you have time, could you bring me some Sporebread?")
 turn_in_lines = PackedStringArray("Oh! You brought me Sporebread!", "It smells wonderful, dear. Thank you.", "Here, take some Hearth-Silk for your kindness.", "The fungi used for Sporebread grow near something old beneath the woods...")
@@ -3104,32 +3117,30 @@ facing_degrees = 8.0
 scheduled = true
 active_from_hour = 8
 active_to_hour = 18
+wander = true
+wander_radius = 5.5
+wander_center = Vector3(14, 0.05, -7)
+walk_speed = 0.9
+pause_at_points = 5.0
 
-[node name="Rowan" parent="Villagers" instance=ExtResource("19_questnpc")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 27.3, 0.05, 4.82)
-npc_name = "Rowan"
-role = "Keeper of Records"
-sprite_frames = ExtResource("16_rowan")
-greeting_lines = PackedStringArray("Keep it safe. Some exchanges cannot be undone.")
-offers_quest = &"quest.rowan_ledger"
-offer_gift_item = &"item.ledger_page"
-offer_gift_amount = 1
-offer_lines = PackedStringArray("The ledger holds more than names.")
-coat_color = Color(0.27, 0.32, 0.4, 1)
-trim_color = Color(0.62, 0.55, 0.4, 1)
-skin_color = Color(0.8, 0.63, 0.47, 1)
-hair_color = Color(0.2, 0.14, 0.09, 1)
-facing_degrees = -6.0
-scheduled = true
-active_from_hour = 8
-active_to_hour = 18
-
-[node name="BlindSeamstress" parent="Villagers" instance=ExtResource("14_npc")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -48.6, 0.05, -46.67)
+[node name="BlindSeamstress" parent="Villagers" instance=ExtResource("19_questnpc")]
+script = ExtResource("50_teacher")
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 18.5, 0.05, -2)
 npc_name = "The Blind Seamstress"
 role = "Seamstress"
 sprite_frames = ExtResource("17_seam")
 greeting_lines = PackedStringArray("I know your footsteps, stranger. Stand still and let me hear your coat.", "Thread remembers what eyes forget.")
+offers_quest = &"quest.seamstress_thread"
+deliver_item = &"item.hearth_silk_thread"
+deliver_amount = 1
+reward_item = &"item.honey"
+reward_amount = 2
+reward_favor = 8
+reward_xp = 30
+reward_coins = 20
+offer_lines = PackedStringArray("You walk like someone who has been out among the spiders.", "Bring me one Hearth-Silk Thread from the bench, and I will mend what the fog frayed.", "My hands will do the seeing.")
+waiting_lines = PackedStringArray("One Hearth-Silk Thread, dear. The crafting bench by the market will make it.", "A Hearth-Silk and a Flower, if my memory serves.")
+turn_in_lines = PackedStringArray("Ah. There it is. Strong thread, and warm.", "Take this honey for your trouble. The hive owes me a favour or two.", "Come back when your coat needs mending.")
 coat_color = Color(0.38, 0.44, 0.3, 1)
 trim_color = Color(0.85, 0.82, 0.7, 1)
 skin_color = Color(0.86, 0.74, 0.62, 1)
@@ -3140,12 +3151,30 @@ facing_degrees = 135.0
 scheduled = true
 active_from_hour = 8
 active_to_hour = 18
+wander = true
+wander_points = PackedVector3Array(8, 0, 0, 18, 0, -1, 24, 0, 0, 18, 0, 2, 10, 0, 2)
+walk_speed = 1.2
+pause_at_points = 3.5
 
-[node name="Thatch" parent="Villagers" instance=ExtResource("14_npc")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 60, 0.05, -26)
+[node name="Thatch" parent="Villagers" instance=ExtResource("19_questnpc")]
+script = ExtResource("50_teacher")
+curriculum = &"thatch"
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 23.5, 0.05, -4.5)
 npc_name = "Thatch"
 role = "Beekeeper"
+sprite_frames = ExtResource("29_thatch")
 greeting_lines = PackedStringArray("Bees keep no schedule. I just follow them.", "The Hive Tower hums louder before rain.")
+offers_quest = &"quest.thatch_hive"
+deliver_item = &"item.flower"
+deliver_amount = 1
+reward_item = &"item.sporebread"
+reward_amount = 1
+reward_favor = 6
+reward_xp = 25
+reward_coins = 15
+offer_lines = PackedStringArray("The Hive Tower's bees are restless this season. They favor the wildflowers that grow along the old road.", "Would you bring me one Flower? Just one, mind. The bees do the rest.")
+waiting_lines = PackedStringArray("Still no flower? Look for the little blue ones near the river stones.", "The bees are patient. I am not.")
+turn_in_lines = PackedStringArray("Ah, that's the one. Sweet as a summer morning.", "Take this Sporebread. It's the least the hive owes you.")
 coat_color = Color(0.62, 0.48, 0.2, 1)
 trim_color = Color(0.82, 0.7, 0.38, 1)
 skin_color = Color(0.82, 0.66, 0.5, 1)
@@ -3156,16 +3185,24 @@ scheduled = true
 active_from_hour = 8
 active_to_hour = 18
 wander = true
-wander_points = PackedVector3Array(57, 0, -24, 60, 0, -26, 65, 0, -31, 68, 0, -37, 65, 0, -31, 60, 0, -26)
+wander_points = PackedVector3Array(22, 0, -4.5, 23.5, 0, -4.5, 25, 0, -5.5, 23.5, 0, -4.5)
 walk_speed = 1.4
 pause_at_points = 3.0
 
-[node name="Fern" parent="Villagers" instance=ExtResource("14_npc")]
+[node name="Fern" parent="Villagers" instance=ExtResource("19_questnpc")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -4, 0.05, 1)
 npc_name = "Fern"
 role = "Wanderer"
 sprite_frames = ExtResource("18_fern")
 greeting_lines = PackedStringArray("Nowhere in particular is a place, if you walk long enough.", "I go where the paths look interesting.")
+offers_quest = &"quest.rowan_ledger"
+offer_gift_item = &"item.ledger_page"
+offer_gift_amount = 1
+reward_favor = 6
+reward_xp = 25
+reward_coins = 15
+offer_lines = PackedStringArray("The wind gave me this. It has your name on it, I think.", "I cannot read the little marks. But you can.")
+waiting_lines = PackedStringArray("The page is still yours. I have kept it dry.")
 coat_color = Color(0.33, 0.45, 0.26, 1)
 trim_color = Color(0.55, 0.47, 0.28, 1)
 skin_color = Color(0.83, 0.68, 0.52, 1)
@@ -3174,3 +3211,559 @@ wander = true
 wander_points = PackedVector3Array(-20, 0, 3, -4, 0, 1, 12, 0, -1, 26, 0, 0, 40, 0, 3)
 walk_speed = 1.5
 pause_at_points = 2.5
+model_scale = 0.62
+
+[node name="MossyVillager" parent="Villagers" instance=ExtResource("19_questnpc")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 74, 0.05, -2)
+npc_name = "Mossy Villager"
+role = "Villager"
+sprite_frames = ExtResource("20_mossy")
+greeting_lines = PackedStringArray("Keep to the paths when the fog rolls in.")
+gift_item = &"item.mushroom"
+gift_amount = 1
+gift_lines = PackedStringArray("Welcome, dear. The woods have been restless.", "Here, take a mushroom for your travels.")
+gift_after_lines = PackedStringArray("Keep to the paths when the fog rolls in.")
+facing_degrees = 180.0
+wander = true
+wander_points = PackedVector3Array(66, 0, -2, 72, 0, 0, 80, 0, -2, 86, 0, 2, 76, 0, 4)
+walk_speed = 1.1
+pause_at_points = 3.0
+
+[node name="SilasGraye" parent="Villagers" instance=ExtResource("19_questnpc")]
+script = ExtResource("50_teacher")
+curriculum = &"silas"
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 31, 0.05, 7)
+npc_name = "Silas Graye"
+role = "Debt Enforcer"
+greeting_lines = PackedStringArray("Debts are not evil. Ignoring them is.", "I keep the ledger at the edge of the trees. It keeps better there.", "Mind what you owe in this village, stranger.")
+coat_color = Color(0.24, 0.22, 0.2, 1)
+trim_color = Color(0.46, 0.38, 0.26, 1)
+skin_color = Color(0.78, 0.64, 0.5, 1)
+hair_color = Color(0.55, 0.55, 0.53, 1)
+facing_degrees = 200.0
+wander = true
+wander_radius = 8.5
+wander_center = Vector3(22, 0.05, -2)
+walk_speed = 1.0
+pause_at_points = 3.5
+
+[node name="CorinVale" parent="Villagers" instance=ExtResource("19_questnpc")]
+script = ExtResource("50_teacher")
+curriculum = &"corin"
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 19, 0.05, 11)
+npc_name = "Corin Vale"
+role = "Toothkeeper"
+greeting_lines = PackedStringArray("Every tooth is a name. I only keep them safe.", "Do not improvise in this room, please. Ritual wants exactness.", "The square keeps its own accounts. So do I.")
+coat_color = Color(0.34, 0.32, 0.28, 1)
+trim_color = Color(0.68, 0.62, 0.46, 1)
+skin_color = Color(0.8, 0.66, 0.52, 1)
+hair_color = Color(0.6, 0.58, 0.52, 1)
+has_apron = true
+facing_degrees = 150.0
+model_scale = 0.92
+wander = true
+wander_radius = 8.0
+wander_center = Vector3(17, 0.05, -6)
+walk_speed = 1.05
+pause_at_points = 4.0
+scheduled = true
+active_from_hour = 8
+active_to_hour = 18
+
+[node name="ElowenThistle" parent="Villagers" instance=ExtResource("19_questnpc")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -9.5, 0.05, -2.5)
+npc_name = "Elowen Thistle"
+role = "Honey-Silk Alchemist"
+greeting_lines = PackedStringArray("Stir clockwise. It keeps the memory steady.", "Honey without silk is only sweetness. Silk without teeth is only thread.", "Hold still. The bees are deciding what you need.")
+gift_item = &"item.honey"
+gift_amount = 2
+gift_lines = PackedStringArray("Here. A little honey for the road.", "Mind you take it with something warm.")
+gift_after_lines = PackedStringArray("Come back when your grief needs a poultice.", "And bring a thread next time.")
+coat_color = Color(0.5, 0.38, 0.24, 1)
+trim_color = Color(0.85, 0.72, 0.4, 1)
+skin_color = Color(0.84, 0.7, 0.55, 1)
+hair_color = Color(0.62, 0.58, 0.5, 1)
+has_apron = true
+long_skirt = true
+facing_degrees = 15.0
+wander = true
+wander_radius = 9.5
+wander_center = Vector3(15, 0.05, -9)
+walk_speed = 1.0
+pause_at_points = 4.5
+
+[node name="SisterHolloway" parent="Villagers" instance=ExtResource("19_questnpc")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -7, 0.05, 8)
+npc_name = "Sister Holloway"
+role = "Chapel Keeper"
+greeting_lines = PackedStringArray("The candles here are for futures that never arrived.", "Ghost Spiders keep no grudges. Only finished lives.", "My shadow died years ago. It still walks behind me.")
+gift_item = &"item.flower"
+gift_amount = 1
+gift_lines = PackedStringArray("Take this bloom to someone who is still here.", "Say their name aloud once for me.")
+gift_after_lines = PackedStringArray("Light a candle before you go.", "The chapel remembers, even when we do not.")
+coat_color = Color(0.26, 0.28, 0.34, 1)
+trim_color = Color(0.6, 0.58, 0.5, 1)
+skin_color = Color(0.82, 0.7, 0.6, 1)
+hair_color = Color(0.36, 0.36, 0.38, 1)
+long_skirt = true
+facing_degrees = 10.0
+wander = true
+wander_radius = 7.5
+wander_center = Vector3(10, 0.05, -4)
+walk_speed = 0.95
+pause_at_points = 5.0
+
+[node name="CrowCollector" parent="Villagers" instance=ExtResource("19_questnpc")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 52, 0.05, 2)
+npc_name = "The Crow Collector"
+role = "Name Gatherer"
+greeting_lines = PackedStringArray("Names, promises, birthdays. Left behind, all of them.", "I can give a memory back. Something else must be forgotten first.", "You have a name you are not using. I can hear it.")
+gift_item = &"item.mushroom"
+gift_amount = 1
+gift_lines = PackedStringArray("Here. It fell out of someone's pocket.", "No, not the mushroom. Keep the mushroom.")
+gift_after_lines = PackedStringArray("Every tag is a life. Mine included.", "Walk carefully. The feathers remember.")
+coat_color = Color(0.12, 0.12, 0.14, 1)
+trim_color = Color(0.34, 0.3, 0.28, 1)
+skin_color = Color(0.76, 0.68, 0.6, 1)
+hair_color = Color(0.1, 0.1, 0.1, 1)
+facing_degrees = 250.0
+wander = true
+wander_radius = 9.0
+wander_center = Vector3(20, 0.05, -9)
+walk_speed = 1.15
+pause_at_points = 3.0
+
+[node name="BakeryGirl" parent="Villagers" instance=ExtResource("19_questnpc")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -23.5, 0.05, 20)
+npc_name = "The Baker's Girl"
+role = "Bakery Hand"
+greeting_lines = PackedStringArray("I open the doors before Bell comes down.", "With one eye, you see the Hollow as it is. With two, you only see the bread.", "There is someone beside the oven. You cannot see them. That is all right.")
+gift_item = &"item.sporebread"
+gift_amount = 1
+gift_lines = PackedStringArray("Take a loaf. It is warm, and it is mine to give.", "Do not tell Bell it was the crooked one.")
+gift_after_lines = PackedStringArray("Bell will be down soon. You should go.", "Mind the step. It is older than it looks.")
+coat_color = Color(0.62, 0.46, 0.34, 1)
+trim_color = Color(0.86, 0.78, 0.64, 1)
+skin_color = Color(0.84, 0.7, 0.58, 1)
+hair_color = Color(0.3, 0.2, 0.14, 1)
+has_apron = true
+model_scale = 0.8
+facing_degrees = 90.0
+wander = true
+wander_radius = 7.0
+wander_center = Vector3(13, 0.05, -7)
+walk_speed = 1.2
+pause_at_points = 2.5
+
+[node name="GlassEyedJune" parent="Villagers" instance=ExtResource("19_questnpc")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -31, 0.05, 21)
+npc_name = "Glass-Eyed June"
+role = "Child"
+greeting_lines = PackedStringArray("I looked straight into the Fog Surge. This eye stayed behind.", "You are in my mirror. So is the thing behind you.", "Do not be scared. It only looks like that from here.")
+gift_item = &"item.flower"
+gift_amount = 1
+gift_lines = PackedStringArray("I found this where the fog thinned.", "Keep it. It might remember you.")
+gift_after_lines = PackedStringArray("The mirror is tired today.", "Come back when you are older. Or not.")
+coat_color = Color(0.42, 0.48, 0.5, 1)
+trim_color = Color(0.78, 0.8, 0.76, 1)
+skin_color = Color(0.88, 0.78, 0.68, 1)
+hair_color = Color(0.7, 0.72, 0.7, 1)
+model_scale = 0.7
+facing_degrees = 320.0
+wander = true
+wander_radius = 6.0
+wander_center = Vector3(17, 0.05, -9)
+walk_speed = 1.3
+pause_at_points = 2.0
+
+[node name="MothDancer" parent="Villagers" instance=ExtResource("19_questnpc")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 6, 0.05, 42)
+npc_name = "The Moth Dancer"
+role = "Hollow Spirit"
+greeting_lines = PackedStringArray("Honey without silk. Silk without teeth. This is where I happened.", "Dance with me and the debt balances, for a little while.", "Children see me clearly. Adults see flickers. You see something in between.")
+gift_item = &"item.flower"
+gift_amount = 1
+gift_lines = PackedStringArray("A spore fell from my wing. It may bloom for you.", "Do not follow the flutter too far.")
+gift_after_lines = PackedStringArray("The dance is not finished. It never is.", "Do not use honey without silk.")
+coat_color = Color(0.58, 0.56, 0.44, 1)
+trim_color = Color(0.74, 0.7, 0.5, 1)
+skin_color = Color(0.86, 0.84, 0.74, 1)
+hair_color = Color(0.72, 0.7, 0.56, 1)
+long_skirt = true
+model_scale = 0.95
+facing_degrees = 180.0
+wander = true
+wander_radius = 10.0
+wander_center = Vector3(17, 0.05, -9)
+walk_speed = 0.85
+pause_at_points = 6.0
+
+[node name="ForestEdge" type="Node3D" parent="."]
+
+[node name="GhostSpider" parent="ForestEdge" instance=ExtResource("30_spider")]
+position = Vector3(54, 0.05, 34)
+save_id = &"enemy.town.forest_edge.ghost_spider_a"
+
+[node name="GhostSpider2" parent="ForestEdge" instance=ExtResource("30_spider")]
+position = Vector3(64, 0.05, 46)
+save_id = &"enemy.town.forest_edge.ghost_spider_b"
+
+[node name="Wisp" type="Node3D" parent="ForestEdge"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 66, 0.9, -6)
+script = ExtResource("23_wisp")
+
+[node name="AnimatedSprite3D" type="AnimatedSprite3D" parent="ForestEdge/Wisp"]
+sprite_frames = ExtResource("22_wisp")
+animation = &"idle"
+autoplay = &"idle"
+billboard = 1
+texture_filter = 0
+alpha_cut = 1
+shaded = false
+double_sided = true
+pixel_size = 0.012
+
+[node name="Guest" parent="." instance=ExtResource("21_guest")]
+position = Vector3(58, 0, 40)
+save_id = &"enemy.town.forest_edge.guest"
+
+[node name="Forage" type="Node3D" parent="."]
+
+[node name="MushroomPickupA" parent="Forage" instance=ExtResource("31_pickup")]
+position = Vector3(-43.4, 0.3, -23.4)
+save_id = &"pickup.town.forage.mushroom_a"
+item_id = &"item.mushroom"
+sprite_texture = ExtResource("33_mushroom")
+
+[node name="MushroomPickupB" parent="Forage" instance=ExtResource("31_pickup")]
+position = Vector3(-34.9, 0.3, -23.5)
+save_id = &"pickup.town.forage.mushroom_b"
+item_id = &"item.mushroom"
+sprite_texture = ExtResource("33_mushroom")
+
+[node name="MushroomPickupC" parent="Forage" instance=ExtResource("31_pickup")]
+position = Vector3(-28.9, 0.3, -23.2)
+save_id = &"pickup.town.forage.mushroom_c"
+item_id = &"item.mushroom"
+sprite_texture = ExtResource("33_mushroom")
+
+[node name="MushroomPickupD" parent="Forage" instance=ExtResource("31_pickup")]
+position = Vector3(5.5, 0.3, -13)
+save_id = &"pickup.town.forage.mushroom_d"
+item_id = &"item.mushroom"
+sprite_texture = ExtResource("33_mushroom")
+
+[node name="FlowerPickupA" parent="Forage" instance=ExtResource("31_pickup")]
+position = Vector3(-43.6, 0.3, -23.6)
+save_id = &"pickup.town.forage.flower_a"
+item_id = &"item.flower"
+sprite_texture = ExtResource("34_flower")
+
+[node name="FlowerPickupB" parent="Forage" instance=ExtResource("31_pickup")]
+position = Vector3(-12.4, 0.3, 12)
+save_id = &"pickup.town.forage.flower_b"
+item_id = &"item.flower"
+sprite_texture = ExtResource("34_flower")
+
+[node name="FlowerPickupC" parent="Forage" instance=ExtResource("31_pickup")]
+position = Vector3(-30, 0.3, -13.5)
+save_id = &"pickup.town.forage.flower_c"
+item_id = &"item.flower"
+sprite_texture = ExtResource("34_flower")
+
+[node name="FlowerPickupD" parent="Forage" instance=ExtResource("31_pickup")]
+position = Vector3(-6, 0.3, 22)
+save_id = &"pickup.town.forage.flower_d"
+item_id = &"item.flower"
+sprite_texture = ExtResource("34_flower")
+
+[node name="Crafting" type="Node3D" parent="."]
+
+[node name="MarketBench" parent="Crafting" instance=ExtResource("32_craft")]
+position = Vector3(15.5, 0, -6.5)
+rotation_degrees = Vector3(0, 25, 0)
+
+[node name="Gathering" type="Node3D" parent="."]
+
+[node name="WoodcutterAxe" parent="Gathering" instance=ExtResource("31_pickup")]
+position = Vector3(-46.2, 0.3, -14.2)
+save_id = &"pickup.town.gathering.axe_west"
+item_id = &"item.axe"
+
+[node name="WestDeadfallA" parent="Gathering" instance=ExtResource("37_gather")]
+position = Vector3(-48.5, 0, -16.5)
+save_id = &"gather.town.west_deadfall_a"
+sprite_texture = ExtResource("38_tree")
+sprite_height = 5.4
+collision_radius = 0.42
+hits_required = 3
+drop_amount = 2
+regrow_days = 3
+verb = "Chop"
+depleted_message = "The deadfall comes apart in your hands"
+
+[node name="WestDeadfallB" parent="Gathering" instance=ExtResource("37_gather")]
+position = Vector3(-52.5, 0, -12)
+save_id = &"gather.town.west_deadfall_b"
+sprite_texture = ExtResource("38_tree")
+sprite_height = 4.6
+collision_radius = 0.4
+hits_required = 3
+drop_amount = 2
+regrow_days = 3
+verb = "Chop"
+depleted_message = "The deadfall comes apart in your hands"
+
+[node name="NorthDeadfallA" parent="Gathering" instance=ExtResource("37_gather")]
+position = Vector3(4, 0, -62)
+save_id = &"gather.town.north_deadfall_a"
+sprite_texture = ExtResource("38_tree")
+sprite_height = 5.8
+collision_radius = 0.44
+hits_required = 3
+drop_amount = 3
+regrow_days = 4
+verb = "Chop"
+depleted_message = "The deadfall comes apart in your hands"
+
+[node name="NorthDeadfallB" parent="Gathering" instance=ExtResource("37_gather")]
+position = Vector3(8, 0, -66)
+save_id = &"gather.town.north_deadfall_b"
+sprite_texture = ExtResource("38_tree")
+sprite_height = 4.4
+collision_radius = 0.4
+hits_required = 3
+drop_amount = 2
+regrow_days = 4
+verb = "Chop"
+depleted_message = "The deadfall comes apart in your hands"
+
+[node name="NorthDeadfallC" parent="Gathering" instance=ExtResource("37_gather")]
+position = Vector3(-6, 0, -70)
+save_id = &"gather.town.north_deadfall_c"
+sprite_texture = ExtResource("38_tree")
+sprite_height = 6.2
+collision_radius = 0.46
+hits_required = 4
+drop_amount = 3
+regrow_days = 4
+verb = "Chop"
+depleted_message = "The deadfall comes apart in your hands"
+
+[node name="MarshDeadfallA" parent="Gathering" instance=ExtResource("37_gather")]
+position = Vector3(40, 0, 62)
+save_id = &"gather.town.marsh_deadfall_a"
+sprite_texture = ExtResource("38_tree")
+sprite_height = 5.0
+collision_radius = 0.42
+hits_required = 3
+drop_amount = 2
+regrow_days = 4
+verb = "Chop"
+depleted_message = "The deadfall comes apart in your hands"
+
+[node name="MarshDeadfallB" parent="Gathering" instance=ExtResource("37_gather")]
+position = Vector3(46, 0, 68)
+save_id = &"gather.town.marsh_deadfall_b"
+sprite_texture = ExtResource("38_tree")
+sprite_height = 5.6
+collision_radius = 0.44
+hits_required = 3
+drop_amount = 3
+regrow_days = 4
+verb = "Chop"
+depleted_message = "The deadfall comes apart in your hands"
+
+[node name="EastOreA" parent="Gathering" instance=ExtResource("37_gather")]
+position = Vector3(66, 0, 30)
+save_id = &"gather.town.east_ore_a"
+kind = 2
+required_tool_tag = &"pickaxe"
+sprite_texture = ExtResource("39_rock")
+sprite_height = 1.5
+collision_radius = 0.85
+collision_height = 1.2
+hits_required = 3
+drop_item = &"item.iron_ore"
+drop_amount = 2
+regrow_days = 5
+verb = "Mine"
+missing_tool_hint = "You need a pickaxe for this"
+depleted_message = "You break the seam down to rubble"
+
+[node name="EastOreB" parent="Gathering" instance=ExtResource("37_gather")]
+position = Vector3(74, 0, 36)
+save_id = &"gather.town.east_ore_b"
+kind = 2
+required_tool_tag = &"pickaxe"
+sprite_texture = ExtResource("39_rock")
+sprite_height = 1.7
+collision_radius = 0.9
+collision_height = 1.3
+hits_required = 4
+drop_item = &"item.iron_ore"
+drop_amount = 3
+regrow_days = 5
+verb = "Mine"
+missing_tool_hint = "You need a pickaxe for this"
+depleted_message = "You break the seam down to rubble"
+
+[node name="EastCrystal" parent="Gathering" instance=ExtResource("37_gather")]
+position = Vector3(62, 0, 44)
+save_id = &"gather.town.east_crystal"
+kind = 3
+required_tool_tag = &"pickaxe"
+sprite_texture = ExtResource("39_rock")
+sprite_height = 1.3
+collision_radius = 0.7
+collision_height = 1.0
+hits_required = 4
+drop_item = &"item.gemstone"
+drop_amount = 1
+regrow_days = 7
+verb = "Mine"
+missing_tool_hint = "You need a pickaxe for this"
+depleted_message = "The crystal comes free with a clean ring"
+tint = Color(0.72, 0.86, 0.95, 1)
+
+[node name="RuinOreA" parent="Gathering" instance=ExtResource("37_gather")]
+position = Vector3(2, 0, -60)
+save_id = &"gather.town.ruin_ore_a"
+kind = 2
+required_tool_tag = &"pickaxe"
+sprite_texture = ExtResource("39_rock")
+sprite_height = 1.4
+collision_radius = 0.8
+collision_height = 1.1
+hits_required = 3
+drop_item = &"item.iron_ore"
+drop_amount = 2
+regrow_days = 5
+verb = "Mine"
+missing_tool_hint = "You need a pickaxe for this"
+depleted_message = "You break the seam down to rubble"
+
+[node name="RuinCrystal" parent="Gathering" instance=ExtResource("37_gather")]
+position = Vector3(14, 0, -64)
+save_id = &"gather.town.ruin_crystal"
+kind = 3
+required_tool_tag = &"pickaxe"
+sprite_texture = ExtResource("39_rock")
+sprite_height = 1.2
+collision_radius = 0.65
+collision_height = 0.9
+hits_required = 4
+drop_item = &"item.gemstone"
+drop_amount = 1
+regrow_days = 7
+verb = "Mine"
+missing_tool_hint = "You need a pickaxe for this"
+depleted_message = "The crystal comes free with a clean ring"
+tint = Color(0.78, 0.8, 0.95, 1)
+
+[node name="GardenCabbageA" parent="Gathering" instance=ExtResource("37_gather")]
+position = Vector3(-13, 0, 27.6)
+save_id = &"gather.town.garden_cabbage_a"
+kind = 4
+required_tool_tag = &""
+hits_required = 1
+drop_item = &"item.cabbage"
+drop_amount = 1
+regrow_days = 2
+verb = "Pick"
+collision_radius = 0.34
+collision_height = 0.6
+depleted_message = "You pick a cabbage"
+
+[node name="GardenCabbageB" parent="Gathering" instance=ExtResource("37_gather")]
+position = Vector3(-8, 0, 27.6)
+save_id = &"gather.town.garden_cabbage_b"
+kind = 4
+required_tool_tag = &""
+hits_required = 1
+drop_item = &"item.cabbage"
+drop_amount = 1
+regrow_days = 2
+verb = "Pick"
+collision_radius = 0.34
+collision_height = 0.6
+depleted_message = "You pick a cabbage"
+
+[node name="GardenCabbageC" parent="Gathering" instance=ExtResource("37_gather")]
+position = Vector3(-3, 0, 27.6)
+save_id = &"gather.town.garden_cabbage_c"
+kind = 4
+required_tool_tag = &""
+hits_required = 1
+drop_item = &"item.cabbage"
+drop_amount = 1
+regrow_days = 2
+verb = "Pick"
+collision_radius = 0.34
+collision_height = 0.6
+depleted_message = "You pick a cabbage"
+
+[node name="GardenCabbageD" parent="Gathering" instance=ExtResource("37_gather")]
+position = Vector3(-13, 0, 32.4)
+save_id = &"gather.town.garden_cabbage_d"
+kind = 4
+required_tool_tag = &""
+hits_required = 1
+drop_item = &"item.cabbage"
+drop_amount = 1
+regrow_days = 2
+verb = "Pick"
+collision_radius = 0.34
+collision_height = 0.6
+depleted_message = "You pick a cabbage"
+
+[node name="MarketCarts" type="Node3D" parent="."]
+
+[node name="MovingStorageCart" parent="MarketCarts" instance=ExtResource("40_movingstorage")]
+position = Vector3(8, 0.05, 4)
+
+[node name="MovingMerchantCart" parent="MarketCarts" instance=ExtResource("41_movingmerchant")]
+position = Vector3(21, 0.05, 5)
+
+[node name="VendingMachine" parent="." instance=ExtResource("42_vending")]
+position = Vector3(10.5, 0, 0.5)
+rotation_degrees = Vector3(0, 180, 0)
+
+[node name="BountyBoard" parent="." instance=ExtResource("44_board")]
+position = Vector3(29, 0, -13.5)
+rotation_degrees = Vector3(0, -75, 0)
+
+[node name="GardenPlot" parent="." instance=ExtResource("45_garden")]
+position = Vector3(-25.5, 0, 31)
+rotation_degrees = Vector3(0, 90, 0)
+
+[node name="WellCounting" parent="." instance=ExtResource("43_lorewell")]
+position = Vector3(-45.6, 0, 7.7)
+well_title = "The Counting Well"
+lines = PackedStringArray("They dug this well before the chapel had walls. The first bucket came up with a nail in it.", "Nine nails were counted into the well over the years. Nobody admits to the tenth.", "If you drop something in, it is not gone. It is being counted.")
+reward_silk = 12.0
+reward_flag = &"well.counting"
+
+[node name="WellHoney" parent="." instance=ExtResource("43_lorewell")]
+position = Vector3(45.4, 0, 26.6)
+well_title = "The Honey Well"
+lines = PackedStringArray("The bees found this water before the beekeepers did. They still come at dusk.", "A girl once lowered a jar on a string and brought it up full. Nobody had put honey in the well.", "The Hive Tower keeps a drop of it in a thimble, for luck. Or for a promise.")
+reward_item = &"item.honey"
+reward_amount = 1
+reward_flag = &"well.honey"
+
+[node name="WellBell" parent="." instance=ExtResource("43_lorewell")]
+position = Vector3(4, 0, 31.5)
+well_title = "The Bell Well"
+lines = PackedStringArray("The bell-ringer lived beside this water and rang for the dying, not the dead.", "When the bell went quiet, the town knew someone had changed their mind.", "The rope is gone. The well still answers if you speak first.")
+reward_item = &"item.hearth_silk_thread"
+reward_amount = 1
+reward_flag = &"well.bell"
+
+
+[node name="Music" type="Node" parent="."]
+script = ExtResource("47_music")
+track = ExtResource("48_theme")
+
+[node name="Weather" type="Node3D" parent="."]
+script = ExtResource("49_weather")

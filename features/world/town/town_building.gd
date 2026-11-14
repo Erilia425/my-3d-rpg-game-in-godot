@@ -26,10 +26,27 @@ enum Style { COTTAGE, LONGHOUSE, CHAPEL, STONE_TOWER, HIVE_TOWER, RUIN }
 @export var has_chimney: bool = true
 @export var door_offset: float = 0.0
 @export var label: String = ""
+## Name of the villager who lives here. The door plate reads "Home of ..." when
+## set, and "Empty" when the building is a home with no owner.
+@export var owner_name: String = ""
+## Marks a residence. A home with no `owner_name` says "Empty", which is also a
+## useful mystery hook for a house nobody claims.
+@export var is_home: bool = false
 @export var ruined: bool = false
 @export var seed_value: int = 0
 
 const BASE := 0.55
+
+## 2D art from the source game: wattle-and-daub walls, straw thatch, and the
+## stone footing. The textures are tinted by the exported colours so a cottage can
+## still be warmer or greyer than its neighbour. See the AGENTS.md decision log.
+const TEX_WALL := preload("res://assets/from_2d/materials/timber_plaster.png")
+const TEX_ROOF := preload("res://assets/from_2d/materials/thatch.png")
+const TEX_STONE := preload("res://assets/from_2d/materials/stone.png")
+## Beams, eaves, doors and the hive-tower body reuse the 2D plank and grass art so
+## the last few buildings read as hand-painted rather than flat-coloured.
+const TEX_WOOD := preload("res://assets/from_2d/materials/wood_planks.png")
+const TEX_MOSS := preload("res://assets/from_2d/materials/grass.png")
 
 var _rng := RandomNumberGenerator.new()
 var _timber: StandardMaterial3D
@@ -45,13 +62,16 @@ func _ready() -> void:
 	_rng.seed = seed_value if seed_value != 0 else hash(name)
 	rotation.y = deg_to_rad(facing_degrees)
 
-	_timber = TownParts.material(Color(0.27, 0.17, 0.1, 1), 0.95)
+	# Wood and grass art carry their own colour too, so their tints sit near white.
+	_timber = TownParts.material(Color(0.72, 0.62, 0.52, 1), 0.95, 0.0, TEX_WOOD, Vector3(2, 2, 2))
 	_dark = TownParts.material(Color(0.18, 0.12, 0.08, 1), 0.9)
-	_moss = TownParts.material(Color(0.24, 0.34, 0.16, 1), 0.98)
+	_moss = TownParts.material(Color(0.58, 0.72, 0.52, 1), 0.98, 0.0, TEX_MOSS, Vector3(2, 2, 2))
 	_glass = TownParts.material(Color(1, 0.76, 0.4, 1), 0.6, 1.6)
-	_stone = TownParts.material(stone_color, 0.95)
-	_wall = TownParts.material(wall_color, 0.97)
-	_roof = TownParts.material(roof_color, 0.99)
+	# The textures carry their own colour, so the exported tint is mixed towards
+	# white before it multiplies them: pure `wall_color` would crush the plaster.
+	_stone = TownParts.material(stone_color.lerp(Color.WHITE, 0.55), 0.95, 0.0, TEX_STONE, Vector3(2, 2, 2))
+	_wall = TownParts.material(wall_color.lerp(Color.WHITE, 0.6), 0.97, 0.0, TEX_WALL, Vector3(1.5, 1, 1.5))
+	_roof = TownParts.material(roof_color.lerp(Color.WHITE, 0.5), 0.99, 0.0, TEX_ROOF, Vector3(3, 1.5, 3))
 
 	match style:
 		Style.COTTAGE:
@@ -69,8 +89,8 @@ func _ready() -> void:
 
 	TownParts.merge_children(self)
 
-	if not label.is_empty():
-		_add_label()
+	if not label.is_empty() or is_home or not owner_name.is_empty():
+		_add_door_plate()
 
 
 # --- styles ----------------------------------------------------------------
@@ -178,7 +198,9 @@ func _hive_tower() -> void:
 			self, "HiveSection%d" % i,
 			Vector3(0, y + section * 0.5, 0),
 			section_radius, section_radius * 1.04, section,
-			TownParts.material(honey.darkened(i * 0.06), 0.95),
+			TownParts.material(
+				honey.darkened(i * 0.06).lerp(Color.WHITE, 0.4), 0.95, 0.0, TEX_WOOD, Vector3(2, 2, 2)
+			),
 			Vector3.ZERO, 6
 		)
 		TownParts.cylinder(
@@ -328,22 +350,63 @@ func _leaning_box(node_name: String, position: Vector3, size: Vector3, mat: Mate
 	return instance
 
 
-func _add_label() -> void:
-	var height := BASE + wall_height + roof_height + 1.4
-	if style == Style.STONE_TOWER:
-		height = BASE + wall_height + 3.2
-	elif style == Style.HIVE_TOWER:
-		height = BASE + wall_height * 1.4 + 3.4
-
+func _add_door_plate() -> void:
 	var text := Label3D.new()
-	text.name = "Nameboard"
-	text.text = label
-	text.position = Vector3(0, height, 0)
+	text.name = "DoorPlate"
+	text.text = _door_plate_text()
+	text.position = _door_plate_position()
+	# A billboard reads from the street without needing a sign mesh, and the
+	# plate sits just in front of the door face instead of above the roof.
 	text.billboard = BaseMaterial3D.BILLBOARD_ENABLED
-	text.font_size = 64
-	text.pixel_size = 0.004
-	text.outline_size = 20
-	text.outline_modulate = Color(0.1, 0.07, 0.04, 0.9)
+	text.font_size = 40
+	text.pixel_size = 0.0035
+	text.outline_size = 14
+	text.outline_modulate = Color(0.1, 0.07, 0.04, 0.95)
 	text.modulate = Color(0.97, 0.92, 0.8, 1)
 	text.no_depth_test = false
+	text.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	add_child(text)
+
+
+## Two short lines at most: the building's name, then who lives there or
+## "Empty". The owner line is skipped when the name already contains the owner.
+func _door_plate_text() -> String:
+	var title := label
+	if title.is_empty():
+		if is_home:
+			title = "Empty House"
+		elif not owner_name.is_empty():
+			title = "Home of %s" % owner_name
+		else:
+			title = "Empty"
+
+	var lines := PackedStringArray([title])
+	if not owner_name.is_empty() and not title.contains(owner_name):
+		lines.append("Home of %s" % owner_name)
+	elif is_home and owner_name.is_empty() and not label.is_empty():
+		lines.append("Empty")
+	return "\n".join(lines)
+
+
+## Places the plate just above the door of each building style. Cottages use the
+## front wall; the chapel and the towers put their door on a porch or a round
+## face, so their plate needs its own depth.
+func _door_plate_position() -> Vector3:
+	var front := -footprint.y * 0.5
+	var radius := footprint.x * 0.5
+	var x := door_offset
+	var y := BASE + 2.5
+	var z := front - 0.2
+
+	match style:
+		Style.CHAPEL:
+			z = front - 2.2
+			y = BASE + 2.95
+		Style.STONE_TOWER:
+			z = -radius * 1.02 - 0.14
+			y = BASE + 2.72
+		Style.HIVE_TOWER:
+			z = -radius * 0.98 - 0.16
+			y = BASE + 2.72
+
+	return Vector3(x, y, z)

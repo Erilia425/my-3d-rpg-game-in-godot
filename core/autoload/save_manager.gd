@@ -73,6 +73,12 @@ func build_save_dict(saveables: Variant = null, world_extra: Dictionary = {}) ->
 	var world := {
 		"time": WorldClock.save_data(),
 		"quests": QuestLog.save_data(),
+		"discoveries": DiscoveryLog.save_data(),
+		"progression": Progression.save_data(),
+		"ledger": Ledger.save_data(),
+		"map": WorldMap.save_data(),
+		"exploration": ExplorationLog.save_data(),
+		"movement": MovementStats.save_data(),
 	}
 	world.merge(world_extra, true)
 	return {
@@ -166,6 +172,26 @@ func apply_save(data: Dictionary) -> bool:
 		WorldClock.load_data(world["time"])
 	if world.has("quests"):
 		QuestLog.load_data(world["quests"])
+	if world.has("discoveries"):
+		DiscoveryLog.load_data(world["discoveries"])
+	if world.has("progression"):
+		Progression.load_data(world["progression"])
+	if world.has("ledger"):
+		Ledger.load_data(world["ledger"])
+	else:
+		Ledger.reset()
+	if world.has("map"):
+		WorldMap.load_data(world["map"])
+	else:
+		WorldMap.reset()
+	if world.has("exploration"):
+		ExplorationLog.load_data(world["exploration"])
+	else:
+		ExplorationLog.reset()
+	if world.has("movement"):
+		MovementStats.load_data(world["movement"])
+	else:
+		MovementStats.reset()
 
 	var entries: Dictionary = data.get("saveables", {})
 	for node in get_tree().get_nodes_in_group("saveable"):

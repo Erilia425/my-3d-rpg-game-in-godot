@@ -1,0 +1,13 @@
+[gd_scene load_steps=4 format=3]
+
+[ext_resource type="Script" path="res://features/interaction/cart_patrol.gd" id="1_patrol"]
+[ext_resource type="PackedScene" path="res://features/interaction/cart_storage.tscn" id="2_storage"]
+
+[node name="MovingStorageCart" type="Node3D"]
+script = ExtResource("1_patrol")
+waypoints = PackedVector3Array(0, 0, 0, 0, 0, -7, 5, 0, -7, 5, 0, 0)
+speed = 1.0
+pause_at_points = 2.0
+
+[node name="CartStorage" parent="." instance=ExtResource("2_storage")]
+save_id = &"cart.town.storage"

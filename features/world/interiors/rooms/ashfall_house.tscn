@@ -1,0 +1,41 @@
+[gd_scene load_steps=7 format=3]
+
+[ext_resource type="Script" path="res://features/world/interiors/interior_room.gd" id="1_room"]
+[ext_resource type="PackedScene" path="res://features/player/player.tscn" id="2_player"]
+[ext_resource type="PackedScene" path="res://features/ui/hud.tscn" id="3_hud"]
+[ext_resource type="PackedScene" path="res://features/ui/pause_menu.tscn" id="4_pause"]
+[ext_resource type="PackedScene" path="res://features/npc/npc.tscn" id="5_npc"]
+[ext_resource type="PackedScene" path="res://features/interaction/chest.tscn" id="6_chest"]
+
+[node name="AshfallHouseInterior" type="Node3D"]
+script = ExtResource("1_room")
+layout = &"cottage"
+room_size = Vector2(7.2, 5.6)
+accent = 3
+
+[node name="Player" parent="." instance=ExtResource("2_player")]
+position = Vector3(0, 0.2, 1.1)
+
+[node name="HUD" parent="." instance=ExtResource("3_hud")]
+
+[node name="PauseMenu" parent="." instance=ExtResource("4_pause")]
+
+[node name="Maren" parent="." instance=ExtResource("5_npc")]
+position = Vector3(-1.5, 0.05, -0.6)
+npc_name = "Maren Ash"
+role = "Fenwalker"
+greeting_lines = PackedStringArray("Mind the step. The bog pulls at foundations.", "Sit a while. It is the driest room in Ashfall.")
+coat_color = Color(0.45, 0.46, 0.47, 1)
+trim_color = Color(0.82, 0.81, 0.76, 1)
+skin_color = Color(0.78, 0.72, 0.66, 1)
+hair_color = Color(0.66, 0.64, 0.61, 1)
+long_skirt = true
+hat_style = 1
+facing_degrees = 200.0
+
+[node name="AshfallHouseChest" parent="." instance=ExtResource("6_chest")]
+position = Vector3(2.5, 0, -1.9)
+save_id = &"chest.ashfall_house"
+loot_id = &"item.mushroom"
+amount = 2
+use_sprite = true

@@ -1,0 +1,15 @@
+[gd_resource type="Resource" load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://data/items/item_data.gd" id="1_item"]
+[ext_resource type="Texture2D" path="res://assets/icons/items/dirt_sack.svg" id="2_icon"]
+
+[resource]
+script = ExtResource("1_item")
+id = &"item.dirt_sack"
+display_name = "Tiny Sack of Dirt"
+icon = ExtResource("2_icon")
+description = "A hand-sewn sack of soil, still cool from wherever it was dug. The machine sells the ground itself, by the handful."
+kind = 0
+stack_size = 10
+value = 4
+tags = PackedStringArray("odd", "soil")

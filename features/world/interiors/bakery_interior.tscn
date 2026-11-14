@@ -1,4 +1,4 @@
-[gd_scene load_steps=7 format=3]
+[gd_scene load_steps=12 format=3]
 
 [ext_resource type="Script" path="res://features/world/interiors/interior_room.gd" id="1_room"]
 [ext_resource type="PackedScene" path="res://features/player/player.tscn" id="2_player"]
@@ -6,20 +6,26 @@
 [ext_resource type="PackedScene" path="res://features/ui/pause_menu.tscn" id="4_pause"]
 [ext_resource type="PackedScene" path="res://features/npc/quest_npc.tscn" id="5_npc"]
 [ext_resource type="SpriteFrames" path="res://assets/from_2d/frames/auntie_bell.tres" id="6_frames"]
+[ext_resource type="PackedScene" path="res://features/npc/npc.tscn" id="7_customer"]
+[ext_resource type="SpriteFrames" path="res://assets/from_2d/frames/mossy_villager.tres" id="8_mossy"]
+[ext_resource type="SpriteFrames" path="res://assets/from_2d/frames/little_eli.tres" id="9_eli"]
+[ext_resource type="PackedScene" path="res://features/interaction/locked_door.tscn" id="10_door"]
+[ext_resource type="PackedScene" path="res://features/interaction/vendor_counter.tscn" id="11_vendor"]
 
 [node name="BakeryInterior" type="Node3D"]
 script = ExtResource("1_room")
-layout = &"bakery"
+layout = &"cafe"
+room_size = Vector2(14, 10)
 
 [node name="Player" parent="." instance=ExtResource("2_player")]
-position = Vector3(0, 0.2, 1.2)
+position = Vector3(0, 0.2, 3.6)
 
 [node name="HUD" parent="." instance=ExtResource("3_hud")]
 
 [node name="PauseMenu" parent="." instance=ExtResource("4_pause")]
 
 [node name="AuntieBell" parent="." instance=ExtResource("5_npc")]
-position = Vector3(2.45, 0.05, -1.25)
+position = Vector3(-1, 0.05, -3.8)
 npc_name = "Auntie Bell"
 role = "Baker"
 sprite_frames = ExtResource("6_frames")
@@ -29,16 +35,59 @@ deliver_item = &"item.sporebread"
 deliver_amount = 1
 reward_item = &"item.hearth_silk"
 reward_amount = 1
+extra_reward_item = &"item.bakery_key"
+extra_reward_amount = 1
+unlock_discovery = &"discovery.fungal_record"
 offer_lines = PackedStringArray("Welcome to Mycelgrove Hollow, dear.", "You look like you've wandered a long way.", "Are you looking for something?", "If you have time, could you bring me some Sporebread?")
 waiting_lines = PackedStringArray("If you have time, could you bring me some Sporebread?")
-turn_in_lines = PackedStringArray("Oh! You brought me Sporebread!", "It smells wonderful, dear. Thank you.", "Here, take some Hearth-Silk for your kindness.", "The fungi used for Sporebread grow near something old beneath the woods...")
+turn_in_lines = PackedStringArray("Oh! You brought me Sporebread!", "It smells wonderful, dear. Thank you.", "Here, take some Hearth-Silk for your kindness.", "And this key. It opens the back room behind the counter. You have earned a quiet corner.", "The fungi used for Sporebread grow near something old beneath the woods...")
 coat_color = Color(0.55, 0.36, 0.22, 1)
 trim_color = Color(0.9, 0.86, 0.72, 1)
 skin_color = Color(0.85, 0.68, 0.52, 1)
 hair_color = Color(0.62, 0.6, 0.55, 1)
 has_apron = true
 long_skirt = true
+facing_degrees = 0.0
+scheduled = true
+active_from_hour = 8
+active_to_hour = 18
+
+[node name="MorningCustomer" parent="." instance=ExtResource("7_customer")]
+position = Vector3(-3.5, 0.05, 0.9)
+npc_name = "Mossy Villager"
+role = "Café regular"
+sprite_frames = ExtResource("8_mossy")
+greeting_lines = PackedStringArray("The morning loaf is always the best one.", "Auntie Bell saves me the crusty end.")
+facing_degrees = 270.0
+scheduled = true
+active_from_hour = 8
+active_to_hour = 13
+
+[node name="AfternoonCustomer" parent="." instance=ExtResource("7_customer")]
+position = Vector3(-0.4, 0.05, -1.7)
+npc_name = "Little Eli"
+role = "Café regular"
+sprite_frames = ExtResource("9_eli")
+greeting_lines = PackedStringArray("Auntie Bell lets me have the broken pastries!", "Don't tell my mum.")
+model_scale = 0.72
 facing_degrees = 180.0
 scheduled = true
-active_from_hour = 18
-active_to_hour = 8
+active_from_hour = 12
+active_to_hour = 18
+
+[node name="PrivateDoor" parent="." instance=ExtResource("10_door")]
+position = Vector3(3.2, 0, -4.1)
+rotation = Vector3(0, -1.5708, 0)
+save_id = &"door.bakery_private"
+open_angle_degrees = 90.0
+required_item = &"item.bakery_key"
+locked_message = "Locked. Auntie Bell keeps this key."
+unlock_message = "Auntie Bell's key fits. The back room is open."
+
+[node name="BellCounter" parent="." instance=ExtResource("11_vendor")]
+position = Vector3(1.6, 0, -1.45)
+rotation = Vector3(0, 3.14159, 0)
+table_id = &"bell"
+vendor_id = &"npc.auntie_bell"
+title = "Auntie Bell's Counter"
+greeting = "Take what you need, dear. I'll write it down and you can settle up."

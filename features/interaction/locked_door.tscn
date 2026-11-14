@@ -1,0 +1,62 @@
+[gd_scene load_steps=9 format=3]
+
+[ext_resource type="Script" path="res://features/interaction/locked_door.gd" id="1_door"]
+
+[sub_resource type="BoxMesh" id="BoxMesh_leaf"]
+size = Vector3(1.4, 2.15, 0.09)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_leaf"]
+albedo_color = Color(0.36, 0.24, 0.15, 1)
+roughness = 0.86
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_leaf"]
+size = Vector3(1.4, 2.15, 0.09)
+
+[sub_resource type="BoxMesh" id="BoxMesh_handle"]
+size = Vector3(0.07, 0.07, 0.14)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_handle"]
+albedo_color = Color(0.3, 0.28, 0.26, 1)
+metallic = 0.7
+roughness = 0.35
+
+[sub_resource type="BoxMesh" id="BoxMesh_lock"]
+size = Vector3(0.16, 0.2, 0.07)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_lock"]
+albedo_color = Color(0.78, 0.62, 0.3, 1)
+metallic = 0.8
+roughness = 0.28
+
+[node name="LockedDoor" type="StaticBody3D" groups=["interactable"]]
+collision_layer = 17
+collision_mask = 0
+script = ExtResource("1_door")
+open_angle_degrees = 90.0
+
+[node name="Mesh" type="MeshInstance3D" parent="."]
+position = Vector3(0.7, 1.075, 0)
+mesh = SubResource("BoxMesh_leaf")
+surface_material_override/0 = SubResource("StandardMaterial3D_leaf")
+
+[node name="Collision" type="CollisionShape3D" parent="."]
+position = Vector3(0.7, 1.075, 0)
+shape = SubResource("BoxShape3D_leaf")
+
+[node name="Handle" type="MeshInstance3D" parent="."]
+position = Vector3(1.22, 1.0, -0.09)
+mesh = SubResource("BoxMesh_handle")
+surface_material_override/0 = SubResource("StandardMaterial3D_handle")
+
+[node name="Lock" type="Node3D" parent="."]
+unique_name_in_owner = true
+position = Vector3(1.2, 0.88, -0.1)
+
+[node name="Plate" type="MeshInstance3D" parent="Lock"]
+mesh = SubResource("BoxMesh_lock")
+surface_material_override/0 = SubResource("StandardMaterial3D_lock")
+
+[node name="Shackle" type="MeshInstance3D" parent="Lock"]
+position = Vector3(0, 0.12, 0)
+mesh = SubResource("BoxMesh_handle")
+surface_material_override/0 = SubResource("StandardMaterial3D_handle")

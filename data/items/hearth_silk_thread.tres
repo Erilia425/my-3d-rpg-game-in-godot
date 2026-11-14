@@ -1,0 +1,15 @@
+[gd_resource type="Resource" load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://data/items/item_data.gd" id="1_item"]
+[ext_resource type="Texture2D" path="res://assets/icons/items/hearth_silk_thread.svg" id="2_icon"]
+
+[resource]
+script = ExtResource("1_item")
+id = &"item.hearth_silk_thread"
+display_name = "Hearth-Silk Thread"
+icon = ExtResource("2_icon")
+description = "Hearth-Silk spun through with a wildflower. It stays warm even in the fog."
+kind = 0
+stack_size = 10
+value = 20
+tags = PackedStringArray("crafted", "silk")

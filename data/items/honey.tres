@@ -1,0 +1,16 @@
+[gd_resource type="Resource" load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://data/items/item_data.gd" id="1_item"]
+[ext_resource type="Texture2D" path="res://assets/icons/items/honey.svg" id="2_icon"]
+
+[resource]
+script = ExtResource("1_item")
+id = &"item.honey"
+display_name = "Hollow Honey"
+icon = ExtResource("2_icon")
+description = "Thick golden honey from the Hive Tower. It warms you from the inside out."
+kind = 3
+stack_size = 10
+value = 6
+tags = PackedStringArray("food", "hive")
+restore_health = 15.0

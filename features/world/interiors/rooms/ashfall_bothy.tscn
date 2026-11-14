@@ -1,0 +1,39 @@
+[gd_scene load_steps=7 format=3]
+
+[ext_resource type="Script" path="res://features/world/interiors/interior_room.gd" id="1_room"]
+[ext_resource type="PackedScene" path="res://features/player/player.tscn" id="2_player"]
+[ext_resource type="PackedScene" path="res://features/ui/hud.tscn" id="3_hud"]
+[ext_resource type="PackedScene" path="res://features/ui/pause_menu.tscn" id="4_pause"]
+[ext_resource type="PackedScene" path="res://features/npc/npc.tscn" id="5_npc"]
+[ext_resource type="PackedScene" path="res://features/interaction/chest.tscn" id="6_chest"]
+
+[node name="AshfallBothyInterior" type="Node3D"]
+script = ExtResource("1_room")
+layout = &"longhouse"
+room_size = Vector2(8.6, 6.6)
+accent = 1
+
+[node name="Player" parent="." instance=ExtResource("2_player")]
+position = Vector3(0, 0.2, 1.4)
+
+[node name="HUD" parent="." instance=ExtResource("3_hud")]
+
+[node name="PauseMenu" parent="." instance=ExtResource("4_pause")]
+
+[node name="Pell" parent="." instance=ExtResource("5_npc")]
+position = Vector3(-1.2, 0.05, 1.6)
+npc_name = "Pell"
+role = "Reed-cutter"
+greeting_lines = PackedStringArray("Reeds, reeds, and more reeds.", "They make good thatch. Better than the mud, anyway.")
+coat_color = Color(0.3, 0.38, 0.28, 1)
+trim_color = Color(0.45, 0.38, 0.52, 1)
+skin_color = Color(0.8, 0.68, 0.55, 1)
+hair_color = Color(0.24, 0.2, 0.18, 1)
+facing_degrees = 160.0
+
+[node name="AshfallBothyChest" parent="." instance=ExtResource("6_chest")]
+position = Vector3(-2.2, 0, 2.4)
+save_id = &"chest.ashfall_bothy"
+loot_id = &"item.honey"
+amount = 1
+use_sprite = true

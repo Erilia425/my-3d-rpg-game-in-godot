@@ -1,0 +1,16 @@
+[gd_resource type="Resource" load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://data/items/item_data.gd" id="1_item"]
+[ext_resource type="Texture2D" path="res://assets/icons/items/faux_ivory_brooch.svg" id="2_icon"]
+
+[resource]
+script = ExtResource("1_item")
+id = &"item.faux_ivory_brooch"
+display_name = "Faux Ivory Brooch"
+icon = ExtResource("2_icon")
+description = "A pale oval brooch with a pin that has never held anything. The ivory is a lie, and the Hollow does not always check. Use it to gain one anchor slot."
+kind = 3
+stack_size = 5
+value = 30
+tags = PackedStringArray("odd", "trinket", "anchor")
+grant_anchoring = 1

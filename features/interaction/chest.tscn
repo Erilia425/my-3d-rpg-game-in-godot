@@ -1,6 +1,7 @@
-[gd_scene load_steps=9 format=3]
+[gd_scene load_steps=10 format=3]
 
 [ext_resource type="Script" path="res://features/interaction/chest.gd" id="1_chest"]
+[ext_resource type="Texture2D" path="res://assets/from_2d/sprites/chest.png" id="2_chest_art"]
 
 [sub_resource type="BoxMesh" id="BoxMesh_base"]
 size = Vector3(1.2, 0.7, 0.8)
@@ -54,3 +55,14 @@ shape = SubResource("BoxShape3D_chest")
 position = Vector3(0, 0.45, 0.42)
 mesh = SubResource("BoxMesh_latch")
 surface_material_override/0 = SubResource("StandardMaterial3D_latch")
+
+[node name="Sprite" type="Sprite3D" parent="."]
+visible = false
+position = Vector3(0, 0.35, 0)
+pixel_size = 0.0051
+texture = ExtResource("2_chest_art")
+billboard = 2
+texture_filter = 0
+alpha_cut = 1
+shaded = true
+double_sided = true

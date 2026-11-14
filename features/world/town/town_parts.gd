@@ -10,8 +10,17 @@ static var _mesh_cache: Dictionary = {}
 static var _material_cache: Dictionary = {}
 
 
-static func material(color: Color, roughness: float = 0.92, emission: float = 0.0) -> StandardMaterial3D:
-	var key := "%s|%.2f|%.2f" % [color.to_html(), roughness, emission]
+static func material(
+	color: Color,
+	roughness: float = 0.92,
+	emission: float = 0.0,
+	albedo_texture: Texture2D = null,
+	uv1_scale: Vector3 = Vector3.ONE
+) -> StandardMaterial3D:
+	var texture_key := str(albedo_texture.resource_path) if albedo_texture != null else ""
+	var key := "%s|%.2f|%.2f|%s|%s" % [
+		color.to_html(), roughness, emission, texture_key, str(uv1_scale)
+	]
 	if _material_cache.has(key):
 		return _material_cache[key]
 
@@ -22,6 +31,10 @@ static func material(color: Color, roughness: float = 0.92, emission: float = 0.
 		made.emission_enabled = true
 		made.emission = color
 		made.emission_energy_multiplier = emission
+	if albedo_texture != null:
+		made.albedo_texture = albedo_texture
+		made.texture_filter = BaseMaterial3D.TEXTURE_FILTER_NEAREST
+		made.uv1_scale = uv1_scale
 	_material_cache[key] = made
 	return made
 

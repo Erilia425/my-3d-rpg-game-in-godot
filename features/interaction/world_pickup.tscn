@@ -1,0 +1,33 @@
+[gd_scene load_steps=4 format=3]
+
+[ext_resource type="Script" path="res://features/interaction/world_pickup.gd" id="1_pickup"]
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_pickup"]
+size = Vector3(0.9, 0.9, 0.9)
+
+[sub_resource type="SphereMesh" id="SphereMesh_pickup"]
+radius = 0.22
+height = 0.44
+
+[node name="WorldPickup" type="StaticBody3D" groups=["interactable"]]
+collision_layer = 17
+collision_mask = 0
+script = ExtResource("1_pickup")
+
+[node name="Mesh" type="MeshInstance3D" parent="."]
+position = Vector3(0, 0.28, 0)
+mesh = SubResource("SphereMesh_pickup")
+
+[node name="Sprite" type="Sprite3D" parent="."]
+visible = false
+position = Vector3(0, 0.45, 0)
+pixel_size = 0.0075
+billboard = 2
+texture_filter = 0
+alpha_cut = 1
+shaded = true
+double_sided = true
+
+[node name="Collision" type="CollisionShape3D" parent="."]
+position = Vector3(0, 0.45, 0)
+shape = SubResource("BoxShape3D_pickup")

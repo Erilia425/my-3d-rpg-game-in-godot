@@ -1,6 +1,6 @@
 [gd_resource type="SpriteFrames" load_steps=2 format=3]
 
-[ext_resource type="Texture2D" path="res://assets/from_2d/sprites/mossy_villager.png" id="1_mossy"]
+[ext_resource type="Texture2D" path="res://assets/from_2d/sprites/mossy_villager_cut.png" id="1_mossy"]
 
 [resource]
 animations = [{

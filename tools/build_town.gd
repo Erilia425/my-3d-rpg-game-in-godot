@@ -1028,11 +1028,6 @@ func _gates() -> void:
 	_gate("HomeGate", gates, Vector3(-40, 1.2, -23.9), Vector3(2.6, 2.4, 0.8),
 		"res://scenes/test_room.tscn", Vector3(0, 0.2, -8))
 
-	# The village's north road out to the wider world.
-	_gate("NorthGate", gates, Vector3(52, 1.2, -60), Vector3(3.4, 2.4, 1.4),
-		"res://scenes/overworld.tscn", Vector3(0, 0.2, 10))
-	_arch("NorthArch", 52.0, -60.0, 0.0)
-
 
 func _gate(
 	node_name: String,

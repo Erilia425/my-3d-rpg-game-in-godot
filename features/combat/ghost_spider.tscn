@@ -1,0 +1,46 @@
+[gd_scene load_steps=5 format=3]
+
+[ext_resource type="Script" path="res://features/combat/enemy.gd" id="1_enemy"]
+[ext_resource type="Script" path="res://features/stats/health_component.gd" id="2_health"]
+[ext_resource type="SpriteFrames" path="res://assets/from_2d/frames/ghost_spider.tres" id="3_frames"]
+
+[sub_resource type="CapsuleShape3D" id="CapsuleShape3D_spider"]
+radius = 0.5
+height = 0.9
+
+[node name="GhostSpider" type="CharacterBody3D" groups=["enemy"]]
+collision_layer = 4
+collision_mask = 3
+floor_snap_length = 0.2
+script = ExtResource("1_enemy")
+move_speed = 2.4
+attack_damage = 6.0
+attack_cooldown = 1.4
+xp_reward = 9
+coin_reward = 4
+drop_item = &"item.hearth_silk"
+drop_amount = 1
+drop_chance = 1.0
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="."]
+position = Vector3(0, 0.45, 0)
+shape = SubResource("CapsuleShape3D_spider")
+
+[node name="Visual" type="Node3D" parent="."]
+unique_name_in_owner = true
+
+[node name="AnimatedSprite3D" type="AnimatedSprite3D" parent="Visual"]
+position = Vector3(0, 0.44, 0)
+sprite_frames = ExtResource("3_frames")
+animation = &"idle"
+autoplay = &"idle"
+billboard = 1
+texture_filter = 0
+alpha_cut = 1
+shaded = false
+double_sided = true
+pixel_size = 0.008
+
+[node name="HealthComponent" type="Node" parent="."]
+script = ExtResource("2_health")
+max_health = 4.0

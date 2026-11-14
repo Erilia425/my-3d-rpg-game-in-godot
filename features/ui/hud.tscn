@@ -1,8 +1,13 @@
-[gd_scene load_steps=9 format=3]
+[gd_scene load_steps=15 format=3]
 
 [ext_resource type="Script" path="res://features/ui/hud.gd" id="1_hud"]
 [ext_resource type="PackedScene" path="res://features/ui/map_screen.tscn" id="2_map"]
 [ext_resource type="PackedScene" path="res://features/dialogue/dialogue_window.tscn" id="3_dialogue"]
+[ext_resource type="PackedScene" path="res://features/ui/quest_journal.tscn" id="4_journal"]
+[ext_resource type="PackedScene" path="res://features/ui/ledger_shop_panel.tscn" id="5_ledger_shop"]
+[ext_resource type="PackedScene" path="res://features/ui/tool_belt.tscn" id="6_belt"]
+[ext_resource type="Script" path="res://features/ui/minimap.gd" id="7_minimap"]
+[ext_resource type="PackedScene" path="res://features/ui/field_notes.tscn" id="8_notes"]
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_prompt"]
 content_margin_left = 18.0
@@ -36,6 +41,13 @@ corner_radius_bottom_right = 4
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_stamina_fill"]
 bg_color = Color(0.3, 0.52, 0.32, 1)
+corner_radius_top_left = 4
+corner_radius_top_right = 4
+corner_radius_bottom_left = 4
+corner_radius_bottom_right = 4
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_memory_fill"]
+bg_color = Color(0.78, 0.62, 0.28, 1)
 corner_radius_top_left = 4
 corner_radius_top_right = 4
 corner_radius_bottom_left = 4
@@ -148,6 +160,17 @@ text = ""
 horizontal_alignment = 1
 vertical_alignment = 1
 
+[node name="ToolBelt" parent="." instance=ExtResource("6_belt")]
+layout_mode = 3
+anchors_preset = 2
+anchor_top = 1.0
+anchor_bottom = 1.0
+offset_left = 28.0
+offset_top = -270.0
+offset_right = 244.0
+offset_bottom = -206.0
+grow_vertical = 0
+
 [node name="Vitals" type="VBoxContainer" parent="."]
 unique_name_in_owner = true
 layout_mode = 3
@@ -155,7 +178,7 @@ anchors_preset = 2
 anchor_top = 1.0
 anchor_bottom = 1.0
 offset_left = 28.0
-offset_top = -134.0
+offset_top = -198.0
 offset_right = 308.0
 offset_bottom = -24.0
 grow_vertical = 0
@@ -193,6 +216,66 @@ theme_override_styles/fill = SubResource("StyleBoxFlat_stamina_fill")
 value = 100.0
 show_percentage = false
 
+[node name="MemoryLabel" type="Label" parent="Vitals"]
+unique_name_in_owner = true
+layout_mode = 2
+mouse_filter = 2
+theme_override_colors/font_color = Color(0.92, 0.82, 0.55, 1)
+theme_override_colors/font_shadow_color = Color(0, 0, 0, 0.8)
+theme_override_constants/shadow_offset_x = 2
+theme_override_constants/shadow_offset_y = 2
+theme_override_font_sizes/font_size = 13
+text = "Memory 80 / 80"
+
+[node name="MemoryBar" type="ProgressBar" parent="Vitals"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 10)
+layout_mode = 2
+mouse_filter = 2
+theme_override_styles/background = SubResource("StyleBoxFlat_bar_bg")
+theme_override_styles/fill = SubResource("StyleBoxFlat_memory_fill")
+value = 100.0
+show_percentage = false
+
+[node name="HollowSymbols" type="HBoxContainer" parent="Vitals"]
+unique_name_in_owner = true
+layout_mode = 2
+mouse_filter = 2
+theme_override_constants/separation = 12
+
+[node name="SilkLabel" type="Label" parent="Vitals/HollowSymbols"]
+unique_name_in_owner = true
+layout_mode = 2
+mouse_filter = 2
+theme_override_colors/font_color = Color(0.74, 0.83, 0.86, 1)
+theme_override_colors/font_shadow_color = Color(0, 0, 0, 0.8)
+theme_override_constants/shadow_offset_x = 2
+theme_override_constants/shadow_offset_y = 2
+theme_override_font_sizes/font_size = 12
+text = "Silk 100"
+
+[node name="AnchorLabel" type="Label" parent="Vitals/HollowSymbols"]
+unique_name_in_owner = true
+layout_mode = 2
+mouse_filter = 2
+theme_override_colors/font_color = Color(0.86, 0.83, 0.74, 1)
+theme_override_colors/font_shadow_color = Color(0, 0, 0, 0.8)
+theme_override_constants/shadow_offset_x = 2
+theme_override_constants/shadow_offset_y = 2
+theme_override_font_sizes/font_size = 12
+text = "Anchors 0"
+
+[node name="LedgerLabel" type="Label" parent="Vitals/HollowSymbols"]
+unique_name_in_owner = true
+layout_mode = 2
+mouse_filter = 2
+theme_override_colors/font_color = Color(0.82, 0.74, 0.55, 1)
+theme_override_colors/font_shadow_color = Color(0, 0, 0, 0.8)
+theme_override_constants/shadow_offset_x = 2
+theme_override_constants/shadow_offset_y = 2
+theme_override_font_sizes/font_size = 12
+text = "Ledger: Balanced"
+
 [node name="WeaponLabel" type="Label" parent="Vitals"]
 unique_name_in_owner = true
 layout_mode = 2
@@ -203,6 +286,17 @@ theme_override_constants/shadow_offset_x = 2
 theme_override_constants/shadow_offset_y = 2
 theme_override_font_sizes/font_size = 15
 text = "Unarmed"
+
+[node name="ToolLabel" type="Label" parent="Vitals"]
+unique_name_in_owner = true
+layout_mode = 2
+mouse_filter = 2
+theme_override_colors/font_color = Color(0.66, 0.7, 0.58, 1)
+theme_override_colors/font_shadow_color = Color(0, 0, 0, 0.8)
+theme_override_constants/shadow_offset_x = 2
+theme_override_constants/shadow_offset_y = 2
+theme_override_font_sizes/font_size = 13
+text = "Tools: none"
 
 [node name="InventoryPanel" type="PanelContainer" parent="."]
 unique_name_in_owner = true
@@ -236,6 +330,8 @@ custom_minimum_size = Vector2(0, 320)
 layout_mode = 2
 size_flags_vertical = 3
 allow_reselect = true
+fixed_icon_size = Vector2i(32, 32)
+icon_mode = 1
 
 [node name="Actions" type="HBoxContainer" parent="InventoryPanel/VBox"]
 layout_mode = 2
@@ -260,6 +356,51 @@ theme_override_font_sizes/font_size = 13
 text = "Select an item, then Equip or Use."
 horizontal_alignment = 1
 
+[node name="BookTabs" type="HBoxContainer" parent="InventoryPanel/VBox"]
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="ShopButton" type="Button" parent="InventoryPanel/VBox/BookTabs"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+text = "Shop"
+
+[node name="SkillsButton" type="Button" parent="InventoryPanel/VBox/BookTabs"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+text = "Skills"
+
+[node name="LedgerButton" type="Button" parent="InventoryPanel/VBox/BookTabs"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+text = "Ledger"
+
 [node name="MapScreen" parent="." instance=ExtResource("2_map")]
 
+[node name="QuestJournal" parent="." instance=ExtResource("4_journal")]
+
+[node name="LedgerShopPanel" parent="." instance=ExtResource("5_ledger_shop")]
+
 [node name="DialogueWindow" parent="." instance=ExtResource("3_dialogue")]
+
+[node name="Minimap" type="Control" parent="."]
+unique_name_in_owner = true
+layout_mode = 3
+anchors_preset = 3
+anchor_left = 1.0
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = -206.0
+offset_top = -206.0
+offset_right = -26.0
+offset_bottom = -26.0
+grow_horizontal = 0
+grow_vertical = 0
+mouse_filter = 2
+script = ExtResource("7_minimap")
+
+[node name="FieldNotes" parent="." instance=ExtResource("8_notes")]

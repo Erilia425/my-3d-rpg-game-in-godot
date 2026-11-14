@@ -1,0 +1,15 @@
+[gd_resource type="Resource" load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://data/items/item_data.gd" id="1_item"]
+[ext_resource type="Texture2D" path="res://assets/icons/items/iron_ore.svg" id="2_icon"]
+
+[resource]
+script = ExtResource("1_item")
+id = &"item.iron_ore"
+display_name = "Iron Ore"
+icon = ExtResource("2_icon")
+description = "Rust-flecked stone from the eastern hills. Worth the swing."
+kind = 0
+stack_size = 50
+value = 6
+tags = PackedStringArray("gather", "ore")

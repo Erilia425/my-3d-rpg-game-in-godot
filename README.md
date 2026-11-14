@@ -15,12 +15,18 @@ Working now:
   main street, chapel, bell tower, bakery, Rowan's house, the seamstress's yew
   cottage, market, keepers' quarter, beekeeping district and Hive Tower, garden,
   cemetery, ruins, river, bridges, and enterable interiors
-- Five villagers with a simple day/night schedule: from **08:00–18:00** Auntie
-  Bell, Rowan, the blind seamstress, and Thatch are outside their homes; from
-  **18:00–08:00** they are inside the bakery, house, yew cottage, and beekeeper
-  cottage. Thatch walks between the Honeyed Way and the Hive Tower by day.
-  Fern wanders the main street at all hours. Talk to them with **E**.
+- Five villagers with a simple day/night schedule: Auntie Bell works behind the
+  bakery counter **08:00–18:00**, while Rowan, the blind seamstress, and Thatch
+  are outside their homes and go inside at **18:00–08:00**. Thatch walks between
+  the Honeyed Way and the Hive Tower by day. Fern wanders the main street at all
+  hours. Talk to them with **E**.
+- Two short **quests**: Auntie Bell trades a Hearth-Silk for Sporebread, and
+  Rowan's ledger page starts the search for the ledger itself
+- Two café **customers** who come and go on their own schedule
+- A **continuous world** around the village — no separate overworld scene and no
+  gates to other maps
 - A full-screen **storybook map** on **M**, with a "You are here" marker in town
+  and a card for each outlying village
 - A **dialogue window** for villagers with speaker, role, multi-line text,
   **E**/**Space** to advance, and **Esc** to close
 - One `CharacterBody3D` player with walk, double-tap run, crouch, hold-to-hop
@@ -46,17 +52,34 @@ Working now:
   doors, and defeated enemies
 - A **world clock** (day and hour) advanced while playing, shown top-right on
   the HUD
-- A **chunk manager** that streams `chunk_<x>_<z>.tscn` scenes around the player
-  with threaded loading; several managers can sit side by side through
-  `chunk_origin`, one per biome
-- A **four-biome exterior** reached through the back door, with a stone arch
-  that leads back inside:
-  - **plains** (grass, broadleaf trees, rocks) around the spawn and the arch
-  - **ice** to the north (snow, ice pillars, dead trees, frozen ponds)
-  - **desert** to the north-east (sand, cacti, bleached rocks, dry shrubs)
-  - **ocean** to the east (shallow sea, sandbars, palms, shells)
-- A first **AreaGate** doorway trigger that carries health, inventory, equipment,
-  world time, and opened chests/doors across a scene change
+- A **continuous exterior** around the village, built at runtime by `TownRealm`
+  as a 520 m half-extent ring of ground, roads, rivers, lakes, and seven biome
+  regions:
+  - **plains** to the south-west and west, **marsh** to the south
+  - **arctic** to the north, **deep forest** to the north-east
+  - **desert** to the east, **ocean shelf** to the south-east
+- Two outlying villages inside the same continuous world: **Ashfall** in the
+  northern bog, and **Thornridge** in the eastern rock hills
+  - Ashfall: ash grey and bog mud, standing pools, reeds, dead snags, cold violet
+    lanterns, and a flag of falling flakes over a marsh
+  - Thornridge: slate and rust, rock outcrops, thorn scrub, standing stones, a dry
+    gully with a low stone bridge on the road, and a bridge-and-peaks flag
+  - Three enterable interiors in each village (houses, a bothy, a shrine, a forge,
+    and an inn), plus two wandering villagers per village
+- Soft gradient seams between the seven biome floors, so regions blend instead of
+  meeting at a hard line
+- A dense forest belt with varied tree kinds (round, pine, fern, dead snag,
+  stump, cactus), tinted ground grass with flowers and mushrooms, and reeds along
+  the water — batched into multi-meshes so a whole meadow costs one draw call
+- **AreaGate** doorway triggers that carry health, inventory, equipment, world
+  time, and opened chests/doors across a scene change
+- **Multi-room interiors** for Rowan (hall, dining room, bedroom, and a study
+  holding the desk and ledger) and Auntie Bell (café floor, bar, lounge, and a
+  private room behind the counter)
+- A **Guest** enemy that lunges, flashes red when hit, and vanishes in a smoke
+  puff on defeat
+- A **locked café back room**: Auntie Bell hands over a bakery key when the
+  Sporebread quest is finished, and the door remembers being unlocked
 - Pause menu with resume, save, load, return to menu, and quit
 - Persistent master volume and fullscreen settings
 - F3 debug overlay showing FPS, state, camera mode, and position
@@ -65,9 +88,8 @@ Working now:
 Not built yet:
 
 - More than two fixed save slots (manual + autosave)
-- Points of interest in the exterior
-- Blended biome edges: today the four biomes meet at straight seams
-- Quests, dialogue, crafting, and shops (later in Phase 4)
+- Points of interest in the deeper forest and desert
+- Crafting and shops (later in Phase 4)
 - Magicka and spells (they arrive with the ability system)
 - Death screen, loot drops, and enemy variety (later phases)
 
@@ -130,9 +152,9 @@ a potion.
 `newest_slot()` selection, quicksave and autosave isolation (temporarily backing
 up and restoring slots 0 and 1), the saveable contract on the player, chests,
 the door, and the enemy, a full write/read/apply round trip, corrupt and
-future-version saves, chunk streaming from test fixtures, the real
-`features/world/chunks/` set and the three biome chunk sets, the room's exit
-gate, the HUD clock, and the pause-menu save/load buttons.
+future-version saves, chunk streaming from the `tests/fixtures/chunks/`
+fixtures, `chunk_origin` placement, the room's exit gate, the HUD clock, the
+town's continuous `Realm` node, and the pause-menu save/load buttons.
 
 They print `PHASE0_SMOKE_OK` / `PHASE1_SMOKE_OK` / `PHASE2_SMOKE_OK` /
 `PHASE3_SMOKE_OK` when everything passes.

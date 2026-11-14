@@ -1,0 +1,13 @@
+[gd_resource type="Resource" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://data/recipes/recipe_data.gd" id="1_recipe"]
+
+[resource]
+script = ExtResource("1_recipe")
+id = &"recipe.iron_dagger"
+display_name = "Iron Dagger"
+output_id = &"item.iron_dagger"
+output_amount = 1
+ingredient_ids = Array[StringName]([&"item.iron_ore", &""])
+ingredient_amounts = Array[int]([2, 1])
+ingredient_tags = Array[StringName]([&"", &"wood"])

@@ -1,0 +1,15 @@
+[gd_resource type="Resource" load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://data/items/item_data.gd" id="1_item"]
+[ext_resource type="Texture2D" path="res://assets/icons/items/honey.svg" id="2_icon"]
+
+[resource]
+script = ExtResource("1_item")
+id = &"item.hollow_honey"
+display_name = "Hollow Honey"
+icon = ExtResource("2_icon")
+description = "Dark honey from hives deep in the old wood. It tastes of smoke and wild mint."
+kind = 0
+stack_size = 10
+value = 15
+tags = PackedStringArray("ingredient", "rare", "honey")

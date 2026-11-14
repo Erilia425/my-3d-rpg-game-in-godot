@@ -1,0 +1,39 @@
+[gd_scene load_steps=7 format=3]
+
+[ext_resource type="Script" path="res://features/world/interiors/interior_room.gd" id="1_room"]
+[ext_resource type="PackedScene" path="res://features/player/player.tscn" id="2_player"]
+[ext_resource type="PackedScene" path="res://features/ui/hud.tscn" id="3_hud"]
+[ext_resource type="PackedScene" path="res://features/ui/pause_menu.tscn" id="4_pause"]
+[ext_resource type="PackedScene" path="res://features/npc/npc.tscn" id="5_npc"]
+[ext_resource type="PackedScene" path="res://features/interaction/chest.tscn" id="6_chest"]
+
+[node name="ThornridgeHouseInterior" type="Node3D"]
+script = ExtResource("1_room")
+layout = &"cottage"
+room_size = Vector2(7.2, 5.6)
+accent = 2
+
+[node name="Player" parent="." instance=ExtResource("2_player")]
+position = Vector3(0, 0.2, 1.1)
+
+[node name="HUD" parent="." instance=ExtResource("3_hud")]
+
+[node name="PauseMenu" parent="." instance=ExtResource("4_pause")]
+
+[node name="Jory" parent="." instance=ExtResource("5_npc")]
+position = Vector3(-1.5, 0.05, -0.6)
+npc_name = "Jory"
+role = "Mason"
+greeting_lines = PackedStringArray("Every stone in this house came up the hill by hand.", "My back remembers each one.")
+coat_color = Color(0.34, 0.3, 0.26, 1)
+trim_color = Color(0.62, 0.34, 0.18, 1)
+skin_color = Color(0.79, 0.64, 0.49, 1)
+hair_color = Color(0.26, 0.2, 0.16, 1)
+facing_degrees = 200.0
+
+[node name="ThornridgeHouseChest" parent="." instance=ExtResource("6_chest")]
+position = Vector3(2.5, 0, -1.9)
+save_id = &"chest.thornridge_house"
+loot_id = &"item.mushroom"
+amount = 3
+use_sprite = true

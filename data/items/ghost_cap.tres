@@ -1,0 +1,15 @@
+[gd_resource type="Resource" load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://data/items/item_data.gd" id="1_item"]
+[ext_resource type="Texture2D" path="res://assets/icons/items/mushroom.svg" id="2_icon"]
+
+[resource]
+script = ExtResource("1_item")
+id = &"item.ghost_cap"
+display_name = "Ghost Cap"
+icon = ExtResource("2_icon")
+description = "A pale mushroom that glows faintly when something unseen passes nearby. The gatherers will not touch them."
+kind = 0
+stack_size = 10
+value = 18
+tags = PackedStringArray("ingredient", "rare", "mushroom")

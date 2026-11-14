@@ -14,6 +14,14 @@ var _current_prompt := ""
 var _time_until_check := 0.0
 
 
+## Suspends the ray while the player is seated, so the chair they sit on does
+## not keep offering "Sit" and props behind it are not picked up.
+func set_paused(paused: bool) -> void:
+	set_physics_process(not paused)
+	if paused:
+		_clear_target()
+
+
 func _physics_process(delta: float) -> void:
 	if Game.state != Game.State.PLAYING:
 		_clear_target()

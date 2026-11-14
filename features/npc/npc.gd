@@ -54,11 +54,24 @@ const SCHEDULE_CHECK_INTERVAL := 0.5
 @export var long_skirt: bool = false
 @export var hat_style: HatStyle = HatStyle.NONE
 @export var facing_degrees: float = 0.0
+## Overall visual size multiplier. 1.0 is an adult; use something like 0.72 for
+## a child. It scales only the drawn model and its floating labels, never the
+## collision shape or movement speed.
+@export_range(0.3, 1.5, 0.01) var model_scale: float = 1.0
 
 @export_group("Behaviour")
 @export var wander: bool = false
 ## World-space points walked between, in order and then looping.
 @export var wander_points: PackedVector3Array = PackedVector3Array()
+## When greater than zero and `wander_points` is empty, a ring of points is
+## generated at load time instead of being authored into the scene. The town's
+## villagers use this to walk about the market square without ten hand-written
+## routes that would drift out of date the moment a stall moves.
+@export var wander_radius: float = 0.0
+## Centre of the generated ring. `Vector3.ZERO` means "around wherever this
+## villager was placed", which is what the outlying villages want.
+@export var wander_center: Vector3 = Vector3.ZERO
+@export var wander_point_count: int = 6
 @export var walk_speed: float = 1.5
 @export var pause_at_points: float = 2.5
 
@@ -85,9 +98,44 @@ func _ready() -> void:
 	add_to_group(&"interactable")
 	add_to_group(&"npc")
 	rotation.y = deg_to_rad(facing_degrees)
+	_prepare_wander()
 	_build_model()
 	_build_labels()
 	_update_schedule(true)
+
+
+## Fills in a generated ring when the scene asked for one. The route is seeded
+## from the villager's name, so the same villager walks the same way every load
+## and a save never catches them mid-teleport.
+func _prepare_wander() -> void:
+	if not wander or wander_radius <= 0.0 or not wander_points.is_empty():
+		return
+
+	var centre := wander_center
+	if centre == Vector3.ZERO:
+		centre = global_position
+
+	var rng := RandomNumberGenerator.new()
+	rng.seed = hash(npc_name)
+
+	# Start from the direction the villager already faces out from the centre,
+	# so their first errand walks them in from where they were placed instead of
+	# across the middle of the square.
+	var offset := Vector2(global_position.x - centre.x, global_position.z - centre.z)
+	var start_angle := offset.angle() if offset.length() > 0.1 else rng.randf() * TAU
+
+	for i in wander_point_count:
+		var angle := start_angle + TAU * float(i) / float(wander_point_count)
+		angle += rng.randf_range(-0.22, 0.22)
+		var radius := wander_radius * rng.randf_range(0.6, 1.0)
+		wander_points.append(
+			Vector3(
+				centre.x + cos(angle) * radius,
+				global_position.y,
+				centre.z + sin(angle) * radius
+			)
+		)
+
 
 
 func _physics_process(delta: float) -> void:
@@ -211,6 +259,7 @@ func _wander(delta: float) -> void:
 func _build_model() -> void:
 	_model = Node3D.new()
 	_model.name = "Model"
+	_model.scale = Vector3.ONE * model_scale
 	add_child(_model)
 
 	if sprite_frames != null:
@@ -371,7 +420,7 @@ func _build_labels() -> void:
 	_label = Label3D.new()
 	_label.name = "NameLabel"
 	_label.text = npc_name
-	_label.position = Vector3(0, 2.34 + rise, 0)
+	_label.position = Vector3(0, (2.34 + rise) * model_scale, 0)
 	_label.billboard = BaseMaterial3D.BILLBOARD_ENABLED
 	_label.font_size = 44
 	_label.pixel_size = 0.0035
@@ -386,7 +435,7 @@ func _build_labels() -> void:
 	_role_label = Label3D.new()
 	_role_label.name = "RoleLabel"
 	_role_label.text = role
-	_role_label.position = Vector3(0, 2.08 + rise, 0)
+	_role_label.position = Vector3(0, (2.08 + rise) * model_scale, 0)
 	_role_label.billboard = BaseMaterial3D.BILLBOARD_ENABLED
 	_role_label.font_size = 22
 	_role_label.pixel_size = 0.0032

@@ -1,0 +1,45 @@
+extends Node3D
+## A decorative forest wisp: a soft 3D light that bobs and drifts in place.
+##
+## The 2D game used the wisp sprite only as scenery, so this node has no
+## interaction, collision, or gameplay. It is now a small glowing sphere with a
+## warm-cool point light, so it reads as a solid object in the 3D world instead
+## of a camera-facing cut-out. The old `wisp.tres` frames stay in the project.
+
+@export var bob_height: float = 0.25
+@export var bob_speed: float = 2.0
+@export var drift_radius: float = 2.5
+@export var drift_speed: float = 0.35
+
+var _origin: Vector3
+var _phase: float = 0.0
+
+
+func _ready() -> void:
+	_origin = position
+	_phase = randf() * TAU
+	_build_visual()
+
+
+## A bright emissive core inside a softer, dimmer shell. Compatibility rendering
+## has no glow pass, so the emission plus the point light do the work.
+func _build_visual() -> void:
+	var core := TownParts.material(Color(0.84, 0.97, 0.8, 1), 0.35, 3.2)
+	var shell := TownParts.material(Color(0.6, 0.86, 0.68, 1), 0.5, 1.1)
+	TownParts.sphere(self, "WispCore", Vector3.ZERO, 0.075, 0.15, core)
+	TownParts.sphere(self, "WispShell", Vector3.ZERO, 0.16, 0.34, shell)
+
+	var light := OmniLight3D.new()
+	light.name = "Glow"
+	light.light_color = Color(0.7, 1.0, 0.78, 1)
+	light.light_energy = 1.2
+	light.omni_range = 4.0
+	light.shadow_enabled = false
+	add_child(light)
+
+
+func _process(delta: float) -> void:
+	_phase += delta * drift_speed
+	position.x = _origin.x + sin(_phase) * drift_radius
+	position.z = _origin.z + cos(_phase * 0.8) * drift_radius
+	position.y = _origin.y + sin(_phase * bob_speed) * bob_height

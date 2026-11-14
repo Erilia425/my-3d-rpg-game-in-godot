@@ -1,25 +1,3 @@
-# Godot 4 generated files
 .godot/
-/android/
-
-# Exported builds
-export/
-build/
-*.exe
-*.pck
-*.zip
-
-# Temporary files
+.export/
 *.tmp
-*.translation
-
-# Operating system files
-Thumbs.db
-Desktop.ini
-.DS_Store
-
-# Editors and IDEs
-.vscode/
-.idea/
-*.sublime-project
-*.sublime-workspace

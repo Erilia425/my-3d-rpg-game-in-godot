@@ -4,37 +4,24 @@
 [ext_resource type="PackedScene" path="res://features/player/player.tscn" id="2_player"]
 [ext_resource type="PackedScene" path="res://features/ui/hud.tscn" id="3_hud"]
 [ext_resource type="PackedScene" path="res://features/ui/pause_menu.tscn" id="4_pause"]
-[ext_resource type="PackedScene" path="res://features/npc/quest_npc.tscn" id="5_npc"]
-[ext_resource type="SpriteFrames" path="res://assets/from_2d/frames/rowan.tres" id="6_frames"]
+[ext_resource type="PackedScene" path="res://features/interaction/world_pickup.tscn" id="5_pickup"]
+[ext_resource type="Texture2D" path="res://assets/from_2d/sprites/odd_coin.png" id="6_coin"]
 
 [node name="RowansHouseInterior" type="Node3D"]
 script = ExtResource("1_room")
-layout = &"hollow_house"
-room_size = Vector2(8.40, 5.90)
+layout = &"rowan_manor"
+room_size = Vector2(13, 9.5)
 accent = 1
 
 [node name="Player" parent="." instance=ExtResource("2_player")]
-position = Vector3(0, 0.2, 1.35)
+position = Vector3(0, 0.2, 3.2)
 
 [node name="HUD" parent="." instance=ExtResource("3_hud")]
 
 [node name="PauseMenu" parent="." instance=ExtResource("4_pause")]
 
-[node name="Rowan" parent="." instance=ExtResource("5_npc")]
-position = Vector3(0.9, 0.05, -1.7)
-npc_name = "Rowan"
-role = "Keeper of Records"
-sprite_frames = ExtResource("6_frames")
-greeting_lines = PackedStringArray("Keep it safe. Some exchanges cannot be undone.")
-offers_quest = &"quest.rowan_ledger"
-offer_gift_item = &"item.ledger_page"
-offer_gift_amount = 1
-offer_lines = PackedStringArray("The ledger holds more than names.")
-coat_color = Color(0.27, 0.32, 0.4, 1)
-trim_color = Color(0.62, 0.55, 0.4, 1)
-skin_color = Color(0.8, 0.63, 0.47, 1)
-hair_color = Color(0.2, 0.14, 0.09, 1)
-facing_degrees = 180.0
-scheduled = true
-active_from_hour = 18
-active_to_hour = 8
+[node name="OddCoin" parent="." instance=ExtResource("5_pickup")]
+position = Vector3(-5.35, 0.6, 3.55)
+save_id = &"pickup.town.rowans_house.odd_coin"
+item_id = &"item.spider_coin"
+sprite_texture = ExtResource("6_coin")

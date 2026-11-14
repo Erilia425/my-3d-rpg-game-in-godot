@@ -1,9 +1,10 @@
-[gd_scene load_steps=5 format=3]
+[gd_scene load_steps=6 format=3]
 
 [ext_resource type="Script" path="res://features/world/interiors/interior_room.gd" id="1_room"]
 [ext_resource type="PackedScene" path="res://features/player/player.tscn" id="2_player"]
 [ext_resource type="PackedScene" path="res://features/ui/hud.tscn" id="3_hud"]
 [ext_resource type="PackedScene" path="res://features/ui/pause_menu.tscn" id="4_pause"]
+[ext_resource type="PackedScene" path="res://features/crafting/crafting_station.tscn" id="5_loom"]
 
 [node name="OldLoomTowerInterior" type="Node3D"]
 script = ExtResource("1_room")
@@ -17,3 +18,12 @@ position = Vector3(0, 0.2, 0.60)
 [node name="HUD" parent="." instance=ExtResource("3_hud")]
 
 [node name="PauseMenu" parent="." instance=ExtResource("4_pause")]
+
+[node name="LoomStation" parent="." instance=ExtResource("5_loom")]
+position = Vector3(-1.3, 0, -1.1)
+save_id = &"station.old_loom_tower"
+title = "The Loom"
+instructions = "Thread, honey, and a little patience. The loom does the rest."
+interaction_text = "Use the loom"
+recipe_ids = Array[StringName]([&"recipe.hearth_silk_thread", &"recipe.memory_honey"])
+station_kind = &"loom"

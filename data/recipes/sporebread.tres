@@ -1,0 +1,12 @@
+[gd_resource type="Resource" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://data/recipes/recipe_data.gd" id="1_recipe"]
+
+[resource]
+script = ExtResource("1_recipe")
+id = &"recipe.sporebread"
+display_name = "Sporebread"
+output_id = &"item.sporebread"
+output_amount = 1
+ingredient_ids = Array[StringName]([&"item.mushroom", &"item.flower"])
+ingredient_amounts = Array[int]([2, 1])

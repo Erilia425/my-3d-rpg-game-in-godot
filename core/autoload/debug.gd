@@ -95,6 +95,14 @@ func _refresh() -> void:
 		"Player: %s" % player_name,
 		"Camera: %s" % camera_text,
 		"Position: %s" % position_text,
+		"Jumps: %d  best %.1f m  drop %.1f m" % [
+			MovementStats.get_jumps(),
+			MovementStats.get_best_jump(),
+			MovementStats.get_best_drop(),
+		],
+		"Places: %d/%d" % [
+			ExplorationLog.get_seen_count(), ExplorationLog.get_total()
+		],
 		"F3 toggles this overlay",
 	])
 

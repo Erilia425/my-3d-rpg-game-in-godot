@@ -1,0 +1,25 @@
+[gd_scene load_steps=6 format=3]
+
+[ext_resource type="Script" path="res://features/world/interiors/interior_room.gd" id="1_room"]
+[ext_resource type="PackedScene" path="res://features/player/player.tscn" id="2_player"]
+[ext_resource type="PackedScene" path="res://features/ui/hud.tscn" id="3_hud"]
+[ext_resource type="PackedScene" path="res://features/ui/pause_menu.tscn" id="4_pause"]
+[ext_resource type="PackedScene" path="res://features/combat/guest.tscn" id="5_guest"]
+
+[node name="HollowHouseInterior" type="Node3D"]
+script = ExtResource("1_room")
+layout = &"hollow_house"
+room_size = Vector2(8.40, 5.90)
+accent = 2
+
+[node name="Player" parent="." instance=ExtResource("2_player")]
+position = Vector3(0, 0.2, 1.35)
+
+[node name="HUD" parent="." instance=ExtResource("3_hud")]
+
+[node name="PauseMenu" parent="." instance=ExtResource("4_pause")]
+
+[node name="Guest" parent="." instance=ExtResource("5_guest")]
+position = Vector3(1.7, 0, 1.9)
+save_id = &"enemy.hollow_house.guest"
+detection_range = 4.0

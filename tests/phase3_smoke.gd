@@ -8,38 +8,17 @@ extends Node
 ## Covers the world clock, the save format, the slot model, autosave and quick
 ## save, the saveable contract on the player, chests, the door and the enemy, a
 ## full write/read/apply round trip, corrupt and future-version saves, chunk
-## streaming (fixtures, the plains set, and the three biome sets), the town and
-## overworld scene wiring, the HUD clock, and the pause menu save/load buttons.
-## Prints PHASE3_SMOKE_OK on success.
+## streaming through the fixture chunks, chunk-origin placement, the town scene
+## wiring and its wider-world Realm node, the HUD clock, and the pause-menu
+## save/load buttons. Prints PHASE3_SMOKE_OK on success.
 
 const EPSILON := 0.02
 ## Slot 9 is reserved for this test and is always deleted again.
 const TEST_SLOT := 9
 const PLAYER_ID := &"player"
 const CHUNK_DIRECTORY := "res://tests/fixtures/chunks"
-const REAL_CHUNK_DIRECTORY := "res://features/world/chunks"
-const REAL_CHUNK_SIZE := 32.0
-const OVERWORLD_SCENE := "res://scenes/overworld.tscn"
+const CHUNK_SIZE := 32.0
 const TOWN_SCENE := "res://scenes/town.tscn"
-## Biome chunk folders, the ground node each one uses, and one prop that only
-## exists in that biome.
-const BIOMES := {
-	"ice": {
-		"directory": "res://features/world/chunks/ice",
-		"ground": "Ground",
-		"prop": "IcePillar",
-	},
-	"desert": {
-		"directory": "res://features/world/chunks/desert",
-		"ground": "Ground",
-		"prop": "Cactus",
-	},
-	"ocean": {
-		"directory": "res://features/world/chunks/ocean",
-		"ground": "Seafloor",
-		"prop": "Water",
-	},
-}
 
 var _failures: PackedStringArray = []
 var _room: Node3D
@@ -62,7 +41,7 @@ func _ready() -> void:
 	var packed := load("res://scenes/test_room.tscn") as PackedScene
 	_check(packed != null, "test room scene loads")
 	if packed == null:
-		_finish()
+		await _finish()
 		return
 
 	_room = packed.instantiate() as Node3D
@@ -73,8 +52,7 @@ func _ready() -> void:
 	await _check_round_trip()
 	_check_storage_errors()
 	await _check_chunk_manager()
-	await _check_real_chunks()
-	await _check_biomes()
+	_check_chunk_origins()
 	_check_hud_and_pause_menu()
 	_check_game_save()
 	_check_quick_save_and_autosave()
@@ -82,7 +60,7 @@ func _ready() -> void:
 	_check_slot_selection()
 
 	SaveManager.delete_slot(TEST_SLOT)
-	_finish()
+	await _finish()
 
 
 # --- world clock ----------------------------------------------------------
@@ -283,6 +261,17 @@ func _check_round_trip() -> void:
 	enemy_health.take_damage(999.0)
 	_check(enemy.call("get_state_name") == &"DEAD", "the enemy is defeated before saving")
 
+	# Quest and discovery progress live in the save's `world` block beside the
+	# clock, not on a node, so they are checked in the same round trip.
+	QuestLog.reset()
+	DiscoveryLog.reset()
+	_check(QuestLog.start(QuestLog.THATCH_HIVE), "the Thatch quest starts before saving")
+	_check(QuestLog.complete(QuestLog.ROWAN_LEDGER), "the Rowan quest completes before saving")
+	_check(
+		DiscoveryLog.unlock(DiscoveryLog.FUNGAL_RECORD),
+		"the fungal record unlocks before saving"
+	)
+
 	var data := SaveManager.build_save_dict()
 	_check(
 		int(data.get("version", 0)) == SaveManager.SAVE_VERSION,
@@ -295,6 +284,16 @@ func _check_round_trip() -> void:
 	var world: Dictionary = data.get("world", {})
 	var time: Dictionary = world.get("time", {})
 	_check(int(time.get("day", 0)) == 3, "the save records the world day")
+	var saved_quests: Dictionary = world.get("quests", {})
+	_check(
+		saved_quests.has("active") and saved_quests.has("completed"),
+		"the save records the quest log"
+	)
+	var saved_discoveries: Dictionary = world.get("discoveries", {})
+	_check(
+		saved_discoveries.has("unlocked"),
+		"the save records the discovery log"
+	)
 
 	var entries: Dictionary = data.get("saveables", {})
 	for id in [
@@ -334,6 +333,8 @@ func _check_round_trip() -> void:
 	health.set_health(100.0)
 	stats.set_stamina(100.0)
 	WorldClock.reset()
+	QuestLog.reset()
+	DiscoveryLog.reset()
 
 	chest.set("is_open", false)
 	lid.rotation.x = 0.0
@@ -392,6 +393,19 @@ func _check_round_trip() -> void:
 		absf(WorldClock.get_hour() - 21.5) < EPSILON,
 		"the world hour is restored (%.3f)" % WorldClock.get_hour()
 	)
+	_check(
+		QuestLog.is_active(QuestLog.THATCH_HIVE),
+		"the in-progress quest is restored"
+	)
+	_check(
+		not QuestLog.is_active(QuestLog.ROWAN_LEDGER)
+		and QuestLog.is_completed(QuestLog.ROWAN_LEDGER),
+		"the completed quest is restored as completed"
+	)
+	_check(
+		DiscoveryLog.has(DiscoveryLog.FUNGAL_RECORD),
+		"the unlocked discovery is restored"
+	)
 
 	# A save that mentions an object this scene does not have is harmless.
 	var with_unknown := reread.duplicate(true)
@@ -403,6 +417,9 @@ func _check_round_trip() -> void:
 	)
 
 	SaveManager.delete_slot(TEST_SLOT)
+	# Leave the static logs clean for the checks that follow.
+	QuestLog.reset()
+	DiscoveryLog.reset()
 
 
 # --- bad save files -------------------------------------------------------
@@ -510,88 +527,17 @@ func _wait_for_chunk(manager: ChunkManager, coord: Vector2i) -> bool:
 	return false
 
 
-## The first real content behind the streaming system: a 3x3 meadow.
-func _check_real_chunks() -> void:
-	var manager := ChunkManager.new()
-	manager.chunk_directory = REAL_CHUNK_DIRECTORY
-	manager.chunk_size = REAL_CHUNK_SIZE
-	manager.load_radius = 1
-	manager.update_interval = 0.05
-	manager.auto_track_player = false
-
-	var marker := Node3D.new()
-	marker.name = "RealChunkMarker"
-	_room.add_child(marker)
-	manager.set_track_node(marker)
-	_room.add_child(manager)
-
-	manager.refresh_now()
-	var loaded := await _wait_for_chunks(manager, 9)
-	_check(
-		loaded,
-		"the 3x3 chunk set streams in (%d loaded)" % manager.get_loaded_chunk_count()
-	)
-	_check(manager.is_chunk_loaded(Vector2i(0, 0)), "the centre chunk is loaded")
-	_check(manager.is_chunk_loaded(Vector2i(-1, -1)), "the corner chunk (-1, -1) is loaded")
-	_check(manager.is_chunk_loaded(Vector2i(1, 1)), "the corner chunk (1, 1) is loaded")
-
-	var centre := manager.find_child("Chunk_0_0", true, false) as Node3D
-	_check(centre != null, "the centre chunk scene is instantiated by name")
-	if centre != null:
-		_check(
-			centre.find_child("Ground", true, false) != null,
-			"the centre chunk has walkable ground"
-		)
-		_check(
-			centre.find_child("Rock", true, false) != null
-			or centre.find_child("Tree", true, false) != null,
-			"the centre chunk has scenery"
-		)
-
-	var east: Node3D = manager._loaded.get(Vector2i(1, 0))
-	_check(east != null, "the chunk east of centre is loaded")
-	if east != null:
-		_check(
-			is_equal_approx(east.position.x, REAL_CHUNK_SIZE),
-			"chunks are spaced one chunk_size apart (%.1f)" % east.position.x
-		)
-
-	manager.unload_all()
-	_check(
-		manager.get_loaded_chunk_count() == 0,
-		"unload_all() empties the real chunk manager"
-	)
-	manager.queue_free()
-	marker.queue_free()
-	# Chunk instances are freed deferred; let the frees happen before the suite
-	# exits so the engine does not report orphaned objects.
-	await _frames(2)
-
-
-## Every biome is its own 3x3 chunk folder streamed by its own manager. The
-## biome folders sit beside the plains set in world space through chunk_origin.
-func _check_biomes() -> void:
-	for biome in BIOMES:
-		var directory: String = BIOMES[biome]["directory"]
-		var missing: PackedStringArray = []
-		for z in 3:
-			for x in 3:
-				if not ResourceLoader.exists("%s/chunk_%d_%d.tscn" % [directory, x, z]):
-					missing.append("chunk_%d_%d" % [x, z])
-		_check(
-			missing.is_empty(),
-			"the %s biome has a full 3x3 chunk set%s" % [
-				biome, "" if missing.is_empty() else " (missing %s)" % ", ".join(missing)
-			]
-		)
-
+## The first streaming content is the shipped fixture set. The real world is no
+## longer chunked: `scenes/town.tscn` grows its surroundings from a `TownRealm`
+## node, so only the manager's own maths is checked here.
+func _check_chunk_origins() -> void:
 	var offset := ChunkManager.new()
-	offset.chunk_size = REAL_CHUNK_SIZE
+	offset.chunk_size = CHUNK_SIZE
 	offset.chunk_origin = Vector2i(-1, -4)
 	offset.auto_track_player = false
 	_check(
 		offset.chunk_to_world(Vector2i(0, 0)).distance_to(Vector3(-32, 0, -128)) < EPSILON,
-		"chunk_origin places a biome's first chunk in world space"
+		"chunk_origin places a chunk set in world space"
 	)
 	_check(
 		offset.world_to_chunk(Vector3(-32, 0, -128)) == Vector2i(0, 0),
@@ -599,62 +545,22 @@ func _check_biomes() -> void:
 	)
 	_check(
 		offset.chunk_to_world(Vector2i(1, 2)).distance_to(Vector3(0, 0, -64)) < EPSILON,
-		"biome chunks keep one chunk_size spacing in both axes"
+		"chunks keep one chunk_size spacing in both axes"
 	)
 	offset.free()
 
 	var plains := ChunkManager.new()
-	plains.chunk_size = REAL_CHUNK_SIZE
+	plains.chunk_size = CHUNK_SIZE
 	plains.auto_track_player = false
 	_check(
 		plains.chunk_to_world(Vector2i(0, 0)).distance_to(Vector3(0, 0, 0)) < EPSILON,
-		"the plains chunk set keeps the world origin at chunk (0, 0)"
+		"a zero origin keeps the world origin at chunk (0, 0)"
 	)
 	_check(
 		plains.chunk_to_world(Vector2i(-1, -1)).distance_to(Vector3(-32, 0, -32)) < EPSILON,
-		"the plains chunk set reaches one chunk west and north of the origin"
+		"a chunk set reaches one chunk west and north of the origin"
 	)
 	plains.free()
-
-	for biome in BIOMES:
-		_check_biome_chunk(biome)
-
-	await _frames(2)
-
-
-func _check_biome_chunk(biome: String) -> void:
-	var directory: String = BIOMES[biome]["directory"]
-	var prop: String = BIOMES[biome]["prop"]
-	var ground: String = BIOMES[biome]["ground"]
-
-	var packed := load("%s/chunk_1_1.tscn" % directory) as PackedScene
-	_check(packed != null, "the %s centre chunk loads" % biome)
-	if packed == null:
-		return
-
-	var instance := packed.instantiate() as Node3D
-	_check(instance != null, "the %s centre chunk instantiates" % biome)
-	if instance == null:
-		return
-
-	_check(
-		instance.find_child(ground, true, false) != null,
-		"the %s chunk has walkable ground (%s)" % [biome, ground]
-	)
-	_check(
-		instance.find_child(prop, true, false) != null,
-		"the %s chunk has its signature scenery (%s)" % [biome, prop]
-	)
-	instance.free()
-
-
-func _wait_for_chunks(manager: ChunkManager, count: int) -> bool:
-	for _i in 240:
-		if manager.get_loaded_chunk_count() >= count:
-			return true
-		manager.refresh_now()
-		await get_tree().process_frame
-	return false
 
 
 # --- HUD and pause menu ---------------------------------------------------
@@ -693,6 +599,17 @@ func _check_hud_and_pause_menu() -> void:
 			_pause.find_child("StatusLabel", true, false) is Label,
 			"the pause menu has a save status label"
 		)
+		var slots := _pause.find_child("SlotOption", true, false) as OptionButton
+		_check(slots != null, "the pause menu has a slot picker")
+		if slots != null:
+			_check(
+				slots.item_count == Game.MANUAL_SLOTS.size(),
+				"the slot picker lists every manual slot (%d)" % slots.item_count
+			)
+			_check(
+				slots.get_item_id(0) == Game.MANUAL_SLOT,
+				"the first picker row is the quicksave slot"
+			)
 
 
 # --- Game wiring ----------------------------------------------------------
@@ -780,12 +697,10 @@ func _check_quick_save_and_autosave() -> void:
 	)
 
 
-## The overworld and the town are content, not services, so this suite asserts
-## their wiring through `PackedScene.get_state()`. Loading them here would pull a
-## second player and HUD into the process and leave their resources alive at
-## exit.
+## The town is content, not a service, so this suite asserts its wiring through
+## `PackedScene.get_state()`. Loading it here would pull a second player and HUD
+## into the process and leave their resources alive at exit.
 func _check_exterior_scene() -> void:
-	_check(ResourceLoader.exists(OVERWORLD_SCENE), "the overworld scene exists")
 	_check(ResourceLoader.exists(TOWN_SCENE), "the town scene exists")
 
 	var exit_gate := _room.get_node_or_null("ExitGate") as AreaGate
@@ -804,7 +719,6 @@ func _check_exterior_scene() -> void:
 	)
 
 	_check_town_scene()
-	_check_overworld_gate()
 
 
 ## Reads the town's saved scene state without instancing it.
@@ -843,10 +757,10 @@ func _check_town_scene() -> void:
 	)
 
 	var north_gate := _state_node(state, "Gates/NorthGate")
-	_check(north_gate >= 0, "the town has a north gate")
+	_check(north_gate < 0, "the town has no gate out to a separate overworld scene")
 	_check(
-		str(_state_value(state, north_gate, "target_scene")) == OVERWORLD_SCENE,
-		"the north gate leads to the overworld"
+		_state_node(state, "Realm") >= 0,
+		"the town grows the wider world from a Realm node"
 	)
 
 	var buildings := _direct_children(state, "Buildings")
@@ -874,28 +788,6 @@ func _check_town_scene() -> void:
 	_check(forest_count >= 100, "the forest ring is dense")
 	var clumps: PackedVector3Array = _state_value(state, forest, "clumps")
 	_check(clumps.size() >= 10, "the forest reaches into the town edge")
-
-
-## The overworld's arch now returns to the town, not straight into the room.
-func _check_overworld_gate() -> void:
-	var packed := load(OVERWORLD_SCENE) as PackedScene
-	_check(packed != null, "the overworld scene loads")
-	if packed == null:
-		return
-
-	var state := packed.get_state()
-	var return_gate := _state_node(state, "ReturnGate")
-	_check(return_gate >= 0, "the overworld has a return gate")
-	_check(
-		str(_state_value(state, return_gate, "target_scene")) == TOWN_SCENE,
-		"the overworld returns to the town"
-	)
-	var arrival: Vector3 = _state_value(state, return_gate, "target_position")
-	_check(
-		arrival.distance_to(Vector3(52, 0.2, -56.5)) < EPSILON,
-		"the overworld returns the player to the town's north gate"
-	)
-	_check(_state_node(state, "FallGuard") >= 0, "the overworld has a fall guard")
 
 
 func _state_node(state: SceneState, path: String) -> int:
@@ -996,7 +888,32 @@ func _physics_frames(count: int) -> void:
 		await get_tree().physics_frame
 
 
+## Chunk scenes load on worker threads. If the test quits while a load is still
+## in flight, the `ResourceLoader` still holds the resource and Godot reports it
+## as a leaked object at exit. Waiting briefly, then disabling and clearing every
+## manager under the room, lets those loads finish and release their resources
+## before the process ends. This is a test-teardown detail, not a gameplay fix.
+func _drain_chunk_streaming() -> void:
+	if _room == null or not is_instance_valid(_room):
+		return
+	var managers: Array[ChunkManager] = []
+	for child in _room.find_children("*", "", true, false):
+		if child is ChunkManager:
+			managers.append(child as ChunkManager)
+	if managers.is_empty():
+		return
+	# Give in-flight threaded loads time to finish and be polled.
+	await get_tree().create_timer(0.8).timeout
+	for manager in managers:
+		if is_instance_valid(manager):
+			manager.enabled = false
+			manager.unload_all()
+	# Let the unloads settle across a few frames.
+	await _frames(6)
+
+
 func _finish() -> void:
+	await _drain_chunk_streaming()
 	_restore_slots()
 	if _failures.is_empty():
 		print("PHASE3_SMOKE_OK")

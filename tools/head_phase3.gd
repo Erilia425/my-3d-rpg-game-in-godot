@@ -51,6 +51,16 @@ var _slot_backup: Dictionary = {}
 
 func _ready() -> void:
 	await get_tree().process_frame
+
+	# Bisect mode: `-- --only=<target>` runs one check in isolation so a leak can
+	# be attributed to a specific block. Normal runs ignore this entirely.
+	var only := _only_arg()
+	if only != "":
+		print("ONLY: " + only)
+		await _run_only(only)
+		_finish()
+		return
+
 	_backup_slots()
 	SaveManager.delete_slot(TEST_SLOT)
 
@@ -82,6 +92,71 @@ func _ready() -> void:
 
 	SaveManager.delete_slot(TEST_SLOT)
 	_finish()
+
+
+# --- leak bisect helpers --------------------------------------------------
+
+
+func _only_arg() -> String:
+	for arg in OS.get_cmdline_user_args():
+		if arg.begins_with("--only="):
+			return arg.trim_prefix("--only=")
+	return ""
+
+
+func _remove_room_node(node_name: String) -> void:
+	var node := _room.get_node_or_null(NodePath(node_name))
+	if node == null:
+		_check(false, "room node exists: " + node_name)
+		return
+	_room.remove_child(node)
+	node.free()
+	await _frames(2)
+
+
+func _run_only(which: String) -> void:
+	if which == "room_drain":
+		await _ensure_room()
+		var cm := _room.get_node_or_null("ChunkManager") as ChunkManager
+		if cm != null:
+			await get_tree().create_timer(1.0).timeout
+			cm.enabled = false
+			cm.unload_all()
+		await _frames(6)
+		return
+	if which.begins_with("room_omit="):
+		await _ensure_room()
+		await _remove_room_node(which.trim_prefix("room_omit="))
+		return
+	match which:
+		"room":
+			await _ensure_room()
+		"chunk_manager":
+			await _ensure_room()
+			await _check_chunk_manager()
+		"real_chunks":
+			await _ensure_room()
+			await _check_real_chunks()
+		"biomes":
+			await _check_biomes()
+		"biome_chunk":
+			for biome in BIOMES:
+				_check_biome_chunk(biome)
+			await _frames(2)
+		_:
+			_check(false, "unknown --only target: " + which)
+
+
+func _ensure_room() -> void:
+	if _room != null:
+		return
+	var packed := load("res://scenes/test_room.tscn") as PackedScene
+	if packed == null:
+		_check(false, "test room scene loads")
+		return
+	_room = packed.instantiate() as Node3D
+	add_child(_room)
+	await _physics_frames(4)
 
 
 # --- world clock ----------------------------------------------------------

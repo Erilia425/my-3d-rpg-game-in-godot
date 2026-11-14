@@ -23,6 +23,9 @@ signal chunk_unloaded(coord: Vector2i)
 @export var update_interval: float = 0.25
 @export var auto_track_player: bool = true
 @export var enabled: bool = true
+## Optional biome tag for the 2D art dressing pass. Leave empty to keep the
+## authored blockout untouched (test fixtures and un-themed managers).
+@export var biome: StringName = &""
 
 ## Vector2i -> instantiated chunk scene
 var _loaded: Dictionary = {}
@@ -186,6 +189,9 @@ func _attach(coord: Vector2i, resource: Resource) -> void:
 	# Chunk files are authored around the origin; the manager places them.
 	instance.position = chunk_to_world(coord)
 	add_child(instance)
+	# Swapping the blockout for 2D billboards only changes what is seen; the
+	# chunk's collisions and transforms are never touched.
+	ChunkDressing.apply(instance, biome)
 	_loaded[coord] = instance
 	chunk_loaded.emit(coord)
 

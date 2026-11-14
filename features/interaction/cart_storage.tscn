@@ -1,0 +1,26 @@
+[gd_scene load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://features/interaction/cart_storage.gd" id="1_cart"]
+[ext_resource type="Texture2D" path="res://assets/from_2d/sprites/cart.png" id="2_cart_art"]
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_cart"]
+size = Vector3(1.4, 1.7, 0.9)
+
+[node name="CartStorage" type="StaticBody3D" groups=["interactable"]]
+collision_layer = 17
+collision_mask = 0
+script = ExtResource("1_cart")
+
+[node name="Sprite" type="Sprite3D" parent="."]
+position = Vector3(0, 1.04, 0)
+pixel_size = 0.0075
+texture = ExtResource("2_cart_art")
+billboard = 2
+texture_filter = 0
+alpha_cut = 1
+shaded = true
+double_sided = true
+
+[node name="Collision" type="CollisionShape3D" parent="."]
+position = Vector3(0, 0.85, 0)
+shape = SubResource("BoxShape3D_cart")
