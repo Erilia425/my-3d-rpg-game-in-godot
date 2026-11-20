@@ -31,3 +31,7 @@ Other Core Stuff
 	    -Temp Pixel Art (More stylized later)
 	-Factions
 
+day 2 
+
+we built an extension to a cave and assined loot and enimy locations also the boss. 
+
